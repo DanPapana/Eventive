@@ -1,0 +1,112 @@
+﻿@model PAWEventive.Models.Events.EventListViewModel;
+@{
+    ViewData["Title"] = "Events";
+}
+
+    <div class="container">
+        <div class="row mt-5 justify-content-center">
+
+
+            @*
+
+                @foreach (var oneEvent in Model.EventList)
+                {
+                    <div class="card text-light bg-secondary card-custom mx-2 mb-3" style="width: 350px;">
+                        <img class="card-img-top" src="/images/hangout.png" alt="Card image cap" height="325">
+                        <div class="card-img-overlay">
+                            <div class="d-flex justify-content-between">
+                                <div class="event-date">@oneEvent.EventDetails.Deadline</div>
+                                <img src="/images/network.png" width="65" height="65" style="position:relative">
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">@oneEvent.Title</h5>
+                            @if (oneEvent.EventDetails.ParticipationFee > 0)
+                            {
+                                <p class="card-text">Fee: $@oneEvent.EventDetails.ParticipationFee</p>
+                            }
+                            <p class="card-text">📍 @oneEvent.EventDetails.Location</p>
+                            <button type="button" class="btn btn-info btn-lg btn-block">Follow</button>
+                            <button type="button" class="btn btn-primary btn-lg btn-block">Apply</button>
+                        </div>
+                    </div>
+                }
+                </div>
+            </div>
+            *@
+
+
+                    <div class="card text-light bg-secondary card-custom mx-2 mb-3" style="width: 350px;">
+                        <img class="card-img-top" src="/images/hangout.png" alt="Card image cap" height="325">
+                        <div class="card-img-overlay">
+                            <div class="d-flex justify-content-between">
+                                <div class="event-date">29 March</div>
+                                <img src="/images/network.png" width="65" height="65" style="position:relative">
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">oneEvent.Title</h5>
+                            <p class="card-text">Fee: $oneEvent.EventDetails.ParticipationFee</p>
+                            <p class="card-text">📍 oneEvent.EventDetails.Location</p>
+                            <button type="button" class="btn btn-info btn-lg btn-block">Follow</button>
+                            <button type="button" class="btn btn-primary btn-lg btn-block">Apply</button>
+                        </div>
+                    </div>
+
+
+                    <div class="card text-light bg-secondary card-custom mx-2 mb-3" style="width: 350px;">
+                        <img class="card-img-top" src="/images/hangout.png" alt="Card image cap" height="325">
+                        <div class="card-img-overlay">
+                            <div class="d-flex justify-content-between">
+                                <div class="event-date">29 March</div>
+                                <img src="/images/network.png" width="65" height="65" style="position:relative">
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">oneEvent.Title</h5>
+                            <p class="card-text">Fee: $oneEvent.EventDetails.ParticipationFee</p>
+                            <p class="card-text">📍 oneEvent.EventDetails.Location</p>
+                            <button type="button" class="btn btn-info btn-lg btn-block">Follow</button>
+                            <button type="button" class="btn btn-primary btn-lg btn-block">Apply</button>
+                        </div>
+                    </div>
+
+
+                    <div class="card text-light bg-secondary card-custom mx-2 mb-3" style="width: 350px;">
+                        <img class="card-img-top" src="~/images/logo.png" alt="Card image cap" height="325">
+                        <div class="card-img-overlay">
+                            <div class="d-flex justify-content-between">
+                                <div class="event-date">29 March</div>
+                                <img src="/images/network.png" width="65" height="65" style="position:relative">
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h5 class="card-title">oneEvent.Title</h5>
+                            <p class="card-text">Fee: $oneEvent.EventDetails.ParticipationFee</p>
+                            <p class="card-text">📍 oneEvent.EventDetails.Location</p>
+                            <button type="button" class="btn btn-info btn-lg btn-block">Follow</button>
+                            <button type="button" class="btn btn-primary btn-lg btn-block">Apply</button>
+                        </div>
+                    </div>
+
+
+                    <div class="card text-light bg-secondary card-custom mx-2 mb-3" style="width: 350px;">
+                        <img class="card-img-top" src="~/images/education.png" alt="Card image cap" height="325">
+                        <div class="card-img-overlay">
+                            <div class="d-flex justify-content-between">
+                                <div class="event-date">29 March</div>
+                                <img src="/images/network.png" width="65" height="65" style="position:relative">
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h5 class="card-title">oneEvent.Title</h5>
+                            <p class="card-text">Fee: $oneEvent.EventDetails.ParticipationFee</p>
+                            <p class="card-text">📍 oneEvent.EventDetails.Location</p>
+                            <button type="button" class="btn btn-info btn-lg btn-block">Follow</button>
+                            <button type="button" class="btn btn-primary btn-lg btn-block">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>

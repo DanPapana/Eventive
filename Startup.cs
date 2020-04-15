@@ -13,6 +13,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PAWEventive.EFDataAccess;
+using PAWEventive.ApplicationLogic.Abstraction;
+using PAWEventive.ApplicationLogic.Services;
 
 namespace PAWEventive
 {
@@ -36,6 +38,12 @@ namespace PAWEventive
                     Configuration.GetConnectionString("DefaultConnection")));
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddScoped<IEventRepository, EventRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<EventService>();
+            services.AddScoped<UserService>();
+
             services.AddControllersWithViews();
             services.AddRazorPages();
         }
