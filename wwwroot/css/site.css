@@ -87,15 +87,60 @@ body {
     font-weight: 500;
     font-size: 20px;
     background-color: white;
-    border-bottom: 2px solid #000000;
 }
 
 .event-date {
     background-color: red;
-    border-radius: 20px;
+    border-radius: 8px;
     text-align: center;
-    font-size: 25px;
-    padding: 10px;
-    font-weight: bold;
+    font-size: 16px;
+    padding: 6px;
+    font-weight: 700;
     color: white;
+}
+
+.event-category {
+    background-color: black;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 16px;
+    padding: 8px;
+    font-weight: 400;
+    color: white;
+}
+
+.filter-icons {
+    width: 5rem;
+    height: 5rem;
+}
+
+.filter-text {
+    font-size: smaller;
+    text-align: center;
+    font-weight: 500;
+}
+
+.filter-box {
+    margin-right: 14rem;
+    margin-left: 14rem
+}
+
+.search-bar {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+
+.profile-image {
+    width: 10rem;
+    height: 10rem;
+}
+
+hr {
+    height: 0.05rem;
+    background-color: black;
+}
+
+.hyper-link {
+    font-weight: bold;
+    font-size: 2rem;
 }

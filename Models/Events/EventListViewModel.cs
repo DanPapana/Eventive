@@ -8,6 +8,6 @@ namespace PAWEventive.Models.Events
 {
     public class EventListViewModel
     {
-        public IEnumerable<Event> EventList { get; set; }
+        public List<EventViewModel> EventViewModelList { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using PAWEventive.ApplicationLogic.DataModel;
 using PAWEventive.ApplicationLogic.Services;
 using PAWEventive.Models.Events;
 using System;
@@ -9,43 +10,59 @@ namespace PAWEventive.Controllers
 {
     public class EventController : Controller
     {
-        private readonly UserManager<IdentityUser> userManager;
         private readonly EventService eventService;
+        private readonly UserService userService;
         
-        public EventController(UserManager<IdentityUser> userManager, EventService eventService)
+        public EventController(UserManager<IdentityUser> userManager, EventService eventService, UserService userService)
         {
-            this.userManager = userManager;
             this.eventService = eventService;
+            this.userService = userService;
         }
 
         public ActionResult Index()
         {
             try
             {
-                /*
                 List<EventViewModel> eventViewModels = new List<EventViewModel>();
 
-                foreach (var oneEvent in eventService.GetCurrentEvents())
+                foreach (Event oneEvent in eventService.GetCurrentEvents())
                 {
+                    Event theEvent = eventService.GetEventWithDetails(oneEvent.Id);
+                    User hostingUser = userService.GetCreatorByGuid(theEvent.CreatorId);
+                    var participationFee = theEvent.EventDetails.ParticipationFee.ToString("#.##");
+
+                    if (participationFee.Length > 0)
+                    {
+                        participationFee = "Fee: $" + participationFee;
+                    } else
+                    {
+                        participationFee = "Free admission";
+                    }
+
                     eventViewModels.Add(new EventViewModel
                     {
-                        Title = oneEvent.Title,
-                        EventCreatorId = oneEvent.CreatorId,
-                        EventDetails = oneEvent.EventDetails,
-                        Category = oneEvent.Category
+                        Title = theEvent.Title,
+                        ImageByteArray = theEvent.ImageByteArray,
+                        UserName = $"{hostingUser.FirstName} {hostingUser.LastName}",
+                        UserEmail = hostingUser.ContactDetails.Email,
+                        UserPhoneNo = hostingUser.ContactDetails.PhoneNo,
+                        Location = theEvent.EventDetails.Location,
+                        ParticipationFee = participationFee,
+                        EventDeadline = theEvent.EventDetails.Deadline.ToString("MM/dd/yyyy H:mm"),
+                        EventDescription = theEvent.EventDetails.Description,
+                        EventMaximumParticipants = theEvent.EventDetails.MaximumParticipantNo,
+                        Category = theEvent.Category
                     });
                 }
-                */
 
-                var userId = userManager.GetUserId(User);
-                
                 EventListViewModel viewModel = new EventListViewModel()
                 {
-                    EventList = eventService.GetCurrentEvents()
+                    EventViewModelList = eventViewModels    
                 };
+
                 return View(viewModel);
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 return BadRequest("Invalid request received ");
             }
