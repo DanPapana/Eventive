@@ -8,6 +8,7 @@ namespace PAWEventive.Models.Events
 {
     public class EventListViewModel
     {
+        public Guid CreatorId { get; set; }
         public List<EventViewModel> EventViewModelList { get; set; }
     }
 }

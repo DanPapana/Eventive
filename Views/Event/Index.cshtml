@@ -1,13 +1,46 @@
-﻿@model PAWEventive.Models.Events.EventListViewModel;
+﻿@using PAWEventive.Models.Events;
+@model EventListViewModel;
 @{
     ViewData["Title"] = "Events";
 }
 
 <div class="d-flex justify-content-end">
+    <button class="btn btn-danger" data-toggle="modal" data-target="#newEventModal">Create</button>
     <div class="active-cyan-3 active-cyan-2 mb-5 mt-5 col-md-5">
         <input class="form-control" type="text" placeholder="Don't click, I'm not ready" aria-label="Search">
     </div>
 </div>
+
+
+<form id="newEventForm" method="post" asp-controller="Event" asp-action="NewEvent"
+      data-ajax="true"
+      data-ajax-method="POST"
+      data-ajax-mode="replace"
+      data-ajax-update="#newEventBody">
+
+    @Html.AntiForgeryToken()
+    <div class="modal" id="newEventModal" tabindex="-1" role="dialog" aria-labelledby="newEventModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold" id="newEventModalLabel">New Event</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div id="newEventBody" class="modal-body">
+                    @await Html.PartialAsync("_AddEventPartial", new NewEventViewModel { CreatorId = Model.CreatorId })
+                </div>
+                <div id="createFailureMessage" class="text-danger ml-5"></div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary shadow-button" data-dismiss="modal">Close</button>
+                    <button id="createButton" type="submit" class="btn btn-danger shadow-button">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
 
 <div class="row d-flex justify-content-around filter-box">
     <div>
