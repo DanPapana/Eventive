@@ -36,13 +36,12 @@ namespace PAWEventive.Controllers
 
                 foreach (Event oneEvent in userService.GetUserEvents(user.Id.ToString()))
                 {
-                    //createdEvents.Add(oneEvent);
-                    createdEvents.Add(eventService.GetEventWithDetails(oneEvent.Id));
+                    createdEvents.Add(eventService.GetEventById(oneEvent.Id));
                 }
 
                 UserProfileViewModel viewModel = new UserProfileViewModel()
                 {
-                    DateOfBirth = $"{user.DateOfBirth.ToString("MMMM dd yyyy")} 🎂",
+                    DateOfBirth = $"{user.DateOfBirth:MMMM dd yyyy} 🎂",
                     FullName = $"{user.FirstName} {user.LastName}",
                     ProfileImageByteArray = user.ProfileImageByteArray,
                     Email = user.ContactDetails.Email,
@@ -57,7 +56,7 @@ namespace PAWEventive.Controllers
 
             catch (Exception e)
             {
-                return BadRequest("Invalid request received ");
+                return BadRequest(e);
             }
         }
     }

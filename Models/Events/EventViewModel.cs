@@ -13,7 +13,7 @@ namespace PAWEventive.Models.Events
         public byte[] ImageByteArray { get; set; }
         public EventCategory Category { get; set; }
         public string EventDeadline { get; set; }
-        public int? EventMaximumParticipants { get; set; }
+        public int EventMaximumParticipants { get; set; }
         public string Location { get; set; }
         public string ParticipationFee { get; set; }
         public string EventDescription { get; set; }

@@ -8,18 +8,10 @@ using static PAWEventive.ApplicationLogic.DataModel.Event;
 
 namespace PAWEventive.Models.Events
 {
-    public enum NewEventStatus
-    {
-        NotInitiated = 0,
-        Created,
-        Failed
-    }
 
     public class NewEventViewModel
     {
-        [Required]
-        public Guid? CreatorId { get; set; }
-
+       
         [Required(ErrorMessage = "There needs to a title!")]
         [Display(Name = "Title")]
         public string Title { get; set; }
@@ -36,16 +28,16 @@ namespace PAWEventive.Models.Events
         [Display(Name = "Location")]
         public string Location { get; set; }
 
-        public System.Drawing.Image EventImage { get; set; }
+        [Display(Name = "Add an image if you feel like it")]
+        public byte[] EventImage { get; set; }
         
         [Display(Name = "Maximum number of participants")]
-        public int? MaximumParticipants { get; set; }
+        public int MaximumParticipants { get; set; }
         
         [Display(Name = "Participation Fee")]
-        public decimal? ParticipationFee { get; set; }
+        public decimal ParticipationFee { get; set; }
         
         [Display(Name = "Event Description")]
         public string EventDescription { get; set; }
-        public NewEventStatus CreationStatus { get; set; }
     }
 }
