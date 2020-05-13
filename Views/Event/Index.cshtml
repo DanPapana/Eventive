@@ -4,14 +4,16 @@
     ViewData["Title"] = "Events";
 }
 
-<div class="d-flex justify-content-around active-cyan-3 active-cyan-2 mt-4">
-    <input id="searchTitleBar" class="form-control col-4 m-4" type="text" placeholder="Search by name" aria-label="Search">
-    <input id="searchLocationBar" class="form-control col-4 m-4" type="text" placeholder="Search by location" aria-label="Search">
+
+<div class="d-flex justify-content-around active-cyan-3 active-cyan-2 m-xl-5">
+    <input id="searchTitleBar" class="form-control col-3 mr-4" type="text" placeholder="Search by name" aria-label="Search">
+    <input id="searchLocationBar" class="form-control col-3 mr-4" type="text" placeholder="Search by location" aria-label="Search">
+    <input id="datepicker" placeholder="Search by date" width="276" />
 
     @if (User.Identity.IsAuthenticated)
     {
         <div>
-            <button class="btn btn-danger m-3" style="font-size:1.6rem; font-weight: 600" data-toggle="modal" data-target="#newEventModal">Create</button>
+            <button class="btn btn-danger ml-3" data-toggle="modal" data-target="#newEventModal">Create</button>
         </div>
     }
 </div>
@@ -83,22 +85,19 @@
 <partial name="_EventContainerPartial" />
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-
-    @*
-        <script>
-            $(document).ready(function () {
-                $("#searchBar").on("keyup", function () {
-                    var value = $(this).val().toLowerCase();
-                    $("#toSearch .card").filter(function () {
-                        $(this).toggle($(this).find('.event-category').text().toLowerCase().indexOf(value) > -1)
-                    });
-                });
-            });
-        </script>
-    *@
 
     <script>
+
+        function followEvent(id) {
+            $.ajax({
+                url: "Event/Follow?id=" + id,
+                success: function () {
+                    $('#follow-' + id).toggle();
+                    $('#following-' + id).toggle();
+                }
+            });
+        }
+
         $(document).ready(function () {
             $("#searchTitleBar").on("keyup", function () {
                 var value = $(this).val().toLowerCase();
@@ -107,9 +106,7 @@
                 });
             });
         });
-    </script>
 
-    <script>
         $(document).ready(function () {
             $("#searchLocationBar").on("keyup", function () {
                 var value = $(this).val().toLowerCase();
@@ -118,5 +115,40 @@
                 });
             });
         });
+
+        $(document).ready(function () {
+            $("#datepicker").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#toSearch .card").filter(function () {
+                    $(this).toggle($(this).find('.date').datepicker().indexOf(value) > -1)
+                });
+            });
+        });
+
+        $(document).ready(function () {
+            $('#datepicker').datepicker({
+                uiLibrary: 'bootstrap4'
+            });
+        });
+
     </script>
+
+    <partial name="_ValidationScriptsPartial" />
+    <!--Datepicker-->
+    <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
+    <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
 }
+
+
+@*
+    <script>
+        $(document).ready(function () {
+            $("#searchBar").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#toSearch .card").filter(function () {
+                    $(this).toggle($(this).find('.event-category').text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+    </script>
+*@

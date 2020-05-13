@@ -17,5 +17,7 @@ namespace PAWEventive.Models.Users
         public string Email { get; set; }
         public string LinkToSocialM { get; set; }
         public IEnumerable<Event> CreatedEvents { get;  set; }
+        public IEnumerable<Event> FollowingEvents { get; set; }
+        public IEnumerable<Event> AppliedEvents { get; set; }
     }
 }

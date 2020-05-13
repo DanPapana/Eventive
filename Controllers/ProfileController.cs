@@ -32,12 +32,20 @@ namespace PAWEventive.Controllers
                 var thisUserId = userManager.GetUserId(User);
                 User user = userService.GetUserByUserId(thisUserId);
 
-                List<Event> createdEvents = new List<Event>();
+                //List<Event> createdEvents = new List<Event>();
 
-                foreach (Event oneEvent in userService.GetUserEvents(user.Id.ToString()))
-                {
-                    createdEvents.Add(eventService.GetEventById(oneEvent.Id));
-                }
+                //foreach (Event oneEvent in userService.GetUserEvents(user.Id.ToString()))
+                //{
+                //    createdEvents.Add(eventService.GetEventById(oneEvent.Id));
+                //}
+
+                IEnumerable<Event> createdEvents = userService.GetUserEvents(user.Id.ToString());
+
+                IEnumerable<Event> followingEvents = eventService
+                            .GetEventsForUser(user.Id, Participation.Type.Following);
+
+                IEnumerable<Event> appliedEvents = eventService
+                            .GetEventsForUser(user.Id, Participation.Type.Applied);
 
                 UserProfileViewModel viewModel = new UserProfileViewModel()
                 {
@@ -48,7 +56,9 @@ namespace PAWEventive.Controllers
                     CityCountry = $"{user.ContactDetails.City}, {user.ContactDetails.Country}",
                     PhoneNo = user.ContactDetails.PhoneNo,
                     LinkToSocialM = user.ContactDetails.LinkToSocialM,
-                    CreatedEvents = createdEvents
+                    CreatedEvents = createdEvents,
+                    FollowingEvents = followingEvents,
+                    AppliedEvents = appliedEvents
                 };
 
                 return View(viewModel);

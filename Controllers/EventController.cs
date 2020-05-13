@@ -49,6 +49,7 @@ namespace PAWEventive.Controllers
 
                     eventViewModels.Add(new EventViewModel
                     {
+                        Id = theEvent.Id,
                         Title = theEvent.Title,
                         ImageByteArray = theEvent.ImageByteArray,
                         UserName = $"{hostingUser.FirstName} {hostingUser.LastName}",
@@ -63,9 +64,20 @@ namespace PAWEventive.Controllers
                     });
                 }
 
+                var userId = userManager.GetUserId(User);
+                var currentUser = userService.GetUserByUserId(userId);
+
+                IEnumerable<Guid> eventsFollowed = eventService
+                               .GetEventsGuidForUser(currentUser.Id, Participation.Type.Following);
+                
+                IEnumerable<Guid> eventsApplied = eventService
+                            .GetEventsGuidForUser(currentUser.Id, Participation.Type.Applied);
+
                 EventListViewModel viewModel = new EventListViewModel()
                 {
-                    EventViewModelList = eventViewModels    
+                    EventViewModelList = eventViewModels,
+                    EventsFollowed = eventsFollowed,
+                    EventsApplied = eventsApplied
                 };
 
                 return View(viewModel);
@@ -112,6 +124,39 @@ namespace PAWEventive.Controllers
                 //return PartialView("_AddEventPartial", eventData);
                 return RedirectToAction("Index");
             }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+
+        public IActionResult Follow(string id)
+        {
+            try
+            {
+                Guid.TryParse(id, out Guid eventGuid);
+                var eventToFollow = eventService.GetEventById(eventGuid);
+
+                var userId = userManager.GetUserId(User);
+                var followingUser = userService.GetUserByUserId(userId);
+
+                var eventId = eventToFollow.Id;
+                var participantId = followingUser.Id;
+                var type = Participation.Type.Following;
+
+                var potentialParticipation = eventService.GetParticipation(eventId, participantId, type);
+
+                if (potentialParticipation == null)
+                {
+                    eventService.ParticipateInEvent(eventId, participantId, type);
+                } else
+                {
+                    eventService.RemoveParticipation(eventId, participantId, type);
+                }
+
+                return RedirectToAction("Index");
+            } 
             catch (Exception e)
             {
                 return BadRequest(e);

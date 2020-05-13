@@ -144,3 +144,12 @@ hr {
     font-weight: bold;
     font-size: 2rem;
 }
+
+.details-drop {
+    position: inherit;
+    padding: 1rem;
+    min-width: 19.5rem;
+    font-family: Roboto;
+    background-color: dimgrey;
+    color: white;
+}
