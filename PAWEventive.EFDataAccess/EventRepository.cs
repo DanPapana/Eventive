@@ -17,6 +17,7 @@ namespace PAWEventive.EFDataAccess
         public IEnumerable<Event> GetActiveEvents()
         {
             return dbContext.Events
+                .Include(evnt => evnt.EventDetails)
                 .Where(evnt => evnt
                 .EventDetails.Deadline > DateTime.UtcNow)
                 .OrderBy(evnt => evnt.EventDetails.Deadline)

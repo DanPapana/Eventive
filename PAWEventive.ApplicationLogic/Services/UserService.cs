@@ -3,9 +3,6 @@ using PAWEventive.ApplicationLogic.DataModel;
 using PAWEventive.ApplicationLogic.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 using static PAWEventive.ApplicationLogic.DataModel.Event;
 
 namespace PAWEventive.ApplicationLogic.Services
@@ -63,7 +60,7 @@ namespace PAWEventive.ApplicationLogic.Services
         }
 
         public void AddEvent(Guid creatorId, string title, EventCategory category, 
-                            byte[] image, EventDetails details)
+                            string image, EventDetails details)
         {
             GetCreatorByGuid(creatorId);
 
@@ -76,20 +73,5 @@ namespace PAWEventive.ApplicationLogic.Services
                 ImageByteArray = image
             });
         }
-
-        /*
-        public byte[] ImageToByteArray(System.Drawing.Image imageIn)
-        {
-            using (var ms = new MemoryStream())
-            {
-                if (imageIn != null)
-                {
-                    imageIn.Save(ms, imageIn.RawFormat);
-                    return ms.ToArray();
-                }
-
-                return null;
-            }
-        }*/
     }
 }

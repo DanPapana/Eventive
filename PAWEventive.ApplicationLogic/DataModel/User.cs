@@ -10,7 +10,7 @@ namespace PAWEventive.ApplicationLogic.DataModel
         public Guid UserId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public byte[] ProfileImageByteArray { get; set; }
+        public byte[] ProfileImage { get; set; }
         public string SocialId { get; set; }
         public DateTime DateOfBirth { get; set; }
         public ContactDetails ContactDetails { get; set; }

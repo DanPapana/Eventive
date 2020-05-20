@@ -4,7 +4,6 @@
     ViewData["Title"] = "Events";
 }
 
-
 <div class="d-flex justify-content-around active-cyan-3 active-cyan-2 m-xl-5">
     <input id="searchTitleBar" class="form-control col-3 mr-4" type="text" placeholder="Search by name" aria-label="Search">
     <input id="searchLocationBar" class="form-control col-3 mr-4" type="text" placeholder="Search by location" aria-label="Search">
@@ -21,6 +20,7 @@
 <form enctype="multipart/form-data" method="post" asp-controller="Event" asp-action="NewEvent"
       data-ajax="true"
       data-ajax-method="POST"
+      data-ajax-complete="modalFormComplete('#newEventModal')"
       data-ajax-mode="replace"
       data-ajax-update="#newEventBody">
 
@@ -44,6 +44,25 @@
         </div>
     </div>
 </form>
+
+<form method="post" asp-controller="Event" asp-action="Apply"
+      data-ajax="true"
+      data-ajax-method="POST"
+      data-ajax-complete="modalFormComplete('#applyModal')"
+      data-ajax-mode="replace"
+      data-ajax-update="#applyBody">
+
+    <div class="modal fade" style="margin-top:10rem" id="applyModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog d-flex justify-content-center">
+            <div class="modal-content" style="max-width: 60%">
+                <div class="modal-body" id="applyBody">
+                    <partial name="_ApplyToEventPartial" model="new ApplyToEventViewModel()" />
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
 
 <div class="container">
     <div class="d-flex justify-content-around filter-box">
@@ -82,7 +101,7 @@
 
 <hr />
 
-<partial name="_EventContainerPartial" />
+<div id="eventContainer"></div>
 
 @section Scripts {
 
@@ -95,6 +114,19 @@
                     $('#follow-' + id).toggle();
                     $('#following-' + id).toggle();
                 }
+            });
+        }
+
+        function applyToEvent(id) {
+            $('#apply-' + id).toggle();
+            $('#applied-' + id).toggle();
+            $('#follow-' + id).hide();
+            $('#following-' + id).show();
+        }
+
+        function LoadApplyToEvent(id) {
+            loadServerPartialView("#applyBody", '@Url.Action("Apply", "Event")' + "/" + id).success(function () {
+                applyToEvent(id);
             });
         }
 
@@ -117,10 +149,10 @@
         });
 
         $(document).ready(function () {
-            $("#datepicker").on("keyup", function () {
+            $("#datepicker").on("click", function () {
                 var value = $(this).val().toLowerCase();
                 $("#toSearch .card").filter(function () {
-                    $(this).toggle($(this).find('.date').datepicker().indexOf(value) > -1)
+                    $(this).toggle($(this).find('.deadline').datepicker().indexOf(value) > -1)
                 });
             });
         });
@@ -131,6 +163,19 @@
             });
         });
 
+        $(document).ready(function () {
+            loadEvents();
+        });
+
+        function loadEvents() {
+            loadServerPartialView("#eventContainer", '@Url.Action("EventContainer", "Event")');
+        }
+
+        function modalFormComplete(modalName) {
+            $(modalName).modal("hide");
+            loadEvents();
+        }
+
     </script>
 
     <partial name="_ValidationScriptsPartial" />
@@ -138,7 +183,6 @@
     <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
     <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
 }
-
 
 @*
     <script>
@@ -151,4 +195,11 @@
             });
         });
     </script>
+
+        $(document).ready(function () {
+            $('#datetimepicker').datetimepicker({
+                format: 'hh:ii dd/MM/yyyy'
+            });
+            $('#datetimepicker').datetimepicker('setStartDate', @DateTime.Now.ToString("hh:ii dd/mm/yyyy"));
+        });
 *@

@@ -11,7 +11,7 @@ namespace PAWEventive.Models.Events
     {
         public Guid Id { get; set; }
         public string Title { get; set; }
-        public byte[] ImageByteArray { get; set; }
+        public string EventImage { get; set; }
         public EventCategory Category { get; set; }
         public string EventDeadline { get; set; }
         public int EventMaximumParticipants { get; set; }

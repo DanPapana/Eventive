@@ -1,4 +1,5 @@
-﻿using PAWEventive.ApplicationLogic.DataModel;
+﻿using Microsoft.AspNetCore.Http;
+using PAWEventive.ApplicationLogic.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace PAWEventive.Models.Users
     {
         public string FullName { get; set; }
         public string DateOfBirth { get; set; }
-        public byte[] ProfileImageByteArray { get; set; }
+        public string ProfileImage { get; set; }
         public string CityCountry { get; set; }
         public string PhoneNo { get; set; }
         public string Email { get; set; }

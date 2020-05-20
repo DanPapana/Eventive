@@ -1,0 +1,22 @@
+﻿@using PAWEventive.Models.Events
+@model ApplyToEventViewModel
+
+<input type="hidden" asp-for="EventId" />
+
+<div class="text-center">
+    @if (Model.AlreadyApplied)
+    {
+        <h4>Do you really want to cancel your application to the event @Model.EventName?</h4>
+    }
+    else
+    {
+        <h4>Are you sure you want to apply to the event @Model.EventName?</h4>
+    }
+</div>
+
+<br />
+
+<div class="d-flex justify-content-around">
+    <button type="button" class="btn btn-dark btn-lg" data-dismiss="modal">No</button>
+    <button type="submit" class="btn btn-success btn-lg">Yes</button>
+</div>

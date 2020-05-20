@@ -24,20 +24,13 @@ namespace PAWEventive.Controllers
             this.userService = userService;
         }
 
-        [Authorize]
-        public ActionResult Index()
+
+        public IActionResult Index()
         {
             try
             {
                 var thisUserId = userManager.GetUserId(User);
                 User user = userService.GetUserByUserId(thisUserId);
-
-                //List<Event> createdEvents = new List<Event>();
-
-                //foreach (Event oneEvent in userService.GetUserEvents(user.Id.ToString()))
-                //{
-                //    createdEvents.Add(eventService.GetEventById(oneEvent.Id));
-                //}
 
                 IEnumerable<Event> createdEvents = userService.GetUserEvents(user.Id.ToString());
 
@@ -49,9 +42,9 @@ namespace PAWEventive.Controllers
 
                 UserProfileViewModel viewModel = new UserProfileViewModel()
                 {
-                    DateOfBirth = $"{user.DateOfBirth:MMMM dd yyyy} 🎂",
+                    DateOfBirth = $"{user.DateOfBirth: dd MMMM yyyy} 🎂",
                     FullName = $"{user.FirstName} {user.LastName}",
-                    ProfileImageByteArray = user.ProfileImageByteArray,
+                    ProfileImage = "",
                     Email = user.ContactDetails.Email,
                     CityCountry = $"{user.ContactDetails.City}, {user.ContactDetails.Country}",
                     PhoneNo = user.ContactDetails.PhoneNo,

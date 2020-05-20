@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using static PAWEventive.ApplicationLogic.DataModel.Event;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace PAWEventive.Models.Events
 {
@@ -16,20 +18,27 @@ namespace PAWEventive.Models.Events
         [Display(Name = "Title")]
         public string Title { get; set; }
 
+
         [Required(ErrorMessage = "A category must be specified")]
         [Display(Name = "Category")]
         public EventCategory Category { get; set; }
 
-        [Required]
+        //[CurrentDate(ErrorMessage = "Date must be after or equal to current date")]
+        //[DataType(DataType.DateTime, ErrorMessage = "Invalid Date Format")]
+        //[Required(ErrorMessage = "Deadline is Required")]
+        //[Range(typeof(DateTime), "00:00 01/01/2020", "00:00 01/01/2100", ErrorMessage = "Date is out of Range")]
+        //[DisplayFormat(DataFormatString = "{0:HH:mm dd/MM/yyyy}", ApplyFormatInEditMode = true)]
+
+        [Required(ErrorMessage = "Deadline is Required")]
         [Display(Name = "Application Deadline")]
-        public string Deadline { get; set; }
+        public DateTime Deadline { get; set; }
 
         [Required(ErrorMessage = "You don't want them stranded, do you?")]
         [Display(Name = "Location")]
         public string Location { get; set; }
 
         [Display(Name = "Add an image if you feel like it")]
-        public byte[] EventImage { get; set; }
+        public IFormFile EventImage { get; set; }
         
         [Display(Name = "Maximum number of participants")]
         public int MaximumParticipants { get; set; }
