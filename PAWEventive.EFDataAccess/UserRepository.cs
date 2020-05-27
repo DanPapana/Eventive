@@ -23,7 +23,7 @@ namespace PAWEventive.EFDataAccess
 
             return foundUser;
         }
-       
+
         public User GetUserByGuid(Guid searchId)
         {
             User foundUser = dbContext.Users

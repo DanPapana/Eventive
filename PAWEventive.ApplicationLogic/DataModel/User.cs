@@ -10,7 +10,7 @@ namespace PAWEventive.ApplicationLogic.DataModel
         public Guid UserId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public byte[] ProfileImage { get; set; }
+        public string ProfileImage { get; set; }
         public string SocialId { get; set; }
         public DateTime DateOfBirth { get; set; }
         public ContactDetails ContactDetails { get; set; }
@@ -27,6 +27,25 @@ namespace PAWEventive.ApplicationLogic.DataModel
                 ContactDetails = new ContactDetails()
             };
             return newUser;
+        }
+
+        public User UpdateUser(string firstName,        string lastName, 
+                                string profileImage,    string address, 
+                                string city,            string country, 
+                                string phoneNo,         string email,
+                                string linkToSocialM)
+        {
+            if (profileImage != null && profileImage.Length > 1)
+            {
+                ProfileImage = profileImage;
+            }
+
+            FirstName = firstName;
+            LastName = lastName;
+
+            ContactDetails.UpdateDetails(address, city, country, phoneNo, email, linkToSocialM);
+
+            return this;
         }
     }
 }

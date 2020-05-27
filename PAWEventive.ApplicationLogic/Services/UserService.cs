@@ -59,6 +59,22 @@ namespace PAWEventive.ApplicationLogic.Services
             return newUser;
         }
 
+        public User UpdateUser(Guid updateId, string firstName, string lastName,
+                                string profileImage, string address,
+                                string city, string country,
+                                string phoneNo, string email,
+                                string linkToSocialM)
+        {
+            var userToUpdate = userRepository.GetUserByGuid(updateId);
+
+            userToUpdate.UpdateUser(firstName, lastName, profileImage, 
+                address, city, country, phoneNo, email, linkToSocialM);
+            
+            userRepository.Update(userToUpdate);
+
+            return userToUpdate;
+        }
+
         public void AddEvent(Guid creatorId, string title, EventCategory category, 
                             string image, EventDetails details)
         {

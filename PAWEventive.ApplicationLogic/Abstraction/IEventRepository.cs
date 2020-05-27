@@ -14,6 +14,8 @@ namespace PAWEventive.ApplicationLogic.Abstraction
         IEnumerable<Event> GetEventsForUser(Guid userId, Participation.Type type);
         IEnumerable<Guid> GetEventsGuidForUser(Guid userId, Participation.Type type);
         Participation CreateParticipation(Participation participation);
+        IEnumerable<Event> GetPastEvents(Guid userId);
         bool RemoveParticipation(Participation participationToRemove);
+        bool RemoveEvent(Guid eventId);
     }
 }

@@ -14,7 +14,8 @@ namespace PAWEventive.ApplicationLogic.DataModel
         public decimal ParticipationFee { get; set; }
 
         public EventDetails() { }
-        public EventDetails(string description, string location, DateTime deadline, int maximumParticipants, decimal fee)
+        public EventDetails(string description, string location, 
+            DateTime deadline, int maximumParticipants, decimal fee)
         {
             Id = Guid.NewGuid();
             Location = location;
@@ -22,6 +23,18 @@ namespace PAWEventive.ApplicationLogic.DataModel
             Deadline = deadline;
             MaximumParticipantNo = maximumParticipants;
             ParticipationFee = fee;
+        }
+
+        public EventDetails UpdateDetails(string description, string location, 
+            DateTime deadline, int maximumParticipants, decimal fee)
+        {
+            Location = location;
+            Description = description;
+            Deadline = deadline;
+            MaximumParticipantNo = maximumParticipants;
+            ParticipationFee = fee;
+
+            return this;
         }
     }
 }

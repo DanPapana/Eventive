@@ -1,43 +1,11 @@
-﻿@using PAWEventive.Models.Users;
-@model UserProfileViewModel;
+﻿
 @{
     ViewData["Title"] = "Profile";
 }
 
-
 <div class="row mt-5 container justify-content-around">
-    <div class="justify-content-center" style="width: 20rem;">
 
-        @if (Model.ProfileImage.Length > 1)
-        {
-            @Model.ProfileImage@*TODO*@
-        }
-        else
-        {
-            <img src="~/images/default_profile.png" class="card-img-top" alt="Profile Picture">
-        }
-
-        <div class="card-body">
-            <div class="d-flex justify-content-between">
-                <a href="#" class="card-link">Change Picture</a>
-                <a href="#" class="card-link">Edit Profile</a>
-            </div>
-            <h3 class="card-title d-flex mt-3 mb-0 justify-content-center">@Model.FullName</h3>
-        </div>
-        <ul class="list-group list-group-flush text-left">
-            <li class="list-group-item">Email: @Model.Email</li>
-            <li class="list-group-item">City: @Model.CityCountry</li>
-            <li class="list-group-item">Birthday: @Model.DateOfBirth</li>
-            @if (Model.LinkToSocialM != null)
-            {
-                <li class="list-group-item">Social Media: @Model.LinkToSocialM</li>
-            }
-            @if (Model.PhoneNo != null)
-            {
-                <li class="list-group-item">Phone Number: @Model.PhoneNo</li>
-            }
-        </ul>
-    </div>
+    <div id="profileContainer"></div>
 
     <div class="mt-5">
         <div class="mt-5">
@@ -55,201 +23,72 @@
     </div>
 </div>
 
-
 <hr />
 <h1 id="created">Created Events</h1>
-
-<div class="row mt-5 justify-content-start">
-    @foreach (var oneEvent in Model.CreatedEvents)
-    {
-        <div class="card text-light bg-secondary card-custom mx-2 mb-3" style="width: 22rem;">
-            @if (oneEvent.ImageByteArray != null)
-            {
-                <img class="card-img-top" style="padding: 0.625rem" src="data:image/png;base64, @oneEvent.ImageByteArray" alt="Event thumbnail">
-            }
-            else
-            {
-                <img class="card-img-top" style="padding: 0.625rem" src="~/images/other.png" alt="Event thumbnail">
-            }
-            <div class="card-img-overlay" style="max-height: 5rem">
-                <div class="d-flex justify-content-between">
-                    <div class="event-date">@oneEvent.EventDetails.Deadline</div>
-                    <div class="event-category">@oneEvent.Category</div>
-                </div>
-            </div>
-
-            <div class="card-body d-flex flex-column">
-                <h4 class="card-title">@oneEvent.Title</h4>
-                <div class="d-flex justify-content-between">
-                    @if (oneEvent.EventDetails.ParticipationFee > 0)
-                    {
-                        <p class="card-text">@oneEvent.EventDetails.ParticipationFee</p>
-                    }
-                    else
-                    {
-                        <p class="card-text">No fee</p>
-                    }
-                    <p>Participants: @oneEvent.EventDetails.MaximumParticipantNo</p>
-                </div>
-
-                <p class="card-text">📍 @oneEvent.EventDetails.Location</p>
-
-                <p class="card-text">@oneEvent.EventDetails.Description</p>
-                <p class="card-text">Applied: @oneEvent.EventDetails.MaximumParticipantNo</p>
-
-                <div class="mt-auto">
-                    <button type="button" class="btn btn-light btn-lg btn-block">Edit Event</button>
-                    <button type="button" class="btn btn-light btn-lg btn-block">Check Applicants</button>
-                    <button type="button" class="btn btn-light btn-lg btn-block">Delete Event</button>
-                </div>
-            </div>
-        </div>
-    }
-</div>
-
+<div id="createdContainer"></div>
 <hr />
+
 <h1 id="following">Following Events</h1>
-
-<div class="row mt-5 justify-content-start">
-
-    @foreach (var oneEvent in Model.FollowingEvents)
-    {
-        <div class="card text-light bg-secondary card-custom mx-2 mb-3" style="width: 22rem">
-            @if (oneEvent.ImageByteArray != null)
-            {
-                <img class="card-img-top" style="padding: 0.625rem" src="data:image/png;base64, @oneEvent.ImageByteArray" alt="Event thumbnail">
-            }
-            else
-            {
-                <img class="card-img-top" style="padding: 0.625rem" src="~/images/other.png" alt="Event thumbnail">
-            }
-            <div class="card-img-overlay" style="max-height: 5rem">
-                <div class="d-flex justify-content-between">
-                    <div class="event-date">@oneEvent.EventDetails.Deadline</div>
-                    <div class="event-category">@oneEvent.Category</div>
-                </div>
-            </div>
-
-            <div class="card-body d-flex flex-column">
-                <h4 class="card-title title">@oneEvent.Title</h4>
-                <div class="d-flex justify-content-between">
-                    <p class="card-text">@oneEvent.EventDetails.ParticipationFee</p>
-                    <p>Participants: @oneEvent.EventDetails.MaximumParticipantNo</p>
-                </div>
-
-                <p class="card-text location">📍 @oneEvent.EventDetails.Location</p>
-
-                <div class="mt-auto">
-
-                    <p class="card-text">@oneEvent.EventDetails.Description</p>
-
-                    <button id="follow-@oneEvent.Id" style="display:none" onclick="followEvent('@oneEvent.Id')" class="btn btn-info btn-lg btn-block">Follow</button>
-                    <button id="following-@oneEvent.Id" onclick="followEvent('@oneEvent.Id')" class="btn btn-success btn-lg btn-block">Following ✓</button>
-
-                    @if (Model.AppliedEvents.Contains(oneEvent))
-                    {
-                        <button id="apply-@oneEvent.Id" onclick="LoadApplyToEvent('@oneEvent.Id')" type="button" style="display:none" class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#applyModal">Apply</button>
-                        <button id="applied-@oneEvent.Id" onclick="LoadApplyToEvent('@oneEvent.Id')" type="button" class="btn btn-outline-warning btn-lg btn-block" data-toggle="modal" data-target="#applyModal">Cancel Application</button>
-                    }
-                    else
-                    {
-                        <button id="apply-@oneEvent.Id" onclick="LoadApplyToEvent('@oneEvent.Id')" type="button" class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#applyModal">Apply</button>
-                        <button id="applied-@oneEvent.Id" onclick="LoadApplyToEvent('@oneEvent.Id')" type="button" style="display:none" class="btn btn-outline-warning btn-lg btn-block" data-toggle="modal" data-target="#applyModal">Cancel Application</button>
-                    }
-                </div>
-            </div>
-        </div>
-    }
-</div>
-
+<div id="followingContainer"></div>
 <hr />
+
 <h1 id="applied">Applied Events</h1>
-
-<div class="row mt-5 justify-content-start">
-
-    @foreach (var oneEvent in Model.AppliedEvents)
-    {
-        <div class="card text-light bg-secondary card-custom mx-2 mb-3" style="width: 22rem">
-            <img class="card-img-top" style="padding: 0.625rem" src="/images/hangout.png" alt="Event thumbnail">
-            <div class="card-img-overlay" style="max-height: 5rem">
-                <div class="d-flex justify-content-between">
-                    <div class="event-date">@oneEvent.EventDetails.Deadline</div>
-                    <div class="event-category">@oneEvent.Category</div>
-                </div>
-            </div>
-
-            <div class="card-body d-flex flex-column">
-                <h4 class="card-title title">@oneEvent.Title</h4>
-                <div class="d-flex justify-content-between">
-                    <p class="card-text">@oneEvent.EventDetails.ParticipationFee</p>
-                    <p>Participants: @oneEvent.EventDetails.MaximumParticipantNo</p>
-                </div>
-
-                <p class="card-text location">📍 @oneEvent.EventDetails.Location</p>
-
-                <div class="mt-auto">
-
-                    <p class="card-text">@oneEvent.EventDetails.Description</p>
-
-                    @if (Model.FollowingEvents.Contains(oneEvent))
-                    {
-                        <button id="follow-@oneEvent.Id" style="display:none" onclick="followEvent('@oneEvent.Id')" class="btn btn-info btn-lg btn-block">Follow</button>
-                        <button id="following-@oneEvent.Id" onclick="followEvent('@oneEvent.Id')" class="btn btn-success btn-lg btn-block">Following ✓</button>
-                    }
-                    else
-                    {
-                        <button id="follow-@oneEvent.Id" onclick="followEvent('@oneEvent.Id')" class="btn btn-info btn-lg btn-block">Follow</button>
-                        <button id="following-@oneEvent.Id" style="display:none" onclick="followEvent('@oneEvent.Id')" class="btn btn-success btn-lg btn-block">Following ✓</button>
-                    }
-                        <button id="apply-@oneEvent.Id" onclick="LoadApplyToEvent('@oneEvent.Id')" type="button" style="display:none" class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#applyModal">Apply</button>
-                        <button id="applied-@oneEvent.Id" onclick="LoadApplyToEvent('@oneEvent.Id')" type="button" class="btn btn-outline-warning btn-lg btn-block" data-toggle="modal" data-target="#applyModal">Cancel Application</button>
-                </div>
-            </div>
-        </div>
-    }
-</div>
-
+<div id="appliedContainer"></div>
 <hr />
+
 <h1 id="past">Past Events</h1>
+<div id="pastContainer"></div>
 
 @section Scripts {
 
     <partial name="_ValidationScriptsPartial" />
+    <partial name="_ModalsPartial" />
+    <script src="~/js/EventContainer.js" type="text/javascript"></script>
 
     <script>
 
-        function followEvent(id) {
-            $.ajax({
-                url: "Event/Follow?id=" + id,
-                success: function () {
-                    $('#follow-' + id).toggle();
-                    $('#following-' + id).toggle();
-                }
-            });
-        }
-
-        function applyToEvent(id) {
-            $('#apply-' + id).toggle();
-            $('#applied-' + id).toggle();
-            $('#follow-' + id).hide();
-            $('#following-' + id).show();
-        }
-
-
-        @*
         function LoadApplyToEvent(id) {
             loadServerPartialView("#applyBody", '@Url.Action("Apply", "Event")' + "/" + id).success(function () {
                 applyToEvent(id);
             });
         }
 
-        $(document).ready(function () {
+        function LoadEditEvent(id) {
+            loadServerPartialView("#editEventBody", '@Url.Action("Edit", "Event")' + "/" + id);
+        }
+
+        function LoadRemoveEvent(Id) {
+            loadServerPartialView("#removeEventBody", '@Url.Action("Remove", "Event")' + "/" + Id);
+        }
+
+        function LoadEditProfile(Id) {
+            loadServerPartialView("#editProfileBody", '@Url.Action("EditProfile", "Profile")' + "/" + Id);
+        }
+
+        function modalFormComplete(modalName) {
+            $(modalName).modal("hide");
+            loadEvents();
+        }
+
+        function updateProfileComplete(modalName) {
+            $(modalName).modal("hide");
             loadProfile();
-        });
+        }
+
+        function loadEvents() {
+            loadServerPartialView("#appliedContainer", '@Url.Action("AppliedEvents", "Event")');
+            loadServerPartialView("#followingContainer", '@Url.Action("FollowingEvents", "Event")');
+            loadServerPartialView("#createdContainer", '@Url.Action("CreatedEvents", "Event")');
+            loadServerPartialView("#pastContainer", '@Url.Action("PastEvents", "Event")');
+        }
 
         function loadProfile() {
-            loadServerPartialView("#profile", '@Url.Action("GetProfile", "Profile")');
+            loadServerPartialView("#profileContainer", '@Url.Action("GetProfile", "Profile")');
         }
-        *@
+
+        $(document).ready(function () {
+            loadProfile();
+            loadEvents();
+        });
     </script>
 }

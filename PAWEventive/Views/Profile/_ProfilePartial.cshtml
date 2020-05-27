@@ -1,1 +1,34 @@
-﻿
+﻿@using PAWEventive.Models.Users;
+@model UserProfileViewModel
+
+    <div class="justify-content-center" style="width: 20rem;">
+
+        @if (Model.ProfileImage != null && Model.ProfileImage.Length > 1)
+        {
+            <img class="card-img-top" style="padding: 0.625rem" src="data:image/png;base64, @Model.ProfileImage">
+        }
+        else
+        {
+            <img class="card-img-top" src="~/images/default_profile.png" alt="Profile Picture">
+        }
+
+        <div class="card-body">
+            <div class="d-flex justify-content-end">
+                <a href="#" class="card-link" onclick="LoadEditProfile('@Model.Id')" data-toggle="modal" data-target="#editProfileModal">Edit Profile</a>
+            </div>
+            <h3 class="card-title d-flex mt-3 mb-0 justify-content-center">@Model.FullName</h3>
+        </div>
+        <ul class="list-group list-group-flush text-left">
+            <li class="list-group-item">Email: @Model.Email</li>
+            <li class="list-group-item">City: @Model.CityCountry</li>
+            <li class="list-group-item">Birthday: @Model.DateOfBirth</li>
+            @if (Model.LinkToSocialM != null)
+            {
+                <li class="list-group-item">Social Media: @Model.LinkToSocialM</li>
+            }
+            @if (Model.PhoneNo != null)
+            {
+                <li class="list-group-item">Phone Number: @Model.PhoneNo</li>
+            }
+        </ul>
+    </div>

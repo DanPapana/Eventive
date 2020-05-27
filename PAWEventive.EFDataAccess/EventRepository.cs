@@ -24,6 +24,17 @@ namespace PAWEventive.EFDataAccess
                 .AsEnumerable();
         }
 
+        public IEnumerable<Event> GetPastEvents(Guid userId)
+        {
+            return dbContext.Events
+                .Include(evnt => evnt.EventDetails)
+                .Where(evnt => evnt
+                .EventDetails.Deadline < DateTime.UtcNow 
+                && evnt.CreatorId == userId)
+                .OrderBy(evnt => evnt.EventDetails.Deadline)
+                .AsEnumerable();
+        }
+
         public Event GetEventById(Guid eventId)
         {
             return dbContext.Events.Include(ev => ev.EventDetails)
@@ -98,6 +109,21 @@ namespace PAWEventive.EFDataAccess
             dbContext.Remove(participationToRemove);
             dbContext.SaveChanges();
             return true;
+        }
+
+        public bool RemoveEvent(Guid eventId)
+        {
+            var eventToRemove = GetEventById(eventId);
+            if (eventToRemove != null)
+            {
+                dbContext.Remove(eventToRemove.EventDetails);
+                dbContext.Remove(eventToRemove);
+                dbContext.SaveChanges();
+                
+                return true;
+            }
+
+            return false;
         }
 
         public void SaveChanges()

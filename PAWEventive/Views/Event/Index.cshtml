@@ -7,8 +7,7 @@
 <div class="d-flex justify-content-around active-cyan-3 active-cyan-2 m-xl-5">
     <input id="searchTitleBar" class="form-control col-3 mr-4" type="text" placeholder="Search by name" aria-label="Search">
     <input id="searchLocationBar" class="form-control col-3 mr-4" type="text" placeholder="Search by location" aria-label="Search">
-    <input id="datepicker" placeholder="Search by date" width="276" />
-
+   
     @if (User.Identity.IsAuthenticated)
     {
         <div>
@@ -17,80 +16,41 @@
     }
 </div>
 
-<form enctype="multipart/form-data" method="post" asp-controller="Event" asp-action="NewEvent"
-      data-ajax="true"
-      data-ajax-method="POST"
-      data-ajax-complete="modalFormComplete('#newEventModal')"
-      data-ajax-mode="replace"
-      data-ajax-update="#newEventBody">
-
-    <div class="modal fade" id="newEventModal" tabindex="-1" aria-labelledby="newEventTitle" aria-hidden="true">
-        <div class="modal-dialog d-flex justify-content-center">
-            <div class="modal-content" style="max-width: 70%">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="newEventTitle">Create a new event!</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="newEventBody">
-                    <partial name="_AddEventPartial" model="new NewEventViewModel()" />
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Create</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-
-<form method="post" asp-controller="Event" asp-action="Apply"
-      data-ajax="true"
-      data-ajax-method="POST"
-      data-ajax-complete="modalFormComplete('#applyModal')"
-      data-ajax-mode="replace"
-      data-ajax-update="#applyBody">
-
-    <div class="modal fade" style="margin-top:10rem" id="applyModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog d-flex justify-content-center">
-            <div class="modal-content" style="max-width: 60%">
-                <div class="modal-body" id="applyBody">
-                    <partial name="_ApplyToEventPartial" model="new ApplyToEventViewModel()" />
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-
 
 <div class="container">
     <div class="d-flex justify-content-around filter-box">
-        <div>
+        <div onclick="searchByCategory('')">
+            <div class="img-thumbnail m-1">
+                <img src="/images/other.png" alt="Other" class="filter-icons">
+            </div>
+            <div class="filter-text">All</div>
+        </div>
+
+        <div onclick="searchByCategory('Hangout')">
             <div class="img-thumbnail m-1">
                 <img src="/images/hangout.png" alt="Hangouts" class="filter-icons">
             </div>
             <div class="filter-text">Hangouts</div>
         </div>
-        <div>
+        <div onclick="searchByCategory('Education')">
             <div class="img-thumbnail m-1">
                 <img src="/images/education.png" alt="Education" class="filter-icons">
             </div>
             <div class="filter-text">Education</div>
         </div>
-        <div>
+        <div onclick="searchByCategory('Entertainment')">
             <div class="img-thumbnail m-1">
                 <img src="/images/entertainment.png" alt="Entertainment" class="filter-icons">
             </div>
             <div class="filter-text">Entertainment</div>
         </div>
-        <div>
+        <div onclick="searchByCategory('Networking')">
             <div class="img-thumbnail m-1">
                 <img src="/images/network.png" alt="Network" class="filter-icons">
             </div>
             <div class="filter-text">Network</div>
         </div>
-        <div>
+        <div onclick="searchByCategory('Other')">
             <div class="img-thumbnail m-1">
                 <img src="/images/other.png" alt="Other" class="filter-icons">
             </div>
@@ -105,101 +65,48 @@
 
 @section Scripts {
 
+    <script src="~/js/EventContainer.js" type="text/javascript"></script>
+
     <script>
-
-        function followEvent(id) {
-            $.ajax({
-                url: "Event/Follow?id=" + id,
-                success: function () {
-                    $('#follow-' + id).toggle();
-                    $('#following-' + id).toggle();
-                }
-            });
-        }
-
-        function applyToEvent(id) {
-            $('#apply-' + id).toggle();
-            $('#applied-' + id).toggle();
-            $('#follow-' + id).hide();
-            $('#following-' + id).show();
-        }
-
         function LoadApplyToEvent(id) {
             loadServerPartialView("#applyBody", '@Url.Action("Apply", "Event")' + "/" + id).success(function () {
-                applyToEvent(id);
+                applyToEvent(id)
             });
         }
-
-        $(document).ready(function () {
-            $("#searchTitleBar").on("keyup", function () {
-                var value = $(this).val().toLowerCase();
-                $("#toSearch .card").filter(function () {
-                    $(this).toggle($(this).find('.title').text().toLowerCase().indexOf(value) > -1)
-                });
-            });
-        });
-
-        $(document).ready(function () {
-            $("#searchLocationBar").on("keyup", function () {
-                var value = $(this).val().toLowerCase();
-                $("#toSearch .card").filter(function () {
-                    $(this).toggle($(this).find('.location').text().toLowerCase().indexOf(value) > -1)
-                });
-            });
-        });
-
-        $(document).ready(function () {
-            $("#datepicker").on("click", function () {
-                var value = $(this).val().toLowerCase();
-                $("#toSearch .card").filter(function () {
-                    $(this).toggle($(this).find('.deadline').datepicker().indexOf(value) > -1)
-                });
-            });
-        });
-
-        $(document).ready(function () {
-            $('#datepicker').datepicker({
-                uiLibrary: 'bootstrap4'
-            });
-        });
-
-        $(document).ready(function () {
-            loadEvents();
-        });
 
         function loadEvents() {
             loadServerPartialView("#eventContainer", '@Url.Action("EventContainer", "Event")');
         }
+
+        function LoadEditEvent(Id) {
+            loadServerPartialView("#editEventBody", '@Url.Action("Edit", "Event")' + "/" + Id);
+        }
+
+        function LoadRemoveEvent(Id) {
+            loadServerPartialView("#removeEventBody", '@Url.Action("Remove", "Event")' + "/" + Id);
+        }
+
+        $(document).ready(function () {
+            loadEvents();
+        });
 
         function modalFormComplete(modalName) {
             $(modalName).modal("hide");
             loadEvents();
         }
 
+        function searchByCategory(category) {
+            if (category == '') {
+                $("#toSearch .card").show();
+            } else {
+                $("#toSearch .card").filter(function () {
+                    $(this).toggle($(this).find('.event-category').text().indexOf(category) > -1)
+                });
+            }
+        }
+
     </script>
 
     <partial name="_ValidationScriptsPartial" />
-    <!--Datepicker-->
-    <script src="https://unpkg.com/gijgo@1.9.13/js/gijgo.min.js" type="text/javascript"></script>
-    <link href="https://unpkg.com/gijgo@1.9.13/css/gijgo.min.css" rel="stylesheet" type="text/css" />
+    <partial name="_ModalsPartial" />
 }
-
-@*
-    <script>
-        $(document).ready(function () {
-            $("#searchBar").on("keyup", function () {
-                var value = $(this).val().toLowerCase();
-                $("#toSearch .card").filter(function () {
-                    $(this).toggle($(this).find('.event-category').text().toLowerCase().indexOf(value) > -1)
-                });
-            });
-        });
-    </script>
-
-        $(document).ready(function () {
-            $('#datetimepicker').datetimepicker({
-                format: 'hh:ii dd/MM/yyyy'
-            });
-            $('#datetimepicker').datetimepicker('setStartDate', @DateTime.Now.ToString("hh:ii dd/mm/yyyy"));
-        });
-*@
