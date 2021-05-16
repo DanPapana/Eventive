@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PAWEventive.EFDataAccess;
 
 namespace PAWEventive.EFDataAccess.Migrations
 {
     [DbContext(typeof(EventManagerDbContext))]
-    partial class EventManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210509001911_UserProfileImage")]
+    partial class UserProfileImage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

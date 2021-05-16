@@ -58,6 +58,7 @@ namespace PAWEventive.ApplicationLogic.Services
                     string description,
                     string location,
                     DateTime deadline,
+                    DateTime occurenceDate,
                     string image,
                     int maximumParticipants,
                     decimal fee)
@@ -65,7 +66,7 @@ namespace PAWEventive.ApplicationLogic.Services
 
             var eventToUpdate = GetEventById(eventId);
 
-            eventToUpdate.UpdateEvent(title, category, description, location, deadline, 
+            eventToUpdate.UpdateEvent(title, category, description, location, deadline, occurenceDate,
                                                 image, maximumParticipants, fee);
             eventRepository.Update(eventToUpdate);
 

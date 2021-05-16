@@ -10,27 +10,31 @@ namespace PAWEventive.ApplicationLogic.DataModel
         public string Description { get; set; }
         public string Location { get; set; }
         public DateTime Deadline { get; set; }
+        public DateTime OccurenceDate { get; set; }
         public int MaximumParticipantNo { get; set; }
         public decimal ParticipationFee { get; set; }
-
+        
         public EventDetails() { }
+
         public EventDetails(string description, string location, 
-            DateTime deadline, int maximumParticipants, decimal fee)
+            DateTime deadline, DateTime occurenceDate, int maximumParticipants, decimal fee)
         {
             Id = Guid.NewGuid();
             Location = location;
             Description = description;
             Deadline = deadline;
+            OccurenceDate = occurenceDate;
             MaximumParticipantNo = maximumParticipants;
             ParticipationFee = fee;
         }
 
         public EventDetails UpdateDetails(string description, string location, 
-            DateTime deadline, int maximumParticipants, decimal fee)
+            DateTime deadline, DateTime occurenceDate, int maximumParticipants, decimal fee)
         {
             Location = location;
             Description = description;
             Deadline = deadline;
+            OccurenceDate = occurenceDate;
             MaximumParticipantNo = maximumParticipants;
             ParticipationFee = fee;
 

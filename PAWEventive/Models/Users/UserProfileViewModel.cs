@@ -1,12 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using PAWEventive.ApplicationLogic.DataModel;
-using PAWEventive.Models.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace PAWEventive.Models.Users
+﻿namespace PAWEventive.Models.Users
 {
     public class UserProfileViewModel
     {

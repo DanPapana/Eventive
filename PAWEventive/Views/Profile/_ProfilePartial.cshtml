@@ -3,7 +3,7 @@
 
     <div class="justify-content-center" style="width: 20rem;">
 
-        @if (Model.ProfileImage != null && Model.ProfileImage.Length > 1)
+        @if (!string.IsNullOrEmpty(Model.ProfileImage))
         {
             <img class="card-img-top" style="padding: 0.625rem" src="data:image/png;base64, @Model.ProfileImage">
         }

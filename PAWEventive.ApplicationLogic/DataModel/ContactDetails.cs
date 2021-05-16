@@ -15,12 +15,18 @@ namespace PAWEventive.ApplicationLogic.DataModel
         public string LinkToSocialM { get; set; }
 
 
+        public ContactDetails(string email)
+        {
+            Id = Guid.NewGuid();
+            Email = email;
+        }
+
         public ContactDetails UpdateDetails(string address,
-                                string city,
-                                string country,
-                                string phoneNo,
-                                string email,
-                                string linkToSocialM) {
+                                    string city,
+                                    string country,
+                                    string phoneNo,
+                                    string email,
+                                    string linkToSocialM) {
 
             Address = address;
             City = city;

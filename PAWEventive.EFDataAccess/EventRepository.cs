@@ -18,6 +18,7 @@ namespace PAWEventive.EFDataAccess
         {
             return dbContext.Events
                 .Include(evnt => evnt.EventDetails)
+                .Include(evnt => evnt.Comments)
                 .Where(evnt => evnt
                 .EventDetails.Deadline > DateTime.UtcNow)
                 .OrderBy(evnt => evnt.EventDetails.Deadline)
@@ -26,8 +27,7 @@ namespace PAWEventive.EFDataAccess
 
         public IEnumerable<Event> GetPastEvents(Guid userId)
         {
-            return dbContext.Events
-                .Include(evnt => evnt.EventDetails)
+            return dbContext.Events.Include(evnt => evnt.EventDetails).Include(evnt => evnt.Comments)
                 .Where(evnt => evnt
                 .EventDetails.Deadline < DateTime.UtcNow 
                 && evnt.CreatorId == userId)
@@ -38,6 +38,7 @@ namespace PAWEventive.EFDataAccess
         public Event GetEventById(Guid eventId)
         {
             return dbContext.Events.Include(ev => ev.EventDetails)
+                    .Include(evnt => evnt.Comments)
                     .Where(evnt => evnt.Id == eventId)
                     .SingleOrDefault();
         }
@@ -116,6 +117,7 @@ namespace PAWEventive.EFDataAccess
             var eventToRemove = GetEventById(eventId);
             if (eventToRemove != null)
             {
+                dbContext.Remove(eventToRemove.Comments);
                 dbContext.Remove(eventToRemove.EventDetails);
                 dbContext.Remove(eventToRemove);
                 dbContext.SaveChanges();

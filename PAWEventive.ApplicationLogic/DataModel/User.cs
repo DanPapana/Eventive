@@ -15,7 +15,7 @@ namespace PAWEventive.ApplicationLogic.DataModel
         public DateTime DateOfBirth { get; set; }
         public ContactDetails ContactDetails { get; set; }
 
-        public static User CreateUser(Guid userId, string firstName, string lastName, string socialId)
+        public static User CreateUser(Guid userId, string firstName, string lastName, string socialId, string email)
         {
             var newUser = new User()
             {
@@ -24,15 +24,19 @@ namespace PAWEventive.ApplicationLogic.DataModel
                 FirstName = firstName,
                 LastName = lastName,
                 SocialId = socialId,
-                ContactDetails = new ContactDetails()
+                ContactDetails = new ContactDetails(email)
             };
             return newUser;
         }
 
-        public User UpdateUser(string firstName,        string lastName, 
-                                string profileImage,    string address, 
-                                string city,            string country, 
-                                string phoneNo,         string email,
+        public User UpdateUser(string firstName,        
+                                string lastName, 
+                                string profileImage,    
+                                string address, 
+                                string city,            
+                                string country, 
+                                string phoneNo,         
+                                string email,
                                 string linkToSocialM)
         {
             if (profileImage != null && profileImage.Length > 1)

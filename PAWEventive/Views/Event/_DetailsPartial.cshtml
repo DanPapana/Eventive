@@ -1,0 +1,158 @@
+﻿@using PAWEventive.Models.Events;
+@model EventViewModel;
+
+<div class="details-content-container d-flex">
+    <div class="container image-container">
+        @if (!string.IsNullOrEmpty(Model.EventImage))
+        {
+            <img src="data:image/png;base64, @Model.EventImage" class="img-fluid" alt="Event thumbnail">
+        }
+        else
+        {
+            <img src="~/images/other.png" class="img-fluid" alt="Event thumbnail">
+        }
+
+        <div class="organizer">
+            <div class="organizer-title">Organizer</div>
+            <div class="organizer-image">
+                @if (!string.IsNullOrEmpty(Model.HostProfileImage))
+                {
+                    <img src="data:image/png;base64, @Model.HostProfileImage" class="img-fluid" alt="Organizer profile picture">
+                }
+                else
+                {
+                    <img src="~/images/default_profile.png" class="img-fluid" alt="Organizer profile picture">
+                }
+            </div>
+            <div class="organizer-info">
+                <div class="d-flex justify-content-between">
+                    <p>Username</p>
+                    <p>@Model.HostName</p>
+                </div>
+                <div class="d-flex justify-content-between">
+                    @if (Model.HostPhoneNo != null)
+                    {
+                        <p>Phone number</p>
+                        <p>@Model.HostPhoneNo</p>
+                    }
+                </div>
+                <div class="d-flex justify-content-between">
+                    @if (Model.HostEmail != null)
+                    {
+                        <p>Email</p>
+                        <p>@Model.HostEmail</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container details-container">
+        <div class="d-flex justify-content-between">
+            <p>Event Name</p>
+            <p class="title">@Model.Title</p>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <p>Category</p>
+            <p>@Model.Category</p>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <p>Application Deadline</p>
+            <p>@Model.Deadline</p>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <p>Occurence Date</p>
+            <p>@Model.OccurenceDate</p>
+        </div>
+
+        <div class="d-flex justify-content-between">
+            <p>Location</p>
+            <p>@Model.Location</p>
+        </div>
+
+        <p>@Model.ParticipationFee</p>
+        <p>@Model.MaximumParticipants</p>
+        <p>@Model.EventDescription</p>
+    </div>
+</div>
+
+@*Reply function?*@
+
+<div>
+    @*Comment to add*@
+    @* @if (User.Identity.IsAuthenticated) {*@
+    <div class="comment">
+        <div class="comment-avatar">
+            @if (!string.IsNullOrEmpty(Model.UserProfileImage))
+            {
+                <img src="data:image/png;base64, @Model.UserProfileImage" class="img-fluid" alt="Commenter profile picture">
+            }
+            else
+            {
+                <img src="~/images/default_profile.png" class="img-fluid" alt="Commenter profile picture">
+            }
+        </div>
+        <div class="comment-text">
+            <textarea placeholder="Write a comment..."></textarea>
+            <div>
+                <button class="btn btn-success comment-button">
+                    Comment
+                </button>
+            </div>
+        </div>
+        @*
+            <a href="#reply" title="Reply" class="comment-reply">
+                <i class="fas fa-reply"></i>
+            </a>
+        *@
+    </div>
+    @*}*@
+
+    @if (Model.Comments != null)
+    {
+        @foreach (var comment in Model.Comments)
+        {
+            <div class="comment">
+                <div class="comment-avatar">
+                    @if (!string.IsNullOrEmpty(comment.Commenter.ProfileImage))
+                    {
+                        <img src="data:image/png;base64, @comment.Commenter.ProfileImage" class="img-fluid" alt="Organizer profile picture">
+                    }
+                    else
+                    {
+                        <img src="~/images/other.png" class="img-fluid" alt="Organizer profile picture">
+                    }
+                </div>
+                <div class="comment-author">@comment.Commenter.FirstName @comment.Commenter.LastName</div>
+                <div class="comment-text">
+                    @comment.Message
+                    <div class="comment-date">@comment.Timestamp</div>
+                </div>
+                <a href="#reply" title="Reply" class="comment-reply">
+                    <i class="fas fa-reply"></i>
+                </a>
+            </div>
+        }
+    }
+</div>
+
+@*
+$("#createVehicleButton").on("click", function () {
+    var createVehicleForm = $("#createVehicleForm").serialize();
+    $.ajax({
+        type: "POST",
+        data: createVehicleForm,
+        url: "/Vehicles/Create",
+        success: function (htmlContent) {
+            $("#createVehicleContainer").html(htmlContent);
+            if (htmlContent.indexOf("field-validation-error") == -1) {
+                $("#createVehicleModal").modal("hide");
+                loadTable();
+            }
+        }
+    });
+});
+*@
