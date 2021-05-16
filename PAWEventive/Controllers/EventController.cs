@@ -1,17 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using PAWEventive.ApplicationLogic.DataModel;
 using PAWEventive.ApplicationLogic.Services;
 using PAWEventive.Models.Events;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
-using System.Drawing;
 using System.IO;
-using System.Threading.Tasks;
 
 namespace PAWEventive.Controllers
 {
@@ -20,7 +14,7 @@ namespace PAWEventive.Controllers
         private readonly EventService eventService;
         private readonly UserService userService;
         private readonly UserManager<IdentityUser> userManager;
-        
+
         public EventController(UserManager<IdentityUser> userManager, EventService eventService, UserService userService)
         {
             this.eventService = eventService;
@@ -41,33 +35,7 @@ namespace PAWEventive.Controllers
             {
                 if (theEvent != null)
                 {
-                    User hostingUser = userService.GetCreatorByGuid(theEvent.CreatorId);
-                    string participationFee = theEvent.EventDetails.ParticipationFee.ToString("#.##");
-
-                    if (participationFee.Length > 0)
-                    {
-                        participationFee = "Fee: $" + participationFee;
-                    }
-                    else
-                    {
-                        participationFee = "Free admission";
-                    }
-
-                    eventViewModels.Add(new EventViewModel
-                    {
-                        Id = theEvent.Id,
-                        Title = theEvent.Title,
-                        EventImage = theEvent.ImageByteArray,
-                        UserName = $"{hostingUser.FirstName} {hostingUser.LastName}",
-                        UserEmail = hostingUser.ContactDetails.Email,
-                        UserPhoneNo = hostingUser.ContactDetails.PhoneNo,
-                        Location = theEvent.EventDetails.Location,
-                        ParticipationFee = participationFee,
-                        EventDeadline = theEvent.EventDetails.Deadline.ToString("H:mm dd/MM/yyyy"),
-                        EventDescription = theEvent.EventDetails.Description,
-                        EventMaximumParticipants = theEvent.EventDetails.MaximumParticipantNo,
-                        Category = theEvent.Category
-                    });
+                    eventViewModels.Add(GetEventViewModel(theEvent));
                 }
             }
 
@@ -80,11 +48,10 @@ namespace PAWEventive.Controllers
                 var currentUser = userService.GetUserByUserId(userId);
 
                 eventsFollowed = eventService
-                               .GetEventsGuidForUser(currentUser.Id, Participation.Type.Following);
+                            .GetEventsGuidForUser(currentUser.Id, Participation.Type.Following);
 
                 eventsApplied = eventService
                             .GetEventsGuidForUser(currentUser.Id, Participation.Type.Applied);
-
             }
             EventListViewModel eventListViewModel = new EventListViewModel()
             {
@@ -98,11 +65,11 @@ namespace PAWEventive.Controllers
 
         public IActionResult EventContainer()
         {
-            try {
-
+            try
+            {
                 var events = eventService.GetCurrentEvents();
                 var viewModel = GetEventListViewModel(events);
-                return PartialView("_EventContainerPartial", viewModel);
+                return PartialView("_ContainerPartial", viewModel);
             }
             catch (Exception e)
             {
@@ -122,7 +89,7 @@ namespace PAWEventive.Controllers
 
                 EventListViewModel viewModel = GetEventListViewModel(appliedEvents);
 
-                return PartialView("_EventContainerPartial", viewModel);
+                return PartialView("_ContainerPartial", viewModel);
             }
             catch (Exception e)
             {
@@ -142,7 +109,7 @@ namespace PAWEventive.Controllers
 
                 EventListViewModel viewModel = GetEventListViewModel(followingEvents);
 
-                return PartialView("_EventContainerPartial", viewModel);
+                return PartialView("_ContainerPartial", viewModel);
             }
             catch (Exception e)
             {
@@ -161,8 +128,8 @@ namespace PAWEventive.Controllers
                             .GetUserEvents(user.Id.ToString());
 
                 return PartialView("_AdminEventPartial", createdEvents);
-
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 return BadRequest(e);
             }
@@ -179,7 +146,6 @@ namespace PAWEventive.Controllers
                             .GetPastEventsOfUser(user.Id);
 
                 return PartialView("_AdminEventPartial", pastEvents);
-
             }
             catch (Exception e)
             {
@@ -187,14 +153,11 @@ namespace PAWEventive.Controllers
             }
         }
 
-
-
         [HttpGet]
         public IActionResult NewEvent()
         {
             return PartialView("_AddEventPartial", new NewEventViewModel());
         }
-
 
         [HttpPost]
         public IActionResult NewEvent([FromForm]NewEventViewModel eventData)
@@ -203,31 +166,32 @@ namespace PAWEventive.Controllers
 
             if (!ModelState.IsValid || eventData == null || eventData.Deadline == null)
                 return PartialView("_AddEventPartial", eventData);
-              
+
             try
             {
-
-                using (var memoryStream = new MemoryStream())
+                if (eventData.EventImage != null)
                 {
+                    using var memoryStream = new MemoryStream();
                     eventData.EventImage.CopyTo(memoryStream);
 
                     image = Convert.ToBase64String(memoryStream.ToArray());
                 }
 
-                    var userId = userManager.GetUserId(User);
+                var userId = userManager.GetUserId(User);
                 var creatingUser = userService.GetUserByUserId(userId);
 
                 EventDetails details = new EventDetails(eventData.EventDescription,
-                                        eventData.Location, 
-                                        eventData.Deadline, 
-                                        eventData.MaximumParticipants, 
+                                        eventData.Location,
+                                        eventData.Deadline,
+                                        eventData.OccurenceDate,
+                                        eventData.MaximumParticipants,
                                         eventData.ParticipationFee);
 
-                    userService.AddEvent(creatingUser.Id,
-                                           eventData.Title,
-                                           eventData.Category,
-                                           image,
-                                           details);
+                userService.AddEvent(creatingUser.Id,
+                                       eventData.Title,
+                                       eventData.Category,
+                                       image,
+                                       details);
 
                 return PartialView("_AddEventPartial", eventData);
             }
@@ -237,6 +201,22 @@ namespace PAWEventive.Controllers
             }
         }
 
+        [HttpGet]
+        public IActionResult Details([FromRoute] string Id)
+        {
+            try
+            {
+                Guid.TryParse(Id, out Guid eventGuid);
+                var eventToGo = eventService.GetEventById(eventGuid);
+                var viewModel = GetEventViewModel(eventToGo);
+
+                return PartialView("_DetailsPartial", viewModel);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
 
         public IActionResult Follow(string id)
         {
@@ -257,13 +237,14 @@ namespace PAWEventive.Controllers
                 if (potentialParticipation == null)
                 {
                     eventService.ParticipateInEvent(eventId, participantId, type);
-                } else
+                }
+                else
                 {
                     eventService.RemoveParticipation(eventId, participantId, type);
                 }
 
                 return RedirectToAction("Index");
-            } 
+            }
             catch (Exception e)
             {
                 return BadRequest(e);
@@ -287,7 +268,7 @@ namespace PAWEventive.Controllers
             {
                 applied = true;
             }
-                
+
             var applyViewModel = new ApplyToEventViewModel()
             {
                 EventId = id,
@@ -297,7 +278,6 @@ namespace PAWEventive.Controllers
 
             return PartialView("_ApplyToEventPartial", applyViewModel);
         }
-
 
         [HttpPost]
         public IActionResult Apply(ApplyToEventViewModel applyViewModel)
@@ -315,14 +295,15 @@ namespace PAWEventive.Controllers
                 var type = Participation.Type.Applied;
 
                 var potentialParticipation = eventService.GetParticipation(eventId, participantId, type);
-                
                 var potentialFollowing = eventService.GetParticipation(eventId, participantId, Participation.Type.Following);
 
-                if (potentialFollowing == null && potentialParticipation == null) {
+                if (potentialFollowing == null && potentialParticipation == null)
+                {
                     eventService.ParticipateInEvent(eventId, participantId, Participation.Type.Following);
                 }
 
-                if (potentialParticipation == null) {
+                if (potentialParticipation == null)
+                {
                     eventService.ParticipateInEvent(eventId, participantId, type);
                 }
                 else
@@ -338,7 +319,6 @@ namespace PAWEventive.Controllers
             }
         }
 
-
         [HttpGet]
         public IActionResult Edit([FromRoute]string id)
         {
@@ -353,14 +333,14 @@ namespace PAWEventive.Controllers
                     Title = eventToUpdate.Title,
                     Category = eventToUpdate.Category,
                     Deadline = eventToUpdate.EventDetails.Deadline,
+                    OccurenceDate = eventToUpdate.EventDetails.OccurenceDate,
                     Location = eventToUpdate.EventDetails.Location,
                     Description = eventToUpdate.EventDetails.Description,
                     Participants = eventToUpdate.EventDetails.MaximumParticipantNo,
-                    ParticipationFee = eventToUpdate.EventDetails.ParticipationFee                    
+                    ParticipationFee = eventToUpdate.EventDetails.ParticipationFee
                 };
 
                 return PartialView("_EditEventPartial", editEventViewModel);
-
             }
             catch (Exception e)
             {
@@ -384,22 +364,21 @@ namespace PAWEventive.Controllers
 
                 if (updatedData.EventImage != null)
                 {
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        updatedData.EventImage.CopyTo(memoryStream);
-                        image = Convert.ToBase64String(memoryStream.ToArray());
-                    }
+                    using var memoryStream = new MemoryStream();
+                    updatedData.EventImage.CopyTo(memoryStream);
+                    image = Convert.ToBase64String(memoryStream.ToArray());
                 }
 
                 eventService.UpdateEvent(eventToUpdate.Id,
-                                                updatedData.Title,
-                                                updatedData.Category,
-                                                updatedData.Description,
-                                                updatedData.Location,
-                                                updatedData.Deadline,
-                                                image,
-                                                updatedData.Participants,
-                                                updatedData.ParticipationFee);
+                                        updatedData.Title,
+                                        updatedData.Category,
+                                        updatedData.Description,
+                                        updatedData.Location,
+                                        updatedData.Deadline,
+                                        updatedData.OccurenceDate,
+                                        image,
+                                        updatedData.Participants,
+                                        updatedData.ParticipationFee);
 
                 return PartialView("_EditEventPartial", updatedData);
             }
@@ -412,7 +391,6 @@ namespace PAWEventive.Controllers
         [HttpGet]
         public IActionResult Remove([FromRoute]string Id)
         {
-
             RemoveEventViewModel removeViewModel = new RemoveEventViewModel()
             {
                 Id = Id
@@ -436,6 +414,82 @@ namespace PAWEventive.Controllers
             return PartialView("_RemoveEventPartial", removeData);
         }
 
+        private string FormatParticipationFee(decimal participationFee)
+        {
+            string formattedFee = participationFee.ToString("#.##");
 
+            if (formattedFee.Length > 0)
+            {
+                return $"Fee: ${formattedFee}";
+            }
+
+            return "Free admission";
+        }
+
+        private string FormatMaximumParticipants(int maximumParticipants)
+        {
+            if (maximumParticipants > 0)
+            {
+                return $"Maximum participants: {maximumParticipants}";
+            }
+
+            return "No maximum participants number";
+        }
+
+        private EventViewModel GetEventViewModel(Event theEvent)
+        {
+            User hostingUser = userService.GetCreatorByGuid(theEvent.CreatorId);
+            string participationFee = FormatParticipationFee(theEvent.EventDetails.ParticipationFee);
+            string maximumParticipants = FormatMaximumParticipants(theEvent.EventDetails.MaximumParticipantNo);
+            string currentUsername = null;
+            string currentProfileImage = null;
+
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = userManager.GetUserId(User);
+                var currentUser = userService.GetUserByUserId(userId);
+                currentUsername = FormatUserName(currentUser);
+                currentProfileImage = currentUser.ProfileImage;
+            }
+
+            var eventViewModel = new EventViewModel
+            {
+                Id = theEvent.Id,
+                Title = theEvent.Title,
+                EventImage = theEvent.ImageByteArray,
+                HostName = FormatUserName(hostingUser),
+                HostEmail = hostingUser.ContactDetails.Email,
+                HostPhoneNo = hostingUser.ContactDetails.PhoneNo,
+                Location = theEvent.EventDetails.Location,
+                ParticipationFee = participationFee,
+                Deadline = FormatEventDate(theEvent.EventDetails.Deadline),
+                OccurenceDate = FormatEventDate(theEvent.EventDetails.Deadline),
+                EventTime = FormatEventTime(theEvent.EventDetails.Deadline),
+                EventDescription = theEvent.EventDetails.Description,
+                MaximumParticipants = maximumParticipants,
+                Category = theEvent.Category,
+                Comments = theEvent.Comments,
+                HostProfileImage = hostingUser.ProfileImage,
+                UserName = currentUsername,
+                UserProfileImage = currentProfileImage
+            };
+
+            return eventViewModel;
+        }
+
+        private string FormatEventDate(DateTime eventDate)
+        {
+            return $"{eventDate:dd/MM/yyyy}";
+        }
+
+        private string FormatEventTime(DateTime eventTime)
+        {
+            return $"{eventTime:H:mm}";
+        }
+
+        private string FormatUserName(User hostingUser)
+        {
+            return $"{hostingUser.FirstName} {hostingUser.LastName}";
+        }
     }
 }

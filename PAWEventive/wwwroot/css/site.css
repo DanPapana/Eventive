@@ -1,27 +1,14 @@
 ﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
 for details on configuring this project to bundle and minify static web assets. */
 
+:root {
+    --danish: #42BF25;
+}
+
 a.navbar-brand {
   white-space: normal;
   text-align: center;
   word-break: break-all;
-}
-
-/* Provide sufficient contrast against white background */
-a {
-  color: #0366d6;
-}
-
-.btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
-}
-
-.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
 }
 
 .nav-container {
@@ -66,7 +53,9 @@ html {
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+    background-color: var(--danish);
+    background-color: hsl(120, 100%, 95%);
 }
 
 .page-title {
@@ -79,14 +68,27 @@ body {
     bottom: 0;
     width: 100%;
     white-space: nowrap;
-    line-height: 50px; /* Vertically center the text there */
+    line-height: 30px;
+    color: white;
+    background-color: var(--danish);
+    background-color: hsl(100, 175%, 6%);
+}
+
+.navbar-toggler-icon {
+    font-size: 23px;
 }
 
 .bg-menu {
     font-family: Roboto;
     font-weight: 500;
-    font-size: 20px;
-    background-color: white;
+    font-size: 17px;
+    background-color: var(--danish);
+    background-color: hsl(120, 100%, 30%);
+}
+
+.logout-button {
+    background-color: hsl(100, 175%, 20%);
+    min-width: 80px;
 }
 
 .event-date {
@@ -145,11 +147,123 @@ hr {
     font-size: 2rem;
 }
 
-.details-drop {
-    position: inherit;
-    padding: 1rem;
-    min-width: 19.5rem;
-    font-family: Roboto;
-    background-color: dimgrey;
-    color: white;
+div.card {
+   width: 18rem;
 }
+
+    div.card img.card-img-top {
+        padding: 0.625rem;
+    }
+    
+    div.card div.card-img-overlay {
+        height: 50%;
+    }
+
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1250px;
+    }
+}
+
+.card-img-parent {
+    height: 50%;
+}
+
+#detailsModal .modal-dialog {
+    min-width: 1000px;
+}
+
+#detailsModal #detailsBody .image-container {
+    float: left;
+    max-width: 40%;
+}
+
+    #detailsModal #detailsBody .image-container img {
+        width: 100%;
+        height: auto;
+    }
+
+#detailsModal #detailsBody .details-container {
+    float: right;
+    max-width: 50%;
+}
+
+#detailsModal .organizer {
+    margin-top: 1rem;
+    min-height: 6.5rem;
+    background-color: lightgrey;
+    line-height: 0.9rem;
+}
+
+    #detailsModal .organizer .organizer-title {
+        font-weight: 600;
+        text-align: center;
+        padding: 0.5rem;
+    }
+
+    #detailsModal .organizer .organizer-image {
+        width: 5rem;
+        height: auto;
+        float: left;
+        margin: -1rem 1rem 0 1rem;
+    }
+
+    #detailsModal .organizer .organizer-info {
+        margin-right: 1rem;
+    }
+
+.comment {
+    position: relative;
+    margin-top: 20px;
+    margin-right: 20px;
+    margin-left: 50px;
+}
+
+    .comment .comment-avatar {
+        position: absolute;
+        top: 0;
+        left: -40px;
+        width: 5rem;
+        height: auto;
+    }
+
+    .comment .comment-author {
+        margin-bottom: 5px;
+        padding-left: 45px;
+        padding-right: 20px;
+        font-size: 16px;
+        font-weight: bold;
+    }
+
+    .comment .comment-date {
+        margin-top: 5px;
+        font-size: 12px;
+        color: #bdc3c7;
+    }
+
+    .comment .comment-reply {
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 15px;
+        height: 15px;
+    }
+
+    .comment .comment-text {
+        padding: 0.5rem;
+        padding-left: 3rem;
+        background-color: #f8f8f8;
+        border-bottom: 5px solid #e5e6e6;
+    }
+    
+        .comment .comment-text textarea {
+            min-width: 80%;
+            max-width: 80%;
+            height: 100%;
+            width: 100%;
+        }
+    
+    .comment button .comment-button {
+        float: right;
+        margin: 0.2rem;
+    }

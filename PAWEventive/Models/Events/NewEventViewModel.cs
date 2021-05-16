@@ -22,9 +22,13 @@ namespace PAWEventive.Models.Events
         [Display(Name = "Category")]
         public EventCategory Category { get; set; }
 
-        [Required(ErrorMessage = "Deadline is Required")]
+        [Required(ErrorMessage = "Deadline is required")]
         [Display(Name = "Application Deadline")]
         public DateTime Deadline { get; set; }
+
+        [Required(ErrorMessage = "Occurence date is required")]
+        [Display(Name = "Application Deadline")]
+        public DateTime OccurenceDate { get; set; }
 
         [Required(ErrorMessage = "You don't want them stranded, do you?")]
         [Display(Name = "Location")]

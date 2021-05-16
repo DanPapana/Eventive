@@ -21,13 +21,14 @@ namespace PAWEventive.ApplicationLogic.DataModel
         public string ImageByteArray { get; set; }
         public EventDetails EventDetails { get; set; }
         public EventCategory Category { get; set; }
-
+        public IEnumerable<Comment> Comments { get; set; }
 
         public Event UpdateEvent(string title, 
                     EventCategory category, 
                     string description, 
                     string location,
                     DateTime deadline, 
+                    DateTime occurenceDate, 
                     string image,
                     int maximumParticipants,
                     decimal fee)
@@ -39,7 +40,7 @@ namespace PAWEventive.ApplicationLogic.DataModel
             Title = title;
             Category = category;
             EventDetails.UpdateDetails(description, location, 
-                deadline, maximumParticipants, fee);
+                deadline, occurenceDate, maximumParticipants, fee);
 
             return this;
         }

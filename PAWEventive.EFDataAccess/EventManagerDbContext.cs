@@ -16,11 +16,11 @@ namespace PAWEventive.EFDataAccess
         public DbSet<Participation> Participations { get; set; }
         public DbSet<EventDetails> EventDetails { get; set; }
         public DbSet<ContactDetails> ContactDetails { get; set; }
-        
+        public DbSet<Comment> Comments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<EventDetails>().Property(P => P.ParticipationFee).HasColumnType("decimal(18,4)");
+            modelBuilder.Entity<EventDetails>().Property(P => P.ParticipationFee).HasColumnType("decimal(18,2)");
         }
     }
 }

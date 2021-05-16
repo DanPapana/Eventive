@@ -47,17 +47,17 @@
 
     <script>
 
-        function LoadApplyToEvent(id) {
+        function loadApplyToEvent(id) {
             loadServerPartialView("#applyBody", '@Url.Action("Apply", "Event")' + "/" + id).success(function () {
                 applyToEvent(id);
             });
         }
 
-        function LoadEditEvent(id) {
+        function loadEditEvent(id) {
             loadServerPartialView("#editEventBody", '@Url.Action("Edit", "Event")' + "/" + id);
         }
 
-        function LoadRemoveEvent(Id) {
+        function loadRemoveEvent(Id) {
             loadServerPartialView("#removeEventBody", '@Url.Action("Remove", "Event")' + "/" + Id);
         }
 

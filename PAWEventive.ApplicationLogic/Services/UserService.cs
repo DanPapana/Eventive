@@ -51,9 +51,9 @@ namespace PAWEventive.ApplicationLogic.Services
             return userRepository.GetEventsCreatedByUser(userIdGuid);
         }
 
-        public User RegisterNewUser(string userId, string firstName, string lastName, string socialId)
+        public User RegisterNewUser(string userId, string firstName, string lastName, string socialId, string email)
         {
-            var newUser = User.CreateUser(Guid.Parse(userId), firstName, lastName, socialId);
+            var newUser = User.CreateUser(Guid.Parse(userId), firstName, lastName, socialId, email);
             newUser = userRepository.Add(newUser);
             userRepository.Update(newUser);
             return newUser;

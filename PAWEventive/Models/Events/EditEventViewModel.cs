@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 using static PAWEventive.ApplicationLogic.DataModel.Event;
 
 namespace PAWEventive.Models.Events
@@ -23,6 +20,10 @@ namespace PAWEventive.Models.Events
         [Required(ErrorMessage = "Deadline is Required")]
         [Display(Name = "Application Deadline")]
         public DateTime Deadline { get; set; }
+
+        [Required(ErrorMessage = "Occurence Date is Required")]
+        [Display(Name = "Occurence Date")]
+        public DateTime OccurenceDate { get; set; }
 
         [Required(ErrorMessage = "You don't want them stranded, do you?")]
         [Display(Name = "Location")]
