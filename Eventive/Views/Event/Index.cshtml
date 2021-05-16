@@ -1,0 +1,114 @@
+﻿@using Eventive.Models.Events;
+@model EventListViewModel;
+@{
+    ViewData["Title"] = "Events";
+}
+
+<div class="d-flex justify-content-around active-cyan-3 active-cyan-2 m-xl-5">
+    <input id="searchTitleBar" class="form-control col-3 mr-4" type="text" placeholder="Search by name" aria-label="Search">
+    <input id="searchLocationBar" class="form-control col-3 mr-4" type="text" placeholder="Search by location" aria-label="Search">
+
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div>
+            <button class="btn btn-danger ml-3" data-toggle="modal" data-target="#newEventModal">Create</button>
+        </div>
+    }
+</div>
+
+<div class="container">
+    <div class="d-flex justify-content-around filter-box">
+        <div onclick="searchByCategory('')">
+            <div class="img-thumbnail m-1">
+                <img src="/images/other.png" alt="Other" class="filter-icons">
+            </div>
+            <div class="filter-text">All</div>
+        </div>
+        <div onclick="searchByCategory('Hangout')">
+            <div class="img-thumbnail m-1">
+                <img src="/images/hangout.png" alt="Hangouts" class="filter-icons">
+            </div>
+            <div class="filter-text">Hangouts</div>
+        </div>
+        <div onclick="searchByCategory('Education')">
+            <div class="img-thumbnail m-1">
+                <img src="/images/education.png" alt="Education" class="filter-icons">
+            </div>
+            <div class="filter-text">Education</div>
+        </div>
+        <div onclick="searchByCategory('Entertainment')">
+            <div class="img-thumbnail m-1">
+                <img src="/images/entertainment.png" alt="Entertainment" class="filter-icons">
+            </div>
+            <div class="filter-text">Entertainment</div>
+        </div>
+        <div onclick="searchByCategory('Networking')">
+            <div class="img-thumbnail m-1">
+                <img src="/images/network.png" alt="Network" class="filter-icons">
+            </div>
+            <div class="filter-text">Network</div>
+        </div>
+        <div onclick="searchByCategory('Other')">
+            <div class="img-thumbnail m-1">
+                <img src="/images/other.png" alt="Other" class="filter-icons">
+            </div>
+            <div class="filter-text">Other</div>
+        </div>
+    </div>
+</div>
+
+<hr />
+
+<div id="eventContainer"></div>
+
+@section Scripts {
+
+    <script src="~/js/EventContainer.js" type="text/javascript"></script>
+
+    <script>
+        function loadApplyToEvent(id) {
+            loadServerPartialView("#applyBody", '@Url.Action("Apply", "Event")' + "/" + id).success(function () {
+                applyToEvent(id)
+            });
+        }
+
+        function loadEvents() {
+            loadServerPartialView("#eventContainer", '@Url.Action("EventContainer", "Event")');
+        }
+
+        function loadEditEvent(Id) {
+            loadServerPartialView("#editEventBody", '@Url.Action("Edit", "Event")' + "/" + Id);
+        }
+
+        function loadRemoveEvent(Id) {
+            loadServerPartialView("#removeEventBody", '@Url.Action("Remove", "Event")' + "/" + Id);
+        }
+
+        function loadDetails(Id) {
+            loadServerPartialView("#detailsBody", '@Url.Action("Details", "Event")' + "/" + Id);
+        }
+
+        $(document).ready(function () {
+            loadEvents();
+        });
+
+        function modalFormComplete(modalName) {
+            $(modalName).modal("hide");
+            loadEvents();
+        }
+
+        function searchByCategory(category) {
+            if (category == '') {
+                $("#toSearch .card").show();
+            } else {
+                $("#toSearch .card").filter(function () {
+                    $(this).toggle($(this).find('.event-category').text().indexOf(category) > -1)
+                });
+            }
+        }
+
+    </script>
+
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="_ModalsPartial" />
+}
