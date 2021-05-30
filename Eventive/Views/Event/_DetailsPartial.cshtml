@@ -1,7 +1,7 @@
 ﻿@using Eventive.Models.Events;
 @model EventViewModel;
 
-<div class="details-content-container d-flex">
+<div class="details-content-container d-flex" id="detailsPartial">
     <div class="container image-container">
         @if (!string.IsNullOrEmpty(Model.EventImage))
         {
@@ -48,82 +48,90 @@
     </div>
 
     <div class="container details-container">
-        <div class="d-flex justify-content-between">
-            <p>Event Name</p>
-            <p class="title">@Model.Title</p>
+        <div class="d-flex justify-content-start">
+            Event Name:
+        </div>
+        <div class="title d-flex justify-content-start mb-3">
+            @Model.Title
+        </div>
+
+        <div class="d-flex justify-content-start">
+            Location:
+        </div>
+        <div class="title d-flex justify-content-start mb-3">
+            @Model.Location
         </div>
 
         <div class="d-flex justify-content-between">
-            <p>Category</p>
+            <p>Category:</p>
             <p>@Model.Category</p>
         </div>
-
         <div class="d-flex justify-content-between">
-            <p>Application Deadline</p>
+            <p>Application Deadline:</p>
             <p>@Model.Deadline</p>
         </div>
-
         <div class="d-flex justify-content-between">
-            <p>Occurence Date</p>
+            <p>Occurence Date:</p>
             <p>@Model.OccurenceDate</p>
+            <p>@Model.EventTime</p>
         </div>
-
         <div class="d-flex justify-content-between">
-            <p>Location</p>
-            <p>@Model.Location</p>
+            <p>Attendance fee:</p>
+            <p>@Model.ParticipationFee</p>
         </div>
-
-        <p>@Model.ParticipationFee</p>
-        <p>@Model.MaximumParticipants</p>
-        <p>@Model.EventDescription</p>
+        <div class="d-flex justify-content-between">
+            <p>Maximum participants:</p>
+            <p>@Model.MaximumParticipants</p>
+        </div>
+        @if (!string.IsNullOrEmpty(Model.EventDescription))
+        {
+            <div class="d-flex justify-content-start">
+                Description:
+            </div>
+            <div class="d-flex justify-content-start mb-3">
+                @Model.EventDescription
+            </div>
+        }
     </div>
 </div>
 
-@*Reply function?*@
-
-<div>
-    @*Comment to add*@
-    @* @if (User.Identity.IsAuthenticated) {*@
+@if (User.Identity.IsAuthenticated)
+{
     <div class="comment">
-        <div class="comment-avatar">
+        <div class="form-comment-avatar">
             @if (!string.IsNullOrEmpty(Model.UserProfileImage))
             {
                 <img src="data:image/png;base64, @Model.UserProfileImage" class="img-fluid" alt="Commenter profile picture">
             }
             else
             {
-                <img src="~/images/default_profile.png" class="img-fluid" alt="Commenter profile picture">
+                <img src="~/images/default_profile.png" class="img-fluid default-avatar-img" alt="Commenter profile picture">
             }
         </div>
-        <div class="comment-text">
-            <textarea placeholder="Write a comment..."></textarea>
-            <div>
-                <button class="btn btn-success comment-button">
-                    Comment
-                </button>
+        <form method="post" class="comment-text" id="addCommentForm">
+            <input style="display: none" asp-for="NewCommentId" value="@Model.Id" class="form-control" />
+            @Html.TextAreaFor(m => m.NewCommentMessage, new { @class = "form-control" })
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-success comment-button" id="addCommentButton">Comment</button>
             </div>
-        </div>
-        @*
-            <a href="#reply" title="Reply" class="comment-reply">
-                <i class="fas fa-reply"></i>
-            </a>
-        *@
+        </form>
     </div>
-    @*}*@
+}
 
-    @if (Model.Comments != null)
-    {
-        @foreach (var comment in Model.Comments)
+@if (Model.Comments != null)
+{
+    <div>
+        @foreach (var comment in Model.Comments.OrderByDescending(com => com.Timestamp))
         {
             <div class="comment">
                 <div class="comment-avatar">
-                    @if (!string.IsNullOrEmpty(comment.Commenter.ProfileImage))
+                    @if (comment.Commenter != null && !string.IsNullOrEmpty(comment.Commenter.ProfileImage))
                     {
                         <img src="data:image/png;base64, @comment.Commenter.ProfileImage" class="img-fluid" alt="Organizer profile picture">
                     }
                     else
                     {
-                        <img src="~/images/other.png" class="img-fluid" alt="Organizer profile picture">
+                        <img src="~/images/default_profile.png" class="img-fluid" alt="Organizer profile picture">
                     }
                 </div>
                 <div class="comment-author">@comment.Commenter.FirstName @comment.Commenter.LastName</div>
@@ -131,28 +139,101 @@
                     @comment.Message
                     <div class="comment-date">@comment.Timestamp</div>
                 </div>
-                <a href="#reply" title="Reply" class="comment-reply">
-                    <i class="fas fa-reply"></i>
-                </a>
             </div>
         }
-    }
-</div>
+    </div>
+}
 
-@*
-$("#createVehicleButton").on("click", function () {
-    var createVehicleForm = $("#createVehicleForm").serialize();
-    $.ajax({
-        type: "POST",
-        data: createVehicleForm,
-        url: "/Vehicles/Create",
-        success: function (htmlContent) {
-            $("#createVehicleContainer").html(htmlContent);
-            if (htmlContent.indexOf("field-validation-error") == -1) {
-                $("#createVehicleModal").modal("hide");
-                loadTable();
-            }
-        }
+<script>
+    $("#addCommentForm").submit(function (event) {
+        event.preventDefault();
     });
-});
-*@
+
+    $("#addCommentButton").on("click", function () {
+        var createCommentForm = $("#addCommentForm").serialize();
+        $.ajax({
+            type: "POST",
+            data: createCommentForm,
+            url: '@Url.Action("AddComment", "Event")',
+            success: function () {
+                loadDetails('@Model.Id');
+            }
+        });
+    });
+</script>
+
+    @*
+        function submit_comment() {
+            axios.post('@Url.Action("AddComment", "Event", new {}, "https")', this.comment)
+                        .then((response) => {
+                            this.comment.Message = '';
+                            alert("Comment Submitted");
+                        });
+        }
+        //var pusher = new Pusher('c70525fa1aa658a4627b', {
+        //    cluster: 'eu'
+        //});
+        //var my_channel = pusher.subscribe('asp_channel');
+        var app = new Vue({
+            el: '#detailsPartial',
+            data: {
+            //  comments: [],
+                comment: {
+                    Message: '',
+                    EventId: '@Model.Id'
+                }
+            },
+        /*    created: function () {
+                this.get_comments();
+                this.listen();
+            },*/
+            methods: {
+               @* get_comments: function () {
+                    axios.get('@Url.Action("GetComments", "Event", new { Id = @Model.Id }, "https")')
+                        .then((response) => {
+                            this.comments = response.data;
+                        })
+                },
+                listen: function() {
+                    my_channel.bind("asp_event", (data) => {
+                        if (data.EventId == this.comment.EventId) {
+                            this.comments.push(data);
+                        }
+                    })
+                },
+                submit_comment: function () {
+                    axios.post('@Url.Action("AddComment", "Event", new {}, "https")', this.comment)
+                        .then((response) => {
+                            this.comment.Message = '';
+                            alert("Comment Submitted");
+                        });
+                }
+            }
+        });*@
+    @*
+        /*
+        var pusher = new Pusher('XXX_APP_KEY', {
+            cluster: 'XXX_APP_CLUSTER'
+        });
+        var my_channel = pusher.subscribe('asp_channel');
+
+        add_comment() {
+
+        }*/
+
+        /*
+        $("#addCommentButton").on("click", function () {
+            var createCommentForm = $("#createCommentForm").serialize();
+            $.ajax({
+                type: "POST",
+                data: createCommentForm,
+                url: "/Event/AddCommentAsync",
+                success: function (htmlContent) {
+                    $("#createVehicleContainer").html(htmlContent);
+                    if (htmlContent.indexOf("field-validation-error") == -1) {
+                        $("#createVehicleModal").modal("hide");
+                        loadTable();
+                    }
+                }
+            });
+        });*/*@

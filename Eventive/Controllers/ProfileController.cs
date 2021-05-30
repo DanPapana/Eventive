@@ -2,10 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Eventive.ApplicationLogic.DataModel;
 using Eventive.ApplicationLogic.Services;
-using Eventive.Models.Events;
 using Eventive.Models.Users;
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Eventive.Controllers
@@ -21,7 +19,6 @@ namespace Eventive.Controllers
             this.userService = userService;
         }
 
-
         public IActionResult Index()
         {
             return View();
@@ -32,7 +29,7 @@ namespace Eventive.Controllers
             try
             {
                 var thisUserId = userManager.GetUserId(User);
-                User user = userService.GetUserByUserId(thisUserId);
+                Participant user = userService.GetUserByUserId(thisUserId);
 
                 UserProfileViewModel viewModel = new UserProfileViewModel()
                 {
@@ -61,7 +58,7 @@ namespace Eventive.Controllers
             try
             {
                 var thisUserId = userManager.GetUserId(User);
-                User user = userService.GetUserByUserId(thisUserId);
+                Participant user = userService.GetUserByUserId(thisUserId);
 
                 var editProfileViewModel = new EditProfileViewModel()
                 {
@@ -94,17 +91,15 @@ namespace Eventive.Controllers
 
             try
             {
-                string image = "";
                 var thisUserId = userManager.GetUserId(User);
-                User userToUpdate = userService.GetUserByUserId(thisUserId);
+                Participant userToUpdate = userService.GetUserByUserId(thisUserId);
 
+                string image = string.Empty;
                 if (updatedData.ProfileImage != null)
                 {
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        updatedData.ProfileImage.CopyTo(memoryStream);
-                        image = Convert.ToBase64String(memoryStream.ToArray());
-                    }
+                    using var memoryStream = new MemoryStream();
+                    updatedData.ProfileImage.CopyTo(memoryStream);
+                    image = Convert.ToBase64String(memoryStream.ToArray());
                 }
 
                 userService.UpdateUser(userToUpdate.Id,

@@ -1,0 +1,29 @@
+﻿<script src="~/js/EventContainer.js" type="text/javascript"></script>
+<partial name="_ModalsPartial" />
+
+<script>
+    function loadEditEvent(Id) {
+        loadServerPartialView("#editEventBody", '@Url.Action("Edit", "Event")' + "/" + Id);
+    }
+
+    function loadRemoveEvent(Id) {
+        loadServerPartialView("#removeEventBody", '@Url.Action("Remove", "Event")' + "/" + Id);
+    }
+
+    function loadDetails(Id) {
+        loadServerPartialView("#detailsBody", '@Url.Action("Details", "Event")' + "/" + Id);
+    }
+
+    function loadApplyToEvent(Id) {
+        loadServerPartialView("#applyBody", '@Url.Action("Apply", "Event")' + "/" + Id).then(successCallback);
+    }
+
+    function successCallback(response) {
+        applyToEvent(response.Id);
+    }
+
+    function modalFormComplete(modalName) {
+        $(modalName).modal("hide");
+        loadEvents();
+    }
+</script>

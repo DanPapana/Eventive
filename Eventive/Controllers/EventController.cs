@@ -27,11 +27,11 @@ namespace Eventive.Controllers
             return View();
         }
 
-        private EventListViewModel GetEventListViewModel(IEnumerable<Event> events)
+        private EventListViewModel GetEventListViewModel(IEnumerable<EventOrganized> events)
         {
             List<EventViewModel> eventViewModels = new List<EventViewModel>();
 
-            foreach (Event theEvent in events)
+            foreach (EventOrganized theEvent in events)
             {
                 if (theEvent != null)
                 {
@@ -48,10 +48,10 @@ namespace Eventive.Controllers
                 var currentUser = userService.GetUserByUserId(userId);
 
                 eventsFollowed = eventService
-                            .GetEventsGuidForUser(currentUser.Id, Participation.Type.Following);
+                            .GetEventsGuidForUser(currentUser.Id, Interaction.Type.Follow);
 
                 eventsApplied = eventService
-                            .GetEventsGuidForUser(currentUser.Id, Participation.Type.Applied);
+                            .GetEventsGuidForUser(currentUser.Id, Interaction.Type.Apply);
             }
             EventListViewModel eventListViewModel = new EventListViewModel()
             {
@@ -82,10 +82,10 @@ namespace Eventive.Controllers
             try
             {
                 var thisUserId = userManager.GetUserId(User);
-                User user = userService.GetUserByUserId(thisUserId);
+                Participant user = userService.GetUserByUserId(thisUserId);
 
-                IEnumerable<Event> appliedEvents = eventService
-                            .GetEventsForUser(user.Id, Participation.Type.Applied);
+                IEnumerable<EventOrganized> appliedEvents = eventService
+                            .GetEventsForUser(user.Id, Interaction.Type.Apply);
 
                 EventListViewModel viewModel = GetEventListViewModel(appliedEvents);
 
@@ -102,10 +102,10 @@ namespace Eventive.Controllers
             try
             {
                 var thisUserId = userManager.GetUserId(User);
-                User user = userService.GetUserByUserId(thisUserId);
+                Participant user = userService.GetUserByUserId(thisUserId);
 
-                IEnumerable<Event> followingEvents = eventService
-                            .GetEventsForUser(user.Id, Participation.Type.Following);
+                IEnumerable<EventOrganized> followingEvents = eventService
+                            .GetEventsForUser(user.Id, Interaction.Type.Follow);
 
                 EventListViewModel viewModel = GetEventListViewModel(followingEvents);
 
@@ -122,12 +122,14 @@ namespace Eventive.Controllers
             try
             {
                 var thisUserId = userManager.GetUserId(User);
-                User user = userService.GetUserByUserId(thisUserId);
+                Participant user = userService.GetUserByUserId(thisUserId);
 
-                IEnumerable<Event> createdEvents = userService
+                IEnumerable<EventOrganized> createdEvents = userService
                             .GetUserEvents(user.Id.ToString());
 
-                return PartialView("_AdminEventPartial", createdEvents);
+                EventListViewModel viewModel = GetEventListViewModel(createdEvents);
+
+                return PartialView("_AdminEventPartial", viewModel);
             }
             catch (Exception e)
             {
@@ -140,12 +142,14 @@ namespace Eventive.Controllers
             try
             {
                 var thisUserId = userManager.GetUserId(User);
-                User user = userService.GetUserByUserId(thisUserId);
+                Participant user = userService.GetUserByUserId(thisUserId);
 
-                IEnumerable<Event> pastEvents = eventService
+                IEnumerable<EventOrganized> pastEvents = eventService
                             .GetPastEventsOfUser(user.Id);
 
-                return PartialView("_AdminEventPartial", pastEvents);
+                EventListViewModel viewModel = GetEventListViewModel(pastEvents);
+
+                return PartialView("_AdminEventPartial", viewModel);
             }
             catch (Exception e)
             {
@@ -156,19 +160,18 @@ namespace Eventive.Controllers
         [HttpGet]
         public IActionResult NewEvent()
         {
-            return PartialView("_AddEventPartial", new NewEventViewModel());
+            return PartialView("_AddEventPartial", new AddEventViewModel());
         }
 
         [HttpPost]
-        public IActionResult NewEvent([FromForm]NewEventViewModel eventData)
+        public IActionResult NewEvent([FromForm]AddEventViewModel eventData)
         {
-            string image = "";
-
-            if (!ModelState.IsValid || eventData == null || eventData.Deadline == null)
+            if (!ModelState.IsValid || eventData is null || eventData.Deadline == null)
                 return PartialView("_AddEventPartial", eventData);
 
             try
             {
+                string image = string.Empty;
                 if (eventData.EventImage != null)
                 {
                     using var memoryStream = new MemoryStream();
@@ -180,12 +183,13 @@ namespace Eventive.Controllers
                 var userId = userManager.GetUserId(User);
                 var creatingUser = userService.GetUserByUserId(userId);
 
-                EventDetails details = new EventDetails(eventData.EventDescription,
+                EventDetails details = EventDetails.Create(eventData.EventDescription,
                                         eventData.Location,
                                         eventData.Deadline,
                                         eventData.OccurenceDate,
                                         eventData.MaximumParticipants,
-                                        eventData.ParticipationFee);
+                                        eventData.ParticipationFee,
+                                        eventData.ApplicationRequired);
 
                 userService.AddEvent(creatingUser.Id,
                                        eventData.Title,
@@ -201,7 +205,6 @@ namespace Eventive.Controllers
             }
         }
 
-        [HttpGet]
         public IActionResult Details([FromRoute] string Id)
         {
             try
@@ -209,6 +212,13 @@ namespace Eventive.Controllers
                 Guid.TryParse(Id, out Guid eventGuid);
                 var eventToGo = eventService.GetEventById(eventGuid);
                 var viewModel = GetEventViewModel(eventToGo);
+
+                if (User.Identity.IsAuthenticated)
+                {
+                    var userId = userManager.GetUserId(User);
+                    var participant = userService.GetUserByUserId(userId);
+                    eventService.RegisterClick(eventGuid, participant.Id);
+                }
 
                 return PartialView("_DetailsPartial", viewModel);
             }
@@ -230,11 +240,11 @@ namespace Eventive.Controllers
 
                 var eventId = eventToFollow.Id;
                 var participantId = followingUser.Id;
-                var type = Participation.Type.Following;
-
+                var type = Interaction.Type.Follow;
+                   
                 var potentialParticipation = eventService.GetParticipation(eventId, participantId, type);
 
-                if (potentialParticipation == null)
+                if (potentialParticipation is null)
                 {
                     eventService.ParticipateInEvent(eventId, participantId, type);
                 }
@@ -262,7 +272,7 @@ namespace Eventive.Controllers
             string eventName = eventService.GetEventById(eventGuid).Title;
             bool applied = false;
 
-            var eventApplied = eventService.GetParticipation(eventGuid, followingUser.Id, Participation.Type.Applied);
+            var eventApplied = eventService.GetParticipation(eventGuid, followingUser.Id, Interaction.Type.Apply);
 
             if (eventApplied != null)
             {
@@ -292,17 +302,17 @@ namespace Eventive.Controllers
 
                 var eventId = eventToApply.Id;
                 var participantId = applyingUser.Id;
-                var type = Participation.Type.Applied;
+                var type = Interaction.Type.Apply;
 
                 var potentialParticipation = eventService.GetParticipation(eventId, participantId, type);
-                var potentialFollowing = eventService.GetParticipation(eventId, participantId, Participation.Type.Following);
+                var potentialFollowing = eventService.GetParticipation(eventId, participantId, Interaction.Type.Follow);
 
-                if (potentialFollowing == null && potentialParticipation == null)
+                if (potentialFollowing is null && potentialParticipation is null)
                 {
-                    eventService.ParticipateInEvent(eventId, participantId, Participation.Type.Following);
+                    eventService.ParticipateInEvent(eventId, participantId, Interaction.Type.Follow);
                 }
 
-                if (potentialParticipation == null)
+                if (potentialParticipation is null)
                 {
                     eventService.ParticipateInEvent(eventId, participantId, type);
                 }
@@ -335,9 +345,10 @@ namespace Eventive.Controllers
                     Deadline = eventToUpdate.EventDetails.Deadline,
                     OccurenceDate = eventToUpdate.EventDetails.OccurenceDate,
                     Location = eventToUpdate.EventDetails.Location,
-                    Description = eventToUpdate.EventDetails.Description,
-                    Participants = eventToUpdate.EventDetails.MaximumParticipantNo,
-                    ParticipationFee = eventToUpdate.EventDetails.ParticipationFee
+                    EventDescription = eventToUpdate.EventDetails.Description,
+                    MaximumParticipants = eventToUpdate.EventDetails.MaximumParticipantNo,
+                    ParticipationFee = eventToUpdate.EventDetails.ParticipationFee,
+                    ApplicationRequired = eventToUpdate.EventDetails.ApplicationRequired
                 };
 
                 return PartialView("_EditEventPartial", editEventViewModel);
@@ -358,7 +369,7 @@ namespace Eventive.Controllers
 
             try
             {
-                string image = "";
+                string image = string.Empty;
                 Guid.TryParse(updatedData.Id, out Guid eventGuid);
                 var eventToUpdate = eventService.GetEventById(eventGuid);
 
@@ -372,13 +383,14 @@ namespace Eventive.Controllers
                 eventService.UpdateEvent(eventToUpdate.Id,
                                         updatedData.Title,
                                         updatedData.Category,
-                                        updatedData.Description,
+                                        updatedData.EventDescription,
                                         updatedData.Location,
                                         updatedData.Deadline,
                                         updatedData.OccurenceDate,
                                         image,
-                                        updatedData.Participants,
-                                        updatedData.ParticipationFee);
+                                        updatedData.MaximumParticipants,
+                                        updatedData.ParticipationFee,
+                                        updatedData.ApplicationRequired);
 
                 return PartialView("_EditEventPartial", updatedData);
             }
@@ -413,6 +425,29 @@ namespace Eventive.Controllers
 
             return PartialView("_RemoveEventPartial", removeData);
         }
+        
+        [HttpPost]
+        public IActionResult AddComment([FromForm] EventViewModel viewModel)
+        {
+            if (!ModelState.IsValid || viewModel is null || string.IsNullOrWhiteSpace(viewModel.NewCommentMessage))
+            {
+                return PartialView("_DetailsPartial", viewModel);
+            }
+
+            var userId = userManager.GetUserId(User);
+            eventService.AddComment(userId, viewModel.NewCommentId, viewModel.NewCommentMessage);
+            
+            return PartialView("_DetailsPartial", viewModel);
+
+            /*
+            var options = new PusherOptions
+            {
+                Cluster = "eu"
+            };
+
+            var pusher = new Pusher("1204504", "c70525fa1aa658a4627b", "a8ae2c2790f252e5f78d", options);
+            ITriggerResult result = await pusher.TriggerAsync("asp_channel", "asp_event", data);*/
+        }
 
         private string FormatParticipationFee(decimal participationFee)
         {
@@ -420,27 +455,27 @@ namespace Eventive.Controllers
 
             if (formattedFee.Length > 0)
             {
-                return $"Fee: ${formattedFee}";
+                return $"${formattedFee}";
             }
 
-            return "Free admission";
+            return "None";
         }
 
         private string FormatMaximumParticipants(int maximumParticipants)
         {
             if (maximumParticipants > 0)
             {
-                return $"Maximum participants: {maximumParticipants}";
+                return $"{maximumParticipants}";
             }
 
-            return "No maximum participants number";
+            return "None";
         }
 
-        private EventViewModel GetEventViewModel(Event theEvent)
+        private EventViewModel GetEventViewModel(EventOrganized organizedEvent)
         {
-            User hostingUser = userService.GetCreatorByGuid(theEvent.CreatorId);
-            string participationFee = FormatParticipationFee(theEvent.EventDetails.ParticipationFee);
-            string maximumParticipants = FormatMaximumParticipants(theEvent.EventDetails.MaximumParticipantNo);
+            Participant hostingUser = userService.GetCreatorByGuid(organizedEvent.CreatorId);
+            string participationFee = FormatParticipationFee(organizedEvent.EventDetails.ParticipationFee);
+            string maximumParticipants = FormatMaximumParticipants(organizedEvent.EventDetails.MaximumParticipantNo);
             string currentUsername = null;
             string currentProfileImage = null;
 
@@ -454,21 +489,21 @@ namespace Eventive.Controllers
 
             var eventViewModel = new EventViewModel
             {
-                Id = theEvent.Id,
-                Title = theEvent.Title,
-                EventImage = theEvent.ImageByteArray,
+                Id = organizedEvent.Id,
+                Title = organizedEvent.Title,
+                EventImage = organizedEvent.ImageByteArray,
                 HostName = FormatUserName(hostingUser),
                 HostEmail = hostingUser.ContactDetails.Email,
                 HostPhoneNo = hostingUser.ContactDetails.PhoneNo,
-                Location = theEvent.EventDetails.Location,
+                Location = organizedEvent.EventDetails.Location,
                 ParticipationFee = participationFee,
-                Deadline = FormatEventDate(theEvent.EventDetails.Deadline),
-                OccurenceDate = FormatEventDate(theEvent.EventDetails.Deadline),
-                EventTime = FormatEventTime(theEvent.EventDetails.Deadline),
-                EventDescription = theEvent.EventDetails.Description,
+                Deadline = FormatEventDate(organizedEvent.EventDetails.Deadline),
+                OccurenceDate = FormatEventDate(organizedEvent.EventDetails.OccurenceDate),
+                EventTime = FormatEventTime(organizedEvent.EventDetails.OccurenceDate),
+                EventDescription = organizedEvent.EventDetails.Description,
                 MaximumParticipants = maximumParticipants,
-                Category = theEvent.Category,
-                Comments = theEvent.Comments,
+                Category = organizedEvent.Category,
+                Comments = organizedEvent.Comments,
                 HostProfileImage = hostingUser.ProfileImage,
                 UserName = currentUsername,
                 UserProfileImage = currentProfileImage
@@ -484,12 +519,24 @@ namespace Eventive.Controllers
 
         private string FormatEventTime(DateTime eventTime)
         {
-            return $"{eventTime:H:mm}";
+            return $" {eventTime:H:mm}";
         }
 
-        private string FormatUserName(User hostingUser)
+        private string FormatUserName(Participant hostingUser)
         {
             return $"{hostingUser.FirstName} {hostingUser.LastName}";
         }
+
+        /*
+        public IActionResult GetComments(Guid Id)
+        {
+            if (Id.Equals(Guid.Empty))
+            {
+                return View();
+            }
+
+            var comments = eventService.GetComments(Id);
+            return Json(comments, new Newtonsoft.Json.JsonSerializerSettings());
+        }*/
     }
 }

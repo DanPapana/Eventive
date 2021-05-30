@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Eventive.ApplicationLogic.DataModel
 {
@@ -13,23 +11,30 @@ namespace Eventive.ApplicationLogic.DataModel
         public DateTime OccurenceDate { get; set; }
         public int MaximumParticipantNo { get; set; }
         public decimal ParticipationFee { get; set; }
-        
+        public bool ApplicationRequired { get; set; }
+
         public EventDetails() { }
 
-        public EventDetails(string description, string location, 
-            DateTime deadline, DateTime occurenceDate, int maximumParticipants, decimal fee)
+        public static EventDetails Create(string description, string location,
+            DateTime deadline, DateTime occurenceDate, int maximumParticipants, decimal fee, bool applicationRequired)
         {
-            Id = Guid.NewGuid();
-            Location = location;
-            Description = description;
-            Deadline = deadline;
-            OccurenceDate = occurenceDate;
-            MaximumParticipantNo = maximumParticipants;
-            ParticipationFee = fee;
+            var newEventDetails = new EventDetails()
+            {
+                Id = Guid.NewGuid(),
+                Location = location,
+                Description = description,
+                Deadline = deadline,
+                OccurenceDate = occurenceDate,
+                MaximumParticipantNo = maximumParticipants,
+                ParticipationFee = fee,
+                ApplicationRequired = applicationRequired
+            };
+
+            return newEventDetails;
         }
 
         public EventDetails UpdateDetails(string description, string location, 
-            DateTime deadline, DateTime occurenceDate, int maximumParticipants, decimal fee)
+            DateTime deadline, DateTime occurenceDate, int maximumParticipants, decimal fee, bool applicationRequired)
         {
             Location = location;
             Description = description;
@@ -37,6 +42,7 @@ namespace Eventive.ApplicationLogic.DataModel
             OccurenceDate = occurenceDate;
             MaximumParticipantNo = maximumParticipants;
             ParticipationFee = fee;
+            ApplicationRequired = applicationRequired;
 
             return this;
         }

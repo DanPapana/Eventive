@@ -2,7 +2,7 @@
 for details on configuring this project to bundle and minify static web assets. */
 
 :root {
-    --danish: #42BF25;
+    --custom: #42BF25;
 }
 
 a.navbar-brand {
@@ -54,7 +54,7 @@ html {
 
 body {
     margin-bottom: 60px;
-    background-color: var(--danish);
+    background-color: var(--custom);
     background-color: hsl(120, 100%, 95%);
 }
 
@@ -70,7 +70,7 @@ body {
     white-space: nowrap;
     line-height: 30px;
     color: white;
-    background-color: var(--danish);
+    background-color: var(--custom);
     background-color: hsl(100, 175%, 6%);
 }
 
@@ -82,7 +82,7 @@ body {
     font-family: Roboto;
     font-weight: 500;
     font-size: 17px;
-    background-color: var(--danish);
+    background-color: var(--custom);
     background-color: hsl(120, 100%, 30%);
 }
 
@@ -91,24 +91,18 @@ body {
     min-width: 80px;
 }
 
-.event-date {
+div.card .event-date {
     background-color: red;
-    border-radius: 8px;
+    border-radius: 0px 4px 16px 4px;
     text-align: center;
-    font-size: 16px;
-    padding: 6px;
-    font-weight: 700;
-    color: white;
+    padding: 8px;
 }
 
-.event-category {
+div.card .event-category {
     background-color: black;
-    border-radius: 8px;
+    border-radius: 4px 0px 4px 16px;
     text-align: center;
-    font-size: 16px;
     padding: 8px;
-    font-weight: 400;
-    color: white;
 }
 
 .filter-icons {
@@ -148,15 +142,48 @@ hr {
 }
 
 div.card {
-   width: 18rem;
+    --card-width: 17rem;
+    width: var(--card-width);
+    border: 0;
 }
 
-    div.card img.card-img-top {
-        padding: 0.625rem;
+    div.card img {
+        width: 100%;
+        height: var(--card-width);
+        object-fit: cover;
     }
-    
-    div.card div.card-img-overlay {
-        height: 50%;
+
+    div.card .card-img-body .card-img-overlay {
+        padding: 0rem;
+        height: var(--card-width);
+        opacity: 1;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+        div.card .card-img-body:hover .details-text {
+            opacity: 1;
+            padding: 1rem;
+        }
+
+        div.card .card-img-body .details-text {
+            opacity: 0;
+        }
+
+        div.card .card-img-body .details-date {
+            opacity: 1;
+        }
+
+        div.card .card-img-body:hover .card-img-overlay {
+            opacity: 1;
+            transition: .3s ease;
+            background-color: #008CBA;
+        }
+
+    div.card .card-body {
+        padding: 0.625rem;
+        padding-top: 0.25rem;
     }
 
 @media (min-width: 1200px) {
@@ -175,7 +202,7 @@ div.card {
 
 #detailsModal #detailsBody .image-container {
     float: left;
-    max-width: 40%;
+    max-width: 50%;
 }
 
     #detailsModal #detailsBody .image-container img {
@@ -183,29 +210,43 @@ div.card {
         height: auto;
     }
 
+    #detailsModal #detailsBody .image-container .organizer-image img {
+        margin-top: -0.5rem;
+        object-fit: cover;
+        width: 5rem;
+        height: 5rem;
+        border-radius: 50%;
+    }
+
 #detailsModal #detailsBody .details-container {
     float: right;
     max-width: 50%;
+    overflow-x: hidden;
 }
+
+    #detailsModal #detailsBody .details-container {
+        font-size: 1rem;
+        font-weight: 600;
+    }
 
 #detailsModal .organizer {
     margin-top: 1rem;
-    min-height: 6.5rem;
+    min-height: 7.5rem;
     background-color: lightgrey;
     line-height: 0.9rem;
+    font-size: 1rem;
 }
 
     #detailsModal .organizer .organizer-title {
         font-weight: 600;
         text-align: center;
+        font-size: 18px;
         padding: 0.5rem;
     }
 
     #detailsModal .organizer .organizer-image {
-        width: 5rem;
-        height: auto;
         float: left;
-        margin: -1rem 1rem 0 1rem;
+        margin: 0rem 1rem 0 1rem;
     }
 
     #detailsModal .organizer .organizer-info {
@@ -216,26 +257,35 @@ div.card {
     position: relative;
     margin-top: 20px;
     margin-right: 20px;
-    margin-left: 50px;
 }
+
+    .comment .form-comment-avatar {
+        position: absolute;
+        top: 10%;
+        margin-left: 1.5%;
+        width: 5rem;
+        height: auto;
+        border-radius: 50%;
+    }
 
     .comment .comment-avatar {
         position: absolute;
-        top: 0;
-        left: -40px;
-        width: 5rem;
+        top: 40%;
+        width: 3rem;
         height: auto;
+        border-radius: 50%;
     }
 
     .comment .comment-author {
         margin-bottom: 5px;
-        padding-left: 45px;
+        padding-left: 3rem;
         padding-right: 20px;
-        font-size: 16px;
+        font-size: 1rem;
         font-weight: bold;
     }
 
     .comment .comment-date {
+        float: right;
         margin-top: 5px;
         font-size: 12px;
         color: #bdc3c7;
@@ -250,20 +300,45 @@ div.card {
     }
 
     .comment .comment-text {
-        padding: 0.5rem;
-        padding-left: 3rem;
+        padding: 0.8rem;
+        padding-left: 6%;
         background-color: #f8f8f8;
         border-bottom: 5px solid #e5e6e6;
     }
-    
+
         .comment .comment-text textarea {
-            min-width: 80%;
-            max-width: 80%;
-            height: 100%;
-            width: 100%;
+            margin-left: 3rem;
+            resize: none;
+            width: 80%;
+            float: left;
+            min-height: 4rem;
         }
-    
-    .comment button .comment-button {
-        float: right;
-        margin: 0.2rem;
+
+    .comment .comment-button {
+        margin: 0.8rem;
     }
+
+div.container .form-check-label {
+    margin-top: 0.5rem;
+}
+
+div.container input[type=checkbox] {
+    width: 2rem;
+    height: 2rem;
+    margin-left: 5rem;
+}
+
+div.container .form-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+div.container .form-event-description {
+    height: 5.2rem;
+    min-height: 5.2rem;
+    max-height: 20rem;
+}
+
+div.modal .event-edit-form {
+    min-width: 60rem;
+}

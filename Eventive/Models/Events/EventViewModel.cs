@@ -1,7 +1,7 @@
 ﻿using Eventive.ApplicationLogic.DataModel;
 using System;
 using System.Collections.Generic;
-using static Eventive.ApplicationLogic.DataModel.Event;
+using static Eventive.ApplicationLogic.DataModel.EventOrganized;
 
 namespace Eventive.Models.Events
 {
@@ -24,6 +24,8 @@ namespace Eventive.Models.Events
         public string UserName { get; set; }
         public string UserProfileImage { get; set; }
         public string HostProfileImage { get; set; }
+        public Guid NewCommentId { get; set; }
+        public string NewCommentMessage { get; set; }
         public IEnumerable<Comment> Comments { get; set; }
     }
 }

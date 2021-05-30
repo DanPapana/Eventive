@@ -1,19 +1,12 @@
-﻿using Eventive.ApplicationLogic.DataModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using static Eventive.ApplicationLogic.DataModel.Event;
-using Microsoft.AspNetCore.Mvc;
+using static Eventive.ApplicationLogic.DataModel.EventOrganized;
 using Microsoft.AspNetCore.Http;
 
 namespace Eventive.Models.Events
 {
-
-    public class NewEventViewModel
+    public class AddEventViewModel
     {
-       
         [Required(ErrorMessage = "There needs to a title!")]
         [Display(Name = "Title")]
         public string Title { get; set; }
@@ -27,29 +20,29 @@ namespace Eventive.Models.Events
         public DateTime Deadline { get; set; }
 
         [Required(ErrorMessage = "Occurence date is required")]
-        [Display(Name = "Application Deadline")]
+        [Display(Name = "Event Date")]
         public DateTime OccurenceDate { get; set; }
 
         [Required(ErrorMessage = "You don't want them stranded, do you?")]
         [Display(Name = "Location")]
         public string Location { get; set; }
 
-        [Display(Name = "Add an image if you feel like it")]
+        [Display(Name = "Image for the event")]
         public IFormFile EventImage { get; set; }
         
         [Display(Name = "Maximum number of participants")]
         public int MaximumParticipants { get; set; }
         
-        [Display(Name = "Participation Fee")]
+        [Display(Name = "Attendance fee")]
         public decimal ParticipationFee { get; set; }
         
-        [Display(Name = "Event Description")]
+        [Display(Name = "Event description")]
         public string EventDescription { get; set; }
+
+        [Display(Name = "Application Required?")]
+        public bool ApplicationRequired { get; set; }
     }
 }
-
-
-
 
 //[CurrentDate(ErrorMessage = "Date must be after or equal to current date")]
 //[DataType(DataType.DateTime, ErrorMessage = "Invalid Date Format")]

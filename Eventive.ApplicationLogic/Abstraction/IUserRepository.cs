@@ -5,10 +5,10 @@ using System.Text;
 
 namespace Eventive.ApplicationLogic.Abstraction
 {
-    public interface IUserRepository : IRepository<User>
+    public interface IUserRepository : IRepository<Participant>
     {
-        User GetUserByGuid(Guid id);
-        User GetUserByUserId(Guid userId);
-        IEnumerable<Event> GetEventsCreatedByUser(Guid id);
+        Participant GetUserByGuid(Guid id);
+        Participant GetUserByUserId(Guid userId);
+        IEnumerable<EventOrganized> GetEventsCreatedByUser(Guid id);
     }
 }

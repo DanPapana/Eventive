@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Eventive.ApplicationLogic.DataModel
 {
-    public class Event
+    public class EventOrganized
     {
         public enum EventCategory
         {
@@ -21,9 +20,11 @@ namespace Eventive.ApplicationLogic.DataModel
         public string ImageByteArray { get; set; }
         public EventDetails EventDetails { get; set; }
         public EventCategory Category { get; set; }
-        public IEnumerable<Comment> Comments { get; set; }
+        public List<Comment> Comments { get; set; }
+        public List<Application> Applications { get; set; }
+        public List<Interaction> Interactions { get; set; }
 
-        public Event UpdateEvent(string title, 
+        public EventOrganized UpdateEvent(string title, 
                     EventCategory category, 
                     string description, 
                     string location,
@@ -31,7 +32,8 @@ namespace Eventive.ApplicationLogic.DataModel
                     DateTime occurenceDate, 
                     string image,
                     int maximumParticipants,
-                    decimal fee)
+                    decimal fee,
+                    bool applicationRequired)
         {
             if (string.IsNullOrEmpty(image)) {
                 ImageByteArray = image;
@@ -40,7 +42,7 @@ namespace Eventive.ApplicationLogic.DataModel
             Title = title;
             Category = category;
             EventDetails.UpdateDetails(description, location, 
-                deadline, occurenceDate, maximumParticipants, fee);
+                deadline, occurenceDate, maximumParticipants, fee, applicationRequired);
 
             return this;
         }

@@ -4,17 +4,16 @@ using Eventive.ApplicationLogic.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Eventive.EFDataAccess
 {
-    public class EventRepository : BaseRepository<Event>, IEventRepository
+    public class EventRepository : BaseRepository<EventOrganized>, IEventRepository
     {
         public EventRepository(EventManagerDbContext dbContext) : base(dbContext)
         {
         }
 
-        public IEnumerable<Event> GetActiveEvents()
+        public IEnumerable<EventOrganized> GetActiveEvents()
         {
             return dbContext.Events
                 .Include(evnt => evnt.EventDetails)
@@ -25,7 +24,7 @@ namespace Eventive.EFDataAccess
                 .AsEnumerable();
         }
 
-        public IEnumerable<Event> GetPastEvents(Guid userId)
+        public IEnumerable<EventOrganized> GetPastEvents(Guid userId)
         {
             return dbContext.Events.Include(evnt => evnt.EventDetails).Include(evnt => evnt.Comments)
                 .Where(evnt => evnt
@@ -35,7 +34,7 @@ namespace Eventive.EFDataAccess
                 .AsEnumerable();
         }
 
-        public Event GetEventById(Guid eventId)
+        public EventOrganized GetEventById(Guid eventId)
         {
             return dbContext.Events.Include(ev => ev.EventDetails)
                     .Include(evnt => evnt.Comments)
@@ -43,72 +42,86 @@ namespace Eventive.EFDataAccess
                     .SingleOrDefault();
         }
 
-        public IEnumerable<Event> GetEventsByCategory(Event.EventCategory eventCategory)
+        public IEnumerable<EventOrganized> GetEventsByCategory(EventOrganized.EventCategory eventCategory)
         {
             return dbContext.Events
                 .Where(evnt => evnt.Category == eventCategory);
         }
 
-        public Participation GetParticipation(Guid eventId, Guid userId, Participation.Type type)
+        public Interaction GetParticipation(Guid eventId, Guid userId, Interaction.Type type)
         {
-            return dbContext.Participations
+            return dbContext.Interactions
                         .Where(ev => ev.ParticipantId == userId 
                         && ev.UserParticipationType == type 
-                        && ev.EventId == eventId)
-                        .SingleOrDefault();
+                        && ev.EventOrganizedId == eventId)
+                        .FirstOrDefault();
         }
 
-        private IEnumerable<Participation> GetUserParticipations(Guid userId, Participation.Type type)
+        private IEnumerable<Interaction> GetUserParticipations(Guid userId, Interaction.Type type)
         {
-            return dbContext.Participations
+            return dbContext.Interactions
                 .Where(p => p.UserParticipationType == type
                 && p.ParticipantId == userId)
                 .AsEnumerable();
         }
 
-        public IEnumerable<Event> GetEventsForUser(Guid userId, Participation.Type type)
+        public IEnumerable<Comment> GetComments(Guid eventId)
         {
-            List<Event> participatedEvents = new List<Event>();
+            return GetEventById(eventId).Comments;
+        }
+
+        public IEnumerable<EventOrganized> GetEventsForUser(Guid userId, Interaction.Type type)
+        {
+            List<EventOrganized> participatedEvents = new List<EventOrganized>();
 
             var participations = GetUserParticipations(userId, type);
 
-            foreach (Participation part in participations)
+            foreach (Interaction part in participations)
             {
-                participatedEvents.Add(GetEventById(part.EventId));
+                participatedEvents.Add(GetEventById(part.EventOrganizedId));
             }
 
             return participatedEvents.AsEnumerable();
         }
 
-        public IEnumerable<Guid> GetEventsGuidForUser(Guid userId, Participation.Type type)
+        public IEnumerable<Guid> GetEventsGuidForUser(Guid userId, Interaction.Type type)
         {
             List<Guid> participatedEvents = new List<Guid>();
 
             var participations = GetUserParticipations(userId, type);
 
-            foreach (Participation part in participations)
+            foreach (Interaction part in participations)
             {
-                participatedEvents.Add(part.EventId);
+                participatedEvents.Add(part.EventOrganizedId);
             }
 
             return participatedEvents.AsEnumerable();
         }
 
-        public Participation CreateParticipation(Participation participation)
+        public Interaction CreateParticipation(Interaction participation)
         {
-            dbContext.Participations.Add(participation);
-            dbContext.SaveChanges();
+            dbContext.Interactions.Add(participation);
+            SaveChanges();
             return participation;
         }
 
-        public bool RemoveParticipation(Participation participationToRemove)
+        public Comment AddComment(Comment comment)
         {
-            
-            if (participationToRemove == null)
+            dbContext.Comments.Add(comment);
+            SaveChanges();
+            return comment;
+        }
+
+        public bool RemoveParticipation(Interaction participationToRemove)
+        {
+
+            if (participationToRemove is null)
+            {
                 return false;
+            }
             
             dbContext.Remove(participationToRemove);
-            dbContext.SaveChanges();
+            SaveChanges();
             return true;
         }
 
@@ -120,7 +133,7 @@ namespace Eventive.EFDataAccess
                 dbContext.Remove(eventToRemove.Comments);
                 dbContext.Remove(eventToRemove.EventDetails);
                 dbContext.Remove(eventToRemove);
-                dbContext.SaveChanges();
+                SaveChanges();
                 
                 return true;
             }

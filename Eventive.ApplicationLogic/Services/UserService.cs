@@ -3,7 +3,7 @@ using Eventive.ApplicationLogic.DataModel;
 using Eventive.ApplicationLogic.Exceptions;
 using System;
 using System.Collections.Generic;
-using static Eventive.ApplicationLogic.DataModel.Event;
+using static Eventive.ApplicationLogic.DataModel.EventOrganized;
 
 namespace Eventive.ApplicationLogic.Services
 {
@@ -18,7 +18,7 @@ namespace Eventive.ApplicationLogic.Services
             this.eventRepository = eventRepository;
         }
 
-        private Guid ParseID(string userId)
+        private Guid ParseId(string userId)
         {
             if (!Guid.TryParse(userId, out Guid userIdGuid))
             {
@@ -27,10 +27,10 @@ namespace Eventive.ApplicationLogic.Services
             return userIdGuid;
         }
 
-        public User GetCreatorByGuid(Guid userGuid)
+        public Participant GetCreatorByGuid(Guid userGuid)
         {
             var user = userRepository.GetUserByGuid(userGuid);
-            if (user == null)
+            if (user is null)
             {
                 throw new EntityNotFoundException(userGuid);
             }
@@ -38,28 +38,28 @@ namespace Eventive.ApplicationLogic.Services
             return user;
         }
 
-        public User GetUserByUserId(string userId)
+        public Participant GetUserByUserId(string userId)
         {
-            Guid userIdGuid = ParseID(userId);
+            Guid userIdGuid = ParseId(userId);
             return userRepository.GetUserByUserId(userIdGuid);
         }
 
-        public IEnumerable<Event> GetUserEvents(string userId)
+        public IEnumerable<EventOrganized> GetUserEvents(string userId)
         {
-            Guid userIdGuid = ParseID(userId);
+            Guid userIdGuid = ParseId(userId);
             GetCreatorByGuid(userIdGuid);
             return userRepository.GetEventsCreatedByUser(userIdGuid);
         }
 
-        public User RegisterNewUser(string userId, string firstName, string lastName, string socialId, string email)
+        public Participant RegisterNewUser(string userId, string firstName, string lastName, string socialId, string email)
         {
-            var newUser = User.CreateUser(Guid.Parse(userId), firstName, lastName, socialId, email);
+            var newUser = Participant.CreateUser(Guid.Parse(userId), firstName, lastName, socialId, email);
             newUser = userRepository.Add(newUser);
             userRepository.Update(newUser);
             return newUser;
         }
 
-        public User UpdateUser(Guid updateId, string firstName, string lastName,
+        public Participant UpdateUser(Guid updateId, string firstName, string lastName,
                                 string profileImage, string address,
                                 string city, string country,
                                 string phoneNo, string email,
@@ -80,7 +80,7 @@ namespace Eventive.ApplicationLogic.Services
         {
             GetCreatorByGuid(creatorId);
 
-            eventRepository.Add(new Event() { 
+            eventRepository.Add(new EventOrganized() { 
                 Id = Guid.NewGuid(), 
                 Title = title, 
                 CreatorId = creatorId, 

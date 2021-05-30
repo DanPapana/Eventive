@@ -8,15 +8,15 @@ using System.Text;
 
 namespace Eventive.EFDataAccess
 {
-    public class UserRepository : BaseRepository<User>, IUserRepository
+    public class UserRepository : BaseRepository<Participant>, IUserRepository
     {
         public UserRepository(EventManagerDbContext dbContext) : base(dbContext)
         {
         }
 
-        public User GetUserByUserId(Guid userId)
+        public Participant GetUserByUserId(Guid userId)
         {
-            User foundUser = dbContext.Users
+            Participant foundUser = dbContext.Participants
                             .Include(user => user.ContactDetails)
                             .Where(user => user.UserId == userId)
                             .SingleOrDefault();
@@ -24,9 +24,9 @@ namespace Eventive.EFDataAccess
             return foundUser;
         }
 
-        public User GetUserByGuid(Guid searchId)
+        public Participant GetUserByGuid(Guid searchId)
         {
-            User foundUser = dbContext.Users
+            Participant foundUser = dbContext.Participants
                             .Include(user=> user.ContactDetails)
                             .Where(user => user.Id == searchId)
                             .SingleOrDefault();
@@ -34,7 +34,7 @@ namespace Eventive.EFDataAccess
             return foundUser;
         }
 
-        public IEnumerable<Event> GetEventsCreatedByUser(Guid userId)
+        public IEnumerable<EventOrganized> GetEventsCreatedByUser(Guid userId)
         {
             return dbContext.Events
                             .Include(ev => ev.EventDetails)

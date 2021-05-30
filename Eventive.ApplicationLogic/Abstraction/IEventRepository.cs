@@ -1,21 +1,22 @@
 ﻿using Eventive.ApplicationLogic.DataModel;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Eventive.ApplicationLogic.Abstraction
 {
-    public interface IEventRepository: IRepository<Event>
+    public interface IEventRepository: IRepository<EventOrganized>
     {
-        IEnumerable<Event> GetActiveEvents();
-        IEnumerable<Event> GetEventsByCategory(Event.EventCategory eventCategory);
-        Event GetEventById(Guid eventId);
-        Participation GetParticipation(Guid eventId, Guid userId, Participation.Type type);
-        IEnumerable<Event> GetEventsForUser(Guid userId, Participation.Type type);
-        IEnumerable<Guid> GetEventsGuidForUser(Guid userId, Participation.Type type);
-        Participation CreateParticipation(Participation participation);
-        IEnumerable<Event> GetPastEvents(Guid userId);
-        bool RemoveParticipation(Participation participationToRemove);
+        IEnumerable<EventOrganized> GetActiveEvents();
+        IEnumerable<EventOrganized> GetEventsByCategory(EventOrganized.EventCategory eventCategory);
+        EventOrganized GetEventById(Guid eventId);
+        Interaction GetParticipation(Guid eventId, Guid userId, Interaction.Type type);
+        IEnumerable<EventOrganized> GetEventsForUser(Guid userId, Interaction.Type type);
+        IEnumerable<Guid> GetEventsGuidForUser(Guid userId, Interaction.Type type);
+        Comment AddComment(Comment comment);
+        Interaction CreateParticipation(Interaction participation);
+        IEnumerable<EventOrganized> GetPastEvents(Guid userId);
+        IEnumerable<Comment> GetComments(Guid eventId);
+        bool RemoveParticipation(Interaction participationToRemove);
         bool RemoveEvent(Guid eventId);
     }
 }

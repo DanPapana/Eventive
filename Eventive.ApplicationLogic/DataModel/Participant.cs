@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Eventive.ApplicationLogic.DataModel
 {
-    public class User
+    public class Participant
     {
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
@@ -14,10 +13,11 @@ namespace Eventive.ApplicationLogic.DataModel
         public string SocialId { get; set; }
         public DateTime DateOfBirth { get; set; }
         public ContactDetails ContactDetails { get; set; }
+        public List<Rating> Ratings { get; set; }
 
-        public static User CreateUser(Guid userId, string firstName, string lastName, string socialId, string email)
+        public static Participant CreateUser(Guid userId, string firstName, string lastName, string socialId, string email)
         {
-            var newUser = new User()
+            var newUser = new Participant()
             {
                 Id = Guid.NewGuid(),
                 UserId = userId,
@@ -26,10 +26,11 @@ namespace Eventive.ApplicationLogic.DataModel
                 SocialId = socialId,
                 ContactDetails = new ContactDetails(email)
             };
+
             return newUser;
         }
 
-        public User UpdateUser(string firstName,        
+        public Participant UpdateUser(string firstName,        
                                 string lastName, 
                                 string profileImage,    
                                 string address, 
@@ -39,7 +40,7 @@ namespace Eventive.ApplicationLogic.DataModel
                                 string email,
                                 string linkToSocialM)
         {
-            if (profileImage != null && profileImage.Length > 1)
+            if (!string.IsNullOrEmpty(profileImage))
             {
                 ProfileImage = profileImage;
             }

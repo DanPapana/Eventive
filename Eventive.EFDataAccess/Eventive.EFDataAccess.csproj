@@ -5,6 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20210525221648_EventIdRenaming.cs" />
+    <Compile Remove="Migrations\20210525221648_EventIdRenaming.Designer.cs" />
+    <Compile Remove="Migrations\20210525222022_EventIdRenamingCont.cs" />
+    <Compile Remove="Migrations\20210525222022_EventIdRenamingCont.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />

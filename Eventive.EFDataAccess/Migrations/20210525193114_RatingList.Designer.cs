@@ -4,45 +4,22 @@ using Eventive.EFDataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Eventive.EFDataAccess.Migrations
 {
     [DbContext(typeof(EventManagerDbContext))]
-    partial class EventManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210525193114_RatingList")]
+    partial class RatingList
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "3.1.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Application", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("ApplicationText")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid>("EventOrganizedId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ParticipantId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventOrganizedId");
-
-                    b.ToTable("Applications");
-                });
 
             modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Comment", b =>
                 {
@@ -53,11 +30,11 @@ namespace Eventive.EFDataAccess.Migrations
                     b.Property<Guid?>("CommenterId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("EventOrganizedId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Message")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("OrganizedEventId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
@@ -66,7 +43,7 @@ namespace Eventive.EFDataAccess.Migrations
 
                     b.HasIndex("CommenterId");
 
-                    b.HasIndex("EventOrganizedId");
+                    b.HasIndex("OrganizedEventId");
 
                     b.ToTable("Comments");
                 });
@@ -106,9 +83,6 @@ namespace Eventive.EFDataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("ApplicationRequired")
-                        .HasColumnType("bit");
-
                     b.Property<DateTime>("Deadline")
                         .HasColumnType("datetime2");
 
@@ -132,7 +106,30 @@ namespace Eventive.EFDataAccess.Migrations
                     b.ToTable("EventDetails");
                 });
 
-            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.EventOrganized", b =>
+            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Interaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ParticipantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserParticipationType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Participations");
+                });
+
+            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.OrganizedEvent", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -158,31 +155,6 @@ namespace Eventive.EFDataAccess.Migrations
                     b.HasIndex("EventDetailsId");
 
                     b.ToTable("Events");
-                });
-
-            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Interaction", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("EventOrganizedId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("ParticipantId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("UserParticipationType")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventOrganizedId");
-
-                    b.ToTable("Interactions");
                 });
 
             modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Participant", b =>
@@ -216,7 +188,7 @@ namespace Eventive.EFDataAccess.Migrations
 
                     b.HasIndex("ContactDetailsId");
 
-                    b.ToTable("Participants");
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Rating", b =>
@@ -241,42 +213,24 @@ namespace Eventive.EFDataAccess.Migrations
                     b.ToTable("Ratings");
                 });
 
-            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Application", b =>
-                {
-                    b.HasOne("Eventive.ApplicationLogic.DataModel.EventOrganized", null)
-                        .WithMany("Applications")
-                        .HasForeignKey("EventOrganizedId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Comment", b =>
                 {
                     b.HasOne("Eventive.ApplicationLogic.DataModel.Participant", "Commenter")
                         .WithMany()
                         .HasForeignKey("CommenterId");
 
-                    b.HasOne("Eventive.ApplicationLogic.DataModel.EventOrganized", null)
+                    b.HasOne("Eventive.ApplicationLogic.DataModel.OrganizedEvent", null)
                         .WithMany("Comments")
-                        .HasForeignKey("EventOrganizedId")
+                        .HasForeignKey("OrganizedEventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.EventOrganized", b =>
+            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.OrganizedEvent", b =>
                 {
                     b.HasOne("Eventive.ApplicationLogic.DataModel.EventDetails", "EventDetails")
                         .WithMany()
                         .HasForeignKey("EventDetailsId");
-                });
-
-            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Interaction", b =>
-                {
-                    b.HasOne("Eventive.ApplicationLogic.DataModel.EventOrganized", null)
-                        .WithMany("Interactions")
-                        .HasForeignKey("EventOrganizedId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Participant", b =>

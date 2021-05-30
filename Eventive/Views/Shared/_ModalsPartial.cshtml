@@ -42,7 +42,7 @@
 
     <div class="modal fade" id="newEventModal" tabindex="-1" aria-labelledby="newEventTitle" aria-hidden="true">
         <div class="modal-dialog d-flex justify-content-center">
-            <div class="modal-content" style="width: 60rem">
+            <div class="modal-content event-edit-form">
                 <div class="modal-header">
                     <h5 class="modal-title" id="newEventTitle">Create a new event!</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -50,7 +50,7 @@
                     </button>
                 </div>
                 <div class="modal-body" id="newEventBody" style="width: 60rem">
-                    @await Html.PartialAsync("~/Views/Event/_AddEventPartial.cshtml", new NewEventViewModel())
+                    @await Html.PartialAsync("~/Views/Event/_AddEventPartial.cshtml", new AddEventViewModel())
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -71,7 +71,7 @@
 
     <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventTitle" aria-hidden="true">
         <div class="modal-dialog d-flex justify-content-center">
-            <div class="modal-content" style="max-width: 70%">
+            <div class="modal-content event-edit-form">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editEventTitle">Edit your event</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">

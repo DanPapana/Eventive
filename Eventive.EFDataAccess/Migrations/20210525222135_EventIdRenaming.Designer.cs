@@ -4,14 +4,16 @@ using Eventive.EFDataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Eventive.EFDataAccess.Migrations
 {
     [DbContext(typeof(EventManagerDbContext))]
-    partial class EventManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210525222135_EventIdRenaming")]
+    partial class EventIdRenaming
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -166,7 +168,10 @@ namespace Eventive.EFDataAccess.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid>("EventOrganizedId")
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("EventOrganizedId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ParticipantId")
@@ -274,9 +279,7 @@ namespace Eventive.EFDataAccess.Migrations
                 {
                     b.HasOne("Eventive.ApplicationLogic.DataModel.EventOrganized", null)
                         .WithMany("Interactions")
-                        .HasForeignKey("EventOrganizedId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("EventOrganizedId");
                 });
 
             modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Participant", b =>

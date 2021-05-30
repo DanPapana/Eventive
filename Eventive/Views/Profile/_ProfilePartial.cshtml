@@ -5,7 +5,7 @@
 
         @if (!string.IsNullOrEmpty(Model.ProfileImage))
         {
-            <img class="card-img-top" style="padding: 0.625rem" src="data:image/png;base64, @Model.ProfileImage">
+            <img class="card-img-top" src="data:image/png;base64, @Model.ProfileImage">
         }
         else
         {
@@ -20,13 +20,19 @@
         </div>
         <ul class="list-group list-group-flush text-left">
             <li class="list-group-item">Email: @Model.Email</li>
-            <li class="list-group-item">City: @Model.CityCountry</li>
-            <li class="list-group-item">Birthday: @Model.DateOfBirth</li>
-            @if (Model.LinkToSocialM != null)
+            @if (!string.IsNullOrWhiteSpace(Model.CityCountry))
+            {
+                <li class="list-group-item">City: @Model.CityCountry</li>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.DateOfBirth))
+            {
+                <li class="list-group-item">Birthday: @Model.DateOfBirth</li>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.LinkToSocialM))
             {
                 <li class="list-group-item">Social Media: @Model.LinkToSocialM</li>
             }
-            @if (Model.PhoneNo != null)
+            @if (!string.IsNullOrWhiteSpace(Model.PhoneNo))
             {
                 <li class="list-group-item">Phone Number: @Model.PhoneNo</li>
             }
