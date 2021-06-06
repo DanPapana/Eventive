@@ -1,7 +1,61 @@
-﻿<script src="~/js/EventContainer.js" type="text/javascript"></script>
-<partial name="_ModalsPartial" />
+﻿<partial name="_ModalsPartial" />
 
 <script>
+    function followEvent(id) {
+        $.ajax({
+            url: "Event/Follow?id=" + id,
+            success: function () {
+                $('#follow-' + id).toggle();
+                $('#following-' + id).toggle();
+            }
+        });
+    }
+
+    function applyToEvent(id) {
+        $('#apply-' + id).toggle();
+        $('#applied-' + id).toggle();
+        if ($('follow-' + id).is(":visible")) {
+            $('#follow-' + id).hide();
+            $('#following-' + id).show();
+        }
+    }
+
+    $(document).ready(function () {
+        $("#searchTitleBar").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#toSearch .card").filter(function () {
+                $(this).toggle($(this).find('.title').text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+    $(document).ready(function () {
+        $("#searchLocationBar").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#toSearch .card").filter(function () {
+                $(this).toggle($(this).find('.location').text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+    function searchByCategory(category) {
+        if (category == '') {
+            $("#toSearch .card").show();
+        } else {
+            $("#toSearch .card").filter(function () {
+                $(this).toggle($(this).find('.event-category').text().indexOf(category) > -1)
+            });
+        }
+    }
+
+    function rateEvent(eventId, score) {
+        $.ajax({
+            url: "/Event/Rate?eventId=" + eventId + "&score=" + score,
+            success: function () {},
+            error: function (xhr) { alert(xhr.responseText) }   
+        });
+    }
+
     function loadEditEvent(Id) {
         loadServerPartialView("#editEventBody", '@Url.Action("Edit", "Event")' + "/" + Id);
     }
@@ -22,8 +76,20 @@
         applyToEvent(response.Id);
     }
 
-    function modalFormComplete(modalName) {
-        $(modalName).modal("hide");
-        loadEvents();
+    function loadCreatedEvents() {
+        loadServerPartialView("#eventsContainer", '@Url.Action("CreatedEvents", "Event")');
     }
+
+    function loadAppliedEvents() {
+        loadServerPartialView("#eventsContainer", '@Url.Action("AppliedEvents", "Event")');
+    }
+
+    function loadFollowingEvents() {
+        loadServerPartialView("#eventsContainer", '@Url.Action("FollowingEvents", "Event")');
+    }
+
+    function loadPastEvents() {
+        loadServerPartialView("#eventsContainer", '@Url.Action("PastEvents", "Event")');
+    }
+
 </script>

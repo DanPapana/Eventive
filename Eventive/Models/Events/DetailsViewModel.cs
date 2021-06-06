@@ -5,7 +5,7 @@ using static Eventive.ApplicationLogic.DataModel.EventOrganized;
 
 namespace Eventive.Models.Events
 {
-    public class EventViewModel
+    public class DetailsViewModel
     {
         public Guid Id { get; set; }
         public string Title { get; set; }
@@ -24,6 +24,8 @@ namespace Eventive.Models.Events
         public string UserName { get; set; }
         public string UserProfileImage { get; set; }
         public string HostProfileImage { get; set; }
-        public int? Rating { get; set; }
+        public IEnumerable<Comment> Comments { get; set; }
+        public Guid NewCommentEventId { get; set; }
+        public string NewCommentMessage { get; set; }
     }
 }

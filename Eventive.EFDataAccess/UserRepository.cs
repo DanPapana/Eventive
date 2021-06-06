@@ -24,7 +24,7 @@ namespace Eventive.EFDataAccess
             return foundUser;
         }
 
-        public Participant GetUserByGuid(Guid searchId)
+        public Participant GetParticipantByGuid(Guid searchId)
         {
             Participant foundUser = dbContext.Participants
                             .Include(user=> user.ContactDetails)

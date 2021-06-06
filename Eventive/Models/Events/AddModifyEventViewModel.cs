@@ -5,7 +5,7 @@ using static Eventive.ApplicationLogic.DataModel.EventOrganized;
 
 namespace Eventive.Models.Events
 {
-    public class EditEventViewModel
+    public class AddModifyEventViewModel
     {
         public string Id { get; set; }
 

@@ -4,14 +4,16 @@ using Eventive.EFDataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Eventive.EFDataAccess.Migrations
 {
     [DbContext(typeof(EventManagerDbContext))]
-    partial class EventManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210605191422_Refactoring")]
+    partial class Refactoring
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -75,7 +77,7 @@ namespace Eventive.EFDataAccess.Migrations
                     b.ToTable("ContactDetails");
                 });
 
-            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.EventApplication", b =>
+            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.EventApply", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -155,7 +157,7 @@ namespace Eventive.EFDataAccess.Migrations
                     b.ToTable("EventDetails");
                 });
 
-            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.EventFollowing", b =>
+            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.EventFollow", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -204,30 +206,6 @@ namespace Eventive.EFDataAccess.Migrations
                     b.ToTable("Events");
                 });
 
-            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.EventRating", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("EventOrganizedId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("ParticipantId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Score")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventOrganizedId");
-
-                    b.HasIndex("ParticipantId");
-
-                    b.ToTable("Ratings");
-                });
-
             modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Participant", b =>
                 {
                     b.Property<Guid>("Id")
@@ -262,6 +240,28 @@ namespace Eventive.EFDataAccess.Migrations
                     b.ToTable("Participants");
                 });
 
+            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Rating", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ParticipantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Score")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParticipantId");
+
+                    b.ToTable("Ratings");
+                });
+
             modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Comment", b =>
                 {
                     b.HasOne("Eventive.ApplicationLogic.DataModel.EventOrganized", "EventOrganized")
@@ -273,7 +273,7 @@ namespace Eventive.EFDataAccess.Migrations
                         .HasForeignKey("ParticipantId");
                 });
 
-            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.EventApplication", b =>
+            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.EventApply", b =>
                 {
                     b.HasOne("Eventive.ApplicationLogic.DataModel.EventOrganized", "EventOrganized")
                         .WithMany("Applications")
@@ -295,7 +295,7 @@ namespace Eventive.EFDataAccess.Migrations
                         .HasForeignKey("ParticipantId");
                 });
 
-            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.EventFollowing", b =>
+            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.EventFollow", b =>
                 {
                     b.HasOne("Eventive.ApplicationLogic.DataModel.EventOrganized", "EventOrganized")
                         .WithMany("Followings")
@@ -313,22 +313,20 @@ namespace Eventive.EFDataAccess.Migrations
                         .HasForeignKey("EventDetailsId");
                 });
 
-            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.EventRating", b =>
-                {
-                    b.HasOne("Eventive.ApplicationLogic.DataModel.EventOrganized", "EventOrganized")
-                        .WithMany("Ratings")
-                        .HasForeignKey("EventOrganizedId");
-
-                    b.HasOne("Eventive.ApplicationLogic.DataModel.Participant", "Participant")
-                        .WithMany("Ratings")
-                        .HasForeignKey("ParticipantId");
-                });
-
             modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Participant", b =>
                 {
                     b.HasOne("Eventive.ApplicationLogic.DataModel.ContactDetails", "ContactDetails")
                         .WithMany()
                         .HasForeignKey("ContactDetailsId");
+                });
+
+            modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.Rating", b =>
+                {
+                    b.HasOne("Eventive.ApplicationLogic.DataModel.Participant", null)
+                        .WithMany("Ratings")
+                        .HasForeignKey("ParticipantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

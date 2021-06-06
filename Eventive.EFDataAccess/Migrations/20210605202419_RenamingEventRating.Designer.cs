@@ -4,14 +4,16 @@ using Eventive.EFDataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Eventive.EFDataAccess.Migrations
 {
     [DbContext(typeof(EventManagerDbContext))]
-    partial class EventManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210605202419_RenamingEventRating")]
+    partial class RenamingEventRating
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -316,7 +318,7 @@ namespace Eventive.EFDataAccess.Migrations
             modelBuilder.Entity("Eventive.ApplicationLogic.DataModel.EventRating", b =>
                 {
                     b.HasOne("Eventive.ApplicationLogic.DataModel.EventOrganized", "EventOrganized")
-                        .WithMany("Ratings")
+                        .WithMany()
                         .HasForeignKey("EventOrganizedId");
 
                     b.HasOne("Eventive.ApplicationLogic.DataModel.Participant", "Participant")

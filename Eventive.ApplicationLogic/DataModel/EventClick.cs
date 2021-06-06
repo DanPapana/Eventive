@@ -3,26 +3,24 @@ using System;
 
 namespace Eventive.ApplicationLogic.DataModel
 {
-    public class Comment : IEventInteraction
+    public class EventClick : IEventInteraction
     {
         public Guid Id { get; set; }
         public Participant Participant { get; set; }
         public EventOrganized EventOrganized { get; set; }
         public DateTime Timestamp { get; set; }
-        public string Message { get; set; }
 
-        public static Comment Create(Participant participant, EventOrganized organizedEvent, string message)
+        public static EventClick Create(EventOrganized eventOrganized, Participant participant)
         {
-            var newComment = new Comment()
+            var newInteraction = new EventClick()
             {
                 Id = Guid.NewGuid(),
-                Timestamp = DateTime.Now,
+                EventOrganized = eventOrganized,
                 Participant = participant,
-                EventOrganized = organizedEvent,
-                Message = message
+                Timestamp = DateTime.Now
             };
 
-            return newComment;
+            return newInteraction;
         }
     }
 }

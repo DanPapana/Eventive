@@ -131,8 +131,16 @@ div.card .event-category {
     height: 10rem;
 }
 
+.nav-pills .nav-link.active {
+    color: #fff !important;
+}
+
+.nav-pills .nav-link:hover {
+    cursor: pointer;
+}
+
 hr {
-    height: 0.05rem;
+    height: 0.04rem;
     background-color: black;
 }
 
@@ -141,19 +149,19 @@ hr {
     font-size: 2rem;
 }
 
-div.card {
+div.card.event {
     --card-width: 17rem;
     width: var(--card-width);
     border: 0;
 }
 
-    div.card img {
+    div.card.event img {
         width: 100%;
         height: var(--card-width);
         object-fit: cover;
     }
 
-    div.card .card-img-body .card-img-overlay {
+    div.card.event .card-img-body .card-img-overlay {
         padding: 0rem;
         height: var(--card-width);
         opacity: 1;
@@ -162,26 +170,26 @@ div.card {
         font-weight: 600;
     }
 
-        div.card .card-img-body:hover .details-text {
-            opacity: 1;
-            padding: 1rem;
-        }
+    div.card.event .card-img-body:hover .details-text {
+        opacity: 1;
+        padding: 1rem;
+    }
 
-        div.card .card-img-body .details-text {
-            opacity: 0;
-        }
+    div.card.event .card-img-body .details-text {
+        opacity: 0;
+    }
 
-        div.card .card-img-body .details-date {
-            opacity: 1;
-        }
+    div.card.event .card-img-body .details-date {
+        opacity: 1;
+    }
 
-        div.card .card-img-body:hover .card-img-overlay {
-            opacity: 1;
-            transition: .3s ease;
-            background-color: #008CBA;
-        }
+    div.card.event .card-img-body:hover .card-img-overlay {
+        opacity: 1;
+        transition: .3s ease;
+        background-color: #008CBA;
+    }
 
-    div.card .card-body {
+    div.card.event .card-body {
         padding: 0.625rem;
         padding-top: 0.25rem;
     }
@@ -263,22 +271,30 @@ div.card {
         position: absolute;
         top: 10%;
         margin-left: 1.5%;
-        width: 5rem;
-        height: auto;
-        border-radius: 50%;
     }
+
+        .comment .form-comment-avatar img {
+            width: 4.5rem;
+            height: 4.5rem;
+            object-fit: cover;
+            border-radius: 50%;
+        }
 
     .comment .comment-avatar {
         position: absolute;
         top: 40%;
-        width: 3rem;
-        height: auto;
-        border-radius: 50%;
     }
+
+        .comment .comment-avatar img {
+            width: 2.8rem;
+            height: 2.8rem;
+            object-fit: cover;
+            border-radius: 50%;
+        }
 
     .comment .comment-author {
         margin-bottom: 5px;
-        padding-left: 3rem;
+        padding-left: 2rem;
         padding-right: 20px;
         font-size: 1rem;
         font-weight: bold;
@@ -333,7 +349,7 @@ div.container .form-title {
     font-weight: 500;
 }
 
-div.container .form-event-description {
+.form-event-description {
     height: 5.2rem;
     min-height: 5.2rem;
     max-height: 20rem;
@@ -342,3 +358,56 @@ div.container .form-event-description {
 div.modal .event-edit-form {
     min-width: 60rem;
 }
+
+.star-rating-text {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: lighter;
+}
+
+.star-rating {
+    height: 4rem;
+    direction: rtl;
+    display: flex;
+    justify-content: center;
+}
+
+    .star-rating input[type=radio] {
+        display: none
+    }
+
+    .star-rating label {
+        color: #bbb;
+        font-size: 2.7rem;
+        padding: 0.2rem;
+        cursor: pointer;
+        -webkit-transition: all .3s ease-in-out;
+        transition: all .3s ease-in-out
+    }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input[type=radio]:checked ~ label {
+            color: #f2b600
+        }
+
+#applyModal.modal,
+#removeEventModal.modal {
+    margin-top: 20rem;
+}
+
+    #applyModal.modal .btn,
+    #removeEventModal.modal .btn {
+        width: 10rem;
+        height: 3rem;
+    }
+
+    #applyModal.modal .modal-footer,
+    #removeEventModal.modal .modal-footer {
+        border-top: 0px;
+    }
+
+    #applyModal.modal .modal-dialog
+    #removeEventModal.modal .modal-dialog {
+        min-height: 10rem;
+    }

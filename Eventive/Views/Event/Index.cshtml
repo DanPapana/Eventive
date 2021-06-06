@@ -4,6 +4,7 @@
     ViewData["Title"] = "Events";
 }
 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
 <div class="d-flex justify-content-around active-cyan-3 active-cyan-2 m-xl-5">
     <input id="searchTitleBar" class="form-control col-3 mr-4" type="text" placeholder="Search by name" aria-label="Search">
     <input id="searchLocationBar" class="form-control col-3 mr-4" type="text" placeholder="Search by location" aria-label="Search">
@@ -66,22 +67,17 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        function loadEvents() {
-            loadServerPartialView("#eventContainer", '@Url.Action("EventContainer", "Event")');
-        }
-
         $(document).ready(function () {
             loadEvents();
         });
 
-        function searchByCategory(category) {
-            if (category == '') {
-                $("#toSearch .card").show();
-            } else {
-                $("#toSearch .card").filter(function () {
-                    $(this).toggle($(this).find('.event-category').text().indexOf(category) > -1)
-                });
-            }
+        function loadEvents() {
+            loadServerPartialView("#eventContainer", '@Url.Action("EventContainer", "Event")');
+        }
+
+        function modalFormComplete(modalName) {
+            $(modalName).modal("hide");
+            loadEvents();
         }
     </script>
 }

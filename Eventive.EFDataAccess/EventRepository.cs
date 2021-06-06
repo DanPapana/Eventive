@@ -12,115 +12,268 @@ namespace Eventive.EFDataAccess
         public EventRepository(EventManagerDbContext dbContext) : base(dbContext)
         {
         }
-
-        public IEnumerable<EventOrganized> GetActiveEvents()
-        {
-            return dbContext.Events
-                .Include(evnt => evnt.EventDetails)
-                .Include(evnt => evnt.Comments)
-                .Where(evnt => evnt
-                .EventDetails.Deadline > DateTime.UtcNow)
-                .OrderBy(evnt => evnt.EventDetails.Deadline)
-                .AsEnumerable();
-        }
-
-        public IEnumerable<EventOrganized> GetPastEvents(Guid userId)
-        {
-            return dbContext.Events.Include(evnt => evnt.EventDetails).Include(evnt => evnt.Comments)
-                .Where(evnt => evnt
-                .EventDetails.Deadline < DateTime.UtcNow 
-                && evnt.CreatorId == userId)
-                .OrderBy(evnt => evnt.EventDetails.Deadline)
-                .AsEnumerable();
-        }
-
+        
         public EventOrganized GetEventById(Guid eventId)
         {
             return dbContext.Events.Include(ev => ev.EventDetails)
                     .Include(evnt => evnt.Comments)
+                    .Include(evnt => evnt.Applications)
+                    .Include(evnt => evnt.Followings)
+                    .Include(evnt => evnt.Clicks)
+                    .Include(evnt => evnt.Ratings)
                     .Where(evnt => evnt.Id == eventId)
-                    .SingleOrDefault();
+                    .FirstOrDefault();
+        }
+
+        public IEnumerable<EventOrganized> GetActiveEvents()
+        {
+            return dbContext.Events
+                    .Include(evnt => evnt.EventDetails)
+                    .Include(evnt => evnt.Comments)
+                    .Where(evnt => evnt
+                    .EventDetails.Deadline > DateTime.UtcNow)
+                    .OrderBy(evnt => evnt.EventDetails.Deadline)
+                    .AsEnumerable();
         }
 
         public IEnumerable<EventOrganized> GetEventsByCategory(EventOrganized.EventCategory eventCategory)
         {
             return dbContext.Events
-                .Where(evnt => evnt.Category == eventCategory);
+                    .Where(evnt => evnt.Category == eventCategory)
+                    .AsEnumerable();
         }
 
-        public Interaction GetParticipation(Guid eventId, Guid userId, Interaction.Type type)
+        public EventApplication GetApplication(Guid eventId, Guid participantId)
         {
-            return dbContext.Interactions
-                        .Where(ev => ev.ParticipantId == userId 
-                        && ev.UserParticipationType == type 
-                        && ev.EventOrganizedId == eventId)
-                        .FirstOrDefault();
+            return dbContext.Applications
+                    .Include(e => e.Participant)
+                    .Include(e => e.EventOrganized)
+                    .Where(ev => ev.Participant.Id == participantId
+                        && ev.EventOrganized.Id == eventId)
+                    .FirstOrDefault();
         }
 
-        private IEnumerable<Interaction> GetUserParticipations(Guid userId, Interaction.Type type)
+        public EventFollowing GetFollowing(Guid eventId, Guid participantId)
         {
-            return dbContext.Interactions
-                .Where(p => p.UserParticipationType == type
-                && p.ParticipantId == userId)
-                .AsEnumerable();
+            return dbContext.Followings
+                    .Include(e => e.Participant)
+                    .Include(e => e.EventOrganized)
+                    .Where(ev => ev.Participant.Id == participantId
+                        && ev.EventOrganized.Id == eventId)
+                    .FirstOrDefault();
+        }
+
+        public IEnumerable<EventApplication> GetUserApplications(Guid participantId)
+        {
+            return dbContext.Applications
+                    .Include(e => e.Participant)
+                    .Include(e => e.EventOrganized)
+                    .Where(app => app.Participant.Id == participantId)
+                    .AsEnumerable();
+        }
+
+        public IEnumerable<EventFollowing> GetUserFollowings(Guid participantId)
+        {
+            return dbContext.Followings
+                    .Include(e => e.Participant)
+                    .Include(e => e.EventOrganized)
+                    .Where(follow => follow.Participant.Id == participantId)
+                    .AsEnumerable();
         }
 
         public IEnumerable<Comment> GetComments(Guid eventId)
         {
-            return GetEventById(eventId).Comments;
+            return dbContext.Comments
+                    .Include(e => e.Participant)
+                    .Include(e => e.EventOrganized)
+                    .Where(e => e.EventOrganized.Id.Equals(eventId))
+                    .AsEnumerable();
         }
 
-        public IEnumerable<EventOrganized> GetEventsForUser(Guid userId, Interaction.Type type)
+        public IEnumerable<EventClick> GetClicks(Guid eventId, Guid participantId)
         {
-            List<EventOrganized> participatedEvents = new List<EventOrganized>();
+            return dbContext.Clicks
+                    .Include(e => e.Participant)
+                    .Include(e => e.EventOrganized)
+                    .Where(e => e.EventOrganized.Id.Equals(eventId)
+                        && e.Participant.Id.Equals(participantId))
+                    .AsEnumerable();                
+        }
 
-            var participations = GetUserParticipations(userId, type);
+        public IEnumerable<EventRating> GetEventRatings(Guid eventId)
+        {
+            return dbContext.Ratings
+                    .Include(e => e.Participant)
+                    .Include(e => e.EventOrganized)
+                    .Where(e => e.EventOrganized.Id.Equals(eventId))
+                    .AsEnumerable();
+        }
 
-            foreach (Interaction part in participations)
+        public IEnumerable<EventRating> GetUserRatings(Guid participantId)
+        {
+            return dbContext.Ratings
+                    .Include(e => e.Participant)
+                    .Include(e => e.EventOrganized)
+                    .Where(e => e.Participant.Id.Equals(participantId))
+                    .AsEnumerable();
+        }
+
+        public IEnumerable<EventOrganized> GetAppliedEventsForUser(Guid participantId)
+        {
+            List<EventOrganized> appliedEvents = new List<EventOrganized>();
+
+            var applications = GetUserApplications(participantId);
+
+            foreach (EventApplication application in applications)
             {
-                participatedEvents.Add(GetEventById(part.EventOrganizedId));
+                appliedEvents.Add(GetEventById(application.EventOrganized.Id));
             }
 
-            return participatedEvents.AsEnumerable();
+            return appliedEvents.AsEnumerable();
         }
 
-        public IEnumerable<Guid> GetEventsGuidForUser(Guid userId, Interaction.Type type)
+        public IEnumerable<EventOrganized> GetFollowedEventsForUser(Guid participantId)
         {
-            List<Guid> participatedEvents = new List<Guid>();
+            List<EventOrganized> followedEvents = new List<EventOrganized>();
 
-            var participations = GetUserParticipations(userId, type);
+            var followings = GetUserFollowings(participantId);
 
-            foreach (Interaction part in participations)
+            foreach (EventFollowing follow in followings)
             {
-                participatedEvents.Add(part.EventOrganizedId);
+                followedEvents.Add(GetEventById(follow.EventOrganized.Id));
             }
 
-            return participatedEvents.AsEnumerable();
+            return followedEvents.AsEnumerable();
         }
 
-        public Interaction CreateParticipation(Interaction participation)
+        public IEnumerable<Guid> GetAppliedEventsGuidForUser(Guid participantId)
         {
-            dbContext.Interactions.Add(participation);
+            List<Guid> appliedEventIds = new List<Guid>();
+
+            var applications = GetUserApplications(participantId);
+
+            foreach (IEventInteraction application in applications)
+            {
+                appliedEventIds.Add(application.EventOrganized.Id);
+            }
+
+            return appliedEventIds.AsEnumerable();
+        }
+
+        public IEnumerable<Guid> GetFollowedEventsGuidForUser(Guid participantId)
+        {
+            List<Guid> followedEventIds = new List<Guid>();
+
+            var follows = GetUserFollowings(participantId);
+
+            foreach (IEventInteraction follow in follows)
+            {
+                followedEventIds.Add(follow.EventOrganized.Id);
+            }
+
+            return followedEventIds.AsEnumerable();
+        }
+
+        public IEnumerable<EventOrganized> GetPastAppliedEvents(Guid participantId)
+        {
+            var allPastEvents = dbContext.Events
+                    .Include(evnt => evnt.EventDetails)
+                    .Include(evnt => evnt.Comments)
+                    .Include(evnt => evnt.Applications)
+                    .Include(evnt => evnt.Followings)
+                    .Where(evnt => evnt
+                        .EventDetails.Deadline < DateTime.UtcNow
+                        && evnt.Applications.Count > 0)
+                    .OrderBy(evnt => evnt.EventDetails.Deadline)
+                    .AsEnumerable();
+
+            List<EventOrganized> pastEventsList = new List<EventOrganized>();
+
+            foreach (var pastEvent in allPastEvents)
+            {
+                foreach (var application in pastEvent.Applications)
+                {
+                    if (application.Participant.Id.Equals(participantId))
+                    {
+                        pastEventsList.Add(pastEvent);
+                    }
+                }
+            }
+
+            return pastEventsList;
+        }
+
+        public string GetUserApplicationText(Guid eventId, Guid participantId)
+        {
+            var appliedEvent = GetEventById(eventId);
+            var application = dbContext.Applications
+                    .Include(e => e.Participant)
+                    .Include(e => e.EventOrganized)
+                    .Where(ap => ap.EventOrganized.Id == eventId
+                        && ap.Participant.Id == participantId)
+                    .FirstOrDefault();
+
+            if (!(application is null))
+            {
+                return application.ApplicationText;
+            }
+
+            return null;
+        }
+
+        public EventRating GetUserRating(Guid eventId, Guid participantId)
+        {
+            return dbContext.Ratings
+                    .Include(e => e.EventOrganized)
+                    .Include(e => e.Participant)
+                    .Where(e => e.EventOrganized.Id.Equals(eventId)
+                        && e.Participant.Id.Equals(participantId))
+                    .FirstOrDefault();
+        }
+
+        public EventFollowing AddInteraction(EventFollowing followInteraction)
+        {
+            dbContext.Followings.Add(followInteraction);
             SaveChanges();
-            return participation;
+            return followInteraction;
         }
 
-        public Comment AddComment(Comment comment)
+        public EventApplication AddInteraction(EventApplication applyInteraction)
+        {
+            dbContext.Applications.Add(applyInteraction);
+            SaveChanges();
+            return applyInteraction;
+        }
+
+        public EventClick AddInteraction(EventClick clickInteraction)
+        {
+            dbContext.Clicks.Add(clickInteraction);
+            SaveChanges();
+            return clickInteraction;
+        }
+
+        public EventRating AddInteraction(EventRating eventRating)
+        {
+            dbContext.Ratings.Add(eventRating);
+            SaveChanges();
+            return eventRating;
+        }
+
+        public Comment AddInteraction(Comment comment)
         {
             dbContext.Comments.Add(comment);
             SaveChanges();
             return comment;
         }
 
-        public bool RemoveParticipation(Interaction participationToRemove)
+        public bool RemoveInteraction(IEventInteraction interactionToRemove)
         {
-
-            if (participationToRemove is null)
+            if (interactionToRemove is null)
             {
                 return false;
             }
             
-            dbContext.Remove(participationToRemove);
+            dbContext.Remove(interactionToRemove);
             SaveChanges();
             return true;
         }
@@ -130,8 +283,12 @@ namespace Eventive.EFDataAccess
             var eventToRemove = GetEventById(eventId);
             if (eventToRemove != null)
             {
-                dbContext.Remove(eventToRemove.Comments);
-                dbContext.Remove(eventToRemove.EventDetails);
+                dbContext.RemoveRange(eventToRemove?.Comments);
+                dbContext.RemoveRange(eventToRemove?.Clicks);
+                dbContext.RemoveRange(eventToRemove?.Applications);
+                dbContext.RemoveRange(eventToRemove?.Followings);
+                dbContext.RemoveRange(eventToRemove?.Ratings);
+                dbContext.Remove(eventToRemove?.EventDetails);
                 dbContext.Remove(eventToRemove);
                 SaveChanges();
                 

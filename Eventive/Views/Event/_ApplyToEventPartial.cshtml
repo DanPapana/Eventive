@@ -6,25 +6,20 @@
 <div class="text-center">
     @if (Model.AlreadyApplied)
     {
-        <h4>Do you really want to cancel your application to the event @Model.EventName?</h4>
+        <h3>Do you really want to cancel your application to the event "@Model.EventName"?</h3>
     }
     else
     {
-        <h4>Are you sure you want to apply to the event @Model.EventName?</h4>
-        @if (Model.ApplicationRequired)
-        {
-            <h5>Apply using the form below:</h5>
-            <div class="form-group">
-                <label asp-for="ApplicationText"></label>
-                <input asp-for="ApplicationText" type="text" class="form-control" />
-            </div>
-        }
+        <div>
+            <h3>Are you sure you want to apply to the event "@Model.EventName"?</h3>
+            <br />
+            @if (Model.ApplicationRequired)
+            {
+                <div class="form-group">
+                    <label asp-for="ApplicationText"></label>
+                    @Html.TextAreaFor(m => m.ApplicationText, new { @class = "form-control form-event-description" })
+                </div>
+            }
+        </div>
     }
-</div>
-
-<br />
-
-<div class="d-flex justify-content-around">
-    <button type="button" class="btn btn-dark btn-lg" data-dismiss="modal">No</button>
-    <button type="submit" class="btn btn-success btn-lg">Yes</button>
 </div>

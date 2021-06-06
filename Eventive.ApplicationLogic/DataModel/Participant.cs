@@ -13,7 +13,7 @@ namespace Eventive.ApplicationLogic.DataModel
         public string SocialId { get; set; }
         public DateTime DateOfBirth { get; set; }
         public ContactDetails ContactDetails { get; set; }
-        public List<Rating> Ratings { get; set; }
+        public List<EventRating> Ratings { get; set; }
 
         public static Participant CreateUser(Guid userId, string firstName, string lastName, string socialId, string email)
         {

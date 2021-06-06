@@ -9,7 +9,7 @@ namespace Eventive.Models.Events
         public bool AlreadyApplied { get; set; }
         public bool ApplicationRequired { get; set; }
 
-        [Display(Name = "Application message:")]
+        [Display(Name = "Write down a motivational letter to participate in this event:")]
         public string ApplicationText { get; set; }
     }
 }

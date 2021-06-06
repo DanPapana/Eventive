@@ -18,11 +18,50 @@ namespace Eventive.ApplicationLogic.DataModel
         public Guid CreatorId { get; set; }
         public string Title { get; set; }
         public string ImageByteArray { get; set; }
-        public EventDetails EventDetails { get; set; }
         public EventCategory Category { get; set; }
+        public EventDetails EventDetails { get; set; }
         public List<Comment> Comments { get; set; }
-        public List<Application> Applications { get; set; }
-        public List<Interaction> Interactions { get; set; }
+        public List<EventClick> Clicks { get; set; }
+        public List<EventApplication> Applications { get; set; }
+        public List<EventFollowing> Followings { get; set; }
+        public List<EventRating> Ratings { get; set; }
+
+        public static EventOrganized Create(Guid creatorId,
+                    string title,
+                    string image,
+                    EventCategory category,
+                    string description,
+                    string location,
+                    DateTime deadline,
+                    DateTime occurenceDate,
+                    int maximumParticipants,
+                    decimal fee,
+                    bool applicationRequired)
+        {
+            var eventDetails = EventDetails.Create(description, location, deadline, 
+                occurenceDate, maximumParticipants, fee, applicationRequired);
+
+            var newEvent = new EventOrganized()
+            {
+                Id = Guid.NewGuid(),
+                CreatorId = creatorId,
+                Title = title,
+                Category = category,
+                EventDetails = eventDetails,
+                Comments = new List<Comment>(),
+                Clicks = new List<EventClick>(),
+                Followings = new List<EventFollowing>(),
+                Applications = new List<EventApplication>(),
+                Ratings = new List<EventRating>()
+            };
+
+            if (!string.IsNullOrEmpty(image))
+            {
+                newEvent.ImageByteArray = image;
+            }
+
+            return newEvent;
+        }
 
         public EventOrganized UpdateEvent(string title, 
                     EventCategory category, 
@@ -35,7 +74,7 @@ namespace Eventive.ApplicationLogic.DataModel
                     decimal fee,
                     bool applicationRequired)
         {
-            if (string.IsNullOrEmpty(image)) {
+            if (!string.IsNullOrEmpty(image)) {
                 ImageByteArray = image;
             }
 

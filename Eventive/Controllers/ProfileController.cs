@@ -29,12 +29,12 @@ namespace Eventive.Controllers
             try
             {
                 var thisUserId = userManager.GetUserId(User);
-                Participant user = userService.GetUserByUserId(thisUserId);
+                Participant user = userService.GetParticipantByUserId(thisUserId);
 
                 UserProfileViewModel viewModel = new UserProfileViewModel()
                 {
                     Id = user.Id.ToString(),
-                    DateOfBirth = $"{user.DateOfBirth: dd MMMM yyyy} 🎂",
+                    DateOfBirth = $"{user.DateOfBirth: dd MMMM yyyy}",
                     FullName = $"{user.FirstName} {user.LastName}",
                     ProfileImage = user.ProfileImage,
                     Email = user.ContactDetails.Email,
@@ -42,6 +42,11 @@ namespace Eventive.Controllers
                     PhoneNo = user.ContactDetails.PhoneNo,
                     LinkToSocialM = user.ContactDetails.LinkToSocialM
                 };
+
+                if (user.DateOfBirth.Equals(DateTime.MinValue))
+                {
+                    viewModel.DateOfBirth = null;
+                }
 
                 return PartialView("_ProfilePartial", viewModel);
             }
@@ -58,7 +63,7 @@ namespace Eventive.Controllers
             try
             {
                 var thisUserId = userManager.GetUserId(User);
-                Participant user = userService.GetUserByUserId(thisUserId);
+                Participant user = userService.GetParticipantByUserId(thisUserId);
 
                 var editProfileViewModel = new EditProfileViewModel()
                 {
@@ -92,7 +97,7 @@ namespace Eventive.Controllers
             try
             {
                 var thisUserId = userManager.GetUserId(User);
-                Participant userToUpdate = userService.GetUserByUserId(thisUserId);
+                Participant userToUpdate = userService.GetParticipantByUserId(thisUserId);
 
                 string image = string.Empty;
                 if (updatedData.ProfileImage != null)
@@ -102,16 +107,16 @@ namespace Eventive.Controllers
                     image = Convert.ToBase64String(memoryStream.ToArray());
                 }
 
-                userService.UpdateUser(userToUpdate.Id,
-                                                updatedData.FirstName,
-                                                updatedData.LastName,
-                                                image,
-                                                updatedData.Address,
-                                                updatedData.City,
-                                                updatedData.Country,
-                                                updatedData.PhoneNo,
-                                                updatedData.Email,
-                                                updatedData.LinkToSocialM);
+                userService.UpdateParticipant(userToUpdate.Id,
+                                        updatedData.FirstName,
+                                        updatedData.LastName,
+                                        image,
+                                        updatedData.Address,
+                                        updatedData.City,
+                                        updatedData.Country,
+                                        updatedData.PhoneNo,
+                                        updatedData.Email,
+                                        updatedData.LinkToSocialM);
 
                 return PartialView("_EditProfilePartial", updatedData);
             }

@@ -13,8 +13,6 @@ namespace Eventive.ApplicationLogic.DataModel
         public decimal ParticipationFee { get; set; }
         public bool ApplicationRequired { get; set; }
 
-        public EventDetails() { }
-
         public static EventDetails Create(string description, string location,
             DateTime deadline, DateTime occurenceDate, int maximumParticipants, decimal fee, bool applicationRequired)
         {

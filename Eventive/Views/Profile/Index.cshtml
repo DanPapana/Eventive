@@ -1,50 +1,70 @@
-﻿
+﻿@using Eventive.Models.Users;
 @{
     ViewData["Title"] = "Profile";
 }
 
-<div class="row mt-5 container justify-content-around">
-
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+<div class="mt-4">
     <div id="profileContainer"></div>
 
-    <div class="mt-5">
-        <div class="mt-5">
-            <a href="#created" class="hyper-link">Created Events</a>
-        </div>
-        <div class="mt-5">
-            <a href="#following" class="hyper-link">Following Events</a>
-        </div>
-        <div class="mt-5">
-            <a href="#applied" class="hyper-link">Applied Events</a>
-        </div>
-        <div class="mt-5">
-            <a href="#past" class="hyper-link">Past Events</a>
-        </div>
-    </div>
+    <hr />
+
+    <ul class="nav nav-pills nav-justified">
+        <li class="nav-item">
+            <a class="nav-link active" data-toggle="pill" onclick="loadCreatedEvents()">Created Events</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" onclick="loadAppliedEvents()">Applied Events</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" onclick="loadFollowingEvents()">Following Events</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" onclick="loadPastEvents()">Past Events</a>
+        </li>
+    </ul>
 </div>
 
-<hr />
-<h1 id="created">Created Events</h1>
-<div id="createdContainer"></div>
-<hr />
+<div id="eventsContainer"></div>
 
-<h1 id="following">Following Events</h1>
-<div id="followingContainer"></div>
-<hr />
+<form enctype="multipart/form-data" method="post" asp-controller="Profile" asp-action="EditProfile"
+      data-ajax="true"
+      data-ajax-method="POST"
+      data-ajax-complete="updateProfileComplete('#editProfileModal')"
+      data-ajax-mode="replace"
+      data-ajax-update="#editProfileBody">
 
-<h1 id="applied">Applied Events</h1>
-<div id="appliedContainer"></div>
-<hr />
-
-<h1 id="past">Past Events</h1>
-<div id="pastContainer"></div>
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileTitle" aria-hidden="true">
+        <div class="modal-dialog d-flex justify-content-center">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editProfileTitle">Edit your profile</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="editProfileBody">
+                    @await Html.PartialAsync("~/Views/Profile/_EditProfilePartial.cshtml", new EditProfileViewModel())
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
 
 @section Scripts {
-
     <partial name="_ValidationScriptsPartial" />
     <partial name="_ScriptsPartial" />
 
     <script>
+        $(document).ready(function () {
+            loadProfile();
+            loadCreatedEvents();
+        });
+
         function loadProfile() {
             loadServerPartialView("#profileContainer", '@Url.Action("GetProfile", "Profile")');
         }
@@ -53,21 +73,14 @@
             loadServerPartialView("#editProfileBody", '@Url.Action("EditProfile", "Profile")' + "/" + Id);
         }
 
+        function modalFormComplete(modalName) {
+            $(modalName).modal("hide");
+            loadCreatedEvents();
+        }
+
         function updateProfileComplete(modalName) {
             $(modalName).modal("hide");
             loadProfile();
         }
-
-        function loadEvents() {
-            loadServerPartialView("#appliedContainer", '@Url.Action("AppliedEvents", "Event")');
-            loadServerPartialView("#followingContainer", '@Url.Action("FollowingEvents", "Event")');
-            loadServerPartialView("#createdContainer", '@Url.Action("CreatedEvents", "Event")');
-            loadServerPartialView("#pastContainer", '@Url.Action("PastEvents", "Event")');
-        }
-
-        $(document).ready(function () {
-            loadProfile();
-            loadEvents();
-        });
     </script>
 }

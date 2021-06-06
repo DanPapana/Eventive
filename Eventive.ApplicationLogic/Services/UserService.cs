@@ -27,28 +27,26 @@ namespace Eventive.ApplicationLogic.Services
             return userIdGuid;
         }
 
-        public Participant GetCreatorByGuid(Guid userGuid)
+        public Participant GetCreatorByGuid(Guid participantId)
         {
-            var user = userRepository.GetUserByGuid(userGuid);
+            var user = userRepository.GetParticipantByGuid(participantId);
             if (user is null)
             {
-                throw new EntityNotFoundException(userGuid);
+                throw new EntityNotFoundException(participantId);
             }
 
             return user;
         }
 
-        public Participant GetUserByUserId(string userId)
+        public Participant GetParticipantByUserId(string userId)
         {
             Guid userIdGuid = ParseId(userId);
             return userRepository.GetUserByUserId(userIdGuid);
         }
 
-        public IEnumerable<EventOrganized> GetUserEvents(string userId)
+        public IEnumerable<EventOrganized> GetUserEvents(Guid participantId)
         {
-            Guid userIdGuid = ParseId(userId);
-            GetCreatorByGuid(userIdGuid);
-            return userRepository.GetEventsCreatedByUser(userIdGuid);
+            return userRepository.GetEventsCreatedByUser(participantId);
         }
 
         public Participant RegisterNewUser(string userId, string firstName, string lastName, string socialId, string email)
@@ -59,13 +57,13 @@ namespace Eventive.ApplicationLogic.Services
             return newUser;
         }
 
-        public Participant UpdateUser(Guid updateId, string firstName, string lastName,
+        public Participant UpdateParticipant(Guid participantId, string firstName, string lastName,
                                 string profileImage, string address,
                                 string city, string country,
                                 string phoneNo, string email,
                                 string linkToSocialM)
         {
-            var userToUpdate = userRepository.GetUserByGuid(updateId);
+            var userToUpdate = userRepository.GetParticipantByGuid(participantId);
 
             userToUpdate.UpdateUser(firstName, lastName, profileImage, 
                 address, city, country, phoneNo, email, linkToSocialM);
@@ -75,19 +73,22 @@ namespace Eventive.ApplicationLogic.Services
             return userToUpdate;
         }
 
-        public void AddEvent(Guid creatorId, string title, EventCategory category, 
+        public EventOrganized AddEvent(Guid creatorId, string title, EventCategory category, 
                             string image, EventDetails details)
         {
             GetCreatorByGuid(creatorId);
 
-            eventRepository.Add(new EventOrganized() { 
+            var newEventOrganized = new EventOrganized() { 
                 Id = Guid.NewGuid(), 
                 Title = title, 
                 CreatorId = creatorId, 
                 Category = category,
                 EventDetails = details,
                 ImageByteArray = image
-            });
+            };
+
+            eventRepository.Add(newEventOrganized);
+            return newEventOrganized;
         }
     }
 }
