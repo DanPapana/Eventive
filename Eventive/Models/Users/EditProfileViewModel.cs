@@ -29,13 +29,8 @@ namespace Eventive.Models.Users
         [Display(Name = "City *")]
         public string City { get; set; }
 
-        [Required(ErrorMessage = "We need to have a phone number")]
-        [Display(Name = "Phone number *")]
+        [Display(Name = "Phone number")]
         public string PhoneNo { get; set; }
-
-        [Required(ErrorMessage = "We need to have an email")]
-        [Display(Name = "Email *")]
-        public string Email { get; set; }
 
         [Display(Name = "Link to your social media")]
         public string LinkToSocialM { get; set; }

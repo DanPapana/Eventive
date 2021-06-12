@@ -1,5 +1,6 @@
 ﻿using Eventive.ApplicationLogic.Abstraction;
 using Eventive.ApplicationLogic.DataModel;
+using Eventive.ApplicationLogic.Exceptions;
 using System;
 using System.Collections.Generic;
 using static Eventive.ApplicationLogic.DataModel.EventOrganized;
@@ -24,7 +25,14 @@ namespace Eventive.ApplicationLogic.Services
 
         public EventOrganized GetEventById(Guid eventId)
         {            
-            return eventRepository.GetEventById(eventId);
+            var eventOrganized = eventRepository.GetEventById(eventId);
+
+            if (eventOrganized is null)
+            {
+                throw new EntityNotFoundException(eventId);
+            }
+
+            return eventOrganized;
         }
 
         public EventFollowing FollowEvent(Guid eventId, Guid participantId)
@@ -170,9 +178,9 @@ namespace Eventive.ApplicationLogic.Services
             return eventRepository.RemoveInteraction(eventInteraction);
         }
 
-        public bool RemoveEvent(string Id)
+        public bool RemoveEvent(string eventId)
         {
-            Guid.TryParse(Id, out Guid eventGuid);
+            Guid.TryParse(eventId, out Guid eventGuid);
             return eventRepository.RemoveEvent(eventGuid);
         }
 

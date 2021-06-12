@@ -8,7 +8,7 @@
     <div class="row mt-3 justify-content-center">
         @foreach (var oneEvent in Model.EventViewModelList)
         {
-            <div class="card event text-light bg-secondary mx-3 mb-3">
+            <div class="card event text-light mx-3 mb-3">
                 <div class="card-img-body">
                     @if (!string.IsNullOrEmpty(oneEvent.Image))
                     {
@@ -53,22 +53,22 @@
                             @if (Model.EventsFollowed.Contains(oneEvent.Id))
                             {
                                 <button id="follow-@oneEvent.Id" style="display:none" onclick="followEvent('@oneEvent.Id')"
-                                        class="btn btn-info btn-lg btn-block">
+                                        class="btn btn-follow btn-info btn-lg btn-block">
                                     Follow
                                 </button>
                                 <button id="following-@oneEvent.Id" onclick="followEvent('@oneEvent.Id')"
-                                        class="btn btn-success btn-lg btn-block">
+                                        class="btn btn-follow-success btn-success btn-lg btn-block">
                                     Following ✓
                                 </button>
                             }
                             else
                             {
                                 <button id="follow-@oneEvent.Id" onclick="followEvent('@oneEvent.Id')"
-                                        class="btn btn-info btn-lg btn-block">
+                                        class="btn btn-follow btn-info btn-lg btn-block">
                                     Follow
                                 </button>
                                 <button id="following-@oneEvent.Id" style="display:none" onclick="followEvent('@oneEvent.Id')"
-                                        class="btn btn-success btn-lg btn-block">
+                                        class="btn btn-follow-success btn-success btn-lg btn-block">
                                     Following ✓
                                 </button>
                             }

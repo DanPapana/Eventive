@@ -12,25 +12,24 @@ namespace Eventive.ApplicationLogic.DataModel
         public string Email { get; set; }
         public string LinkToSocialM { get; set; }
 
-
-        public ContactDetails(string email)
+        public ContactDetails(string email, string country, string city)
         {
             Id = Guid.NewGuid();
             Email = email;
+            Country = country;
+            City = city;
         }
 
         public ContactDetails UpdateDetails(string address,
                                     string city,
                                     string country,
                                     string phoneNo,
-                                    string email,
                                     string linkToSocialM) {
 
             Address = address;
             City = city;
             Country = country;
             PhoneNo = phoneNo;
-            Email = email;
             LinkToSocialM = linkToSocialM;
 
             return this;

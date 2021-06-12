@@ -6,56 +6,38 @@
 
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
 <div class="d-flex justify-content-around active-cyan-3 active-cyan-2 m-xl-5">
-    <input id="searchTitleBar" class="form-control col-3 mr-4" type="text" placeholder="Search by name" aria-label="Search">
-    <input id="searchLocationBar" class="form-control col-3 mr-4" type="text" placeholder="Search by location" aria-label="Search">
+    <input id="searchTitleBar" class="form-control search-bar col-3 mr-4" type="text" placeholder="Search by name" aria-label="Search">
+    <input id="searchLocationBar" class="form-control search-bar col-3 mr-4" type="text" placeholder="Search by location" aria-label="Search">
 
     @if (User.Identity.IsAuthenticated)
     {
         <div>
-            <button class="btn btn-danger ml-3" data-toggle="modal" data-target="#newEventModal">Create</button>
+            <button class="btn createButton ml-3" data-toggle="modal" data-target="#newEventModal">Create</button>
         </div>
     }
 </div>
 
 <div class="container">
-    <div class="d-flex justify-content-around filter-box">
-        <div onclick="searchByCategory('')">
-            <div class="img-thumbnail m-1">
-                <img src="/images/other.png" alt="Other" class="filter-icons">
-            </div>
-            <div class="filter-text">All</div>
-        </div>
-        <div onclick="searchByCategory('Hangout')">
-            <div class="img-thumbnail m-1">
-                <img src="/images/hangout.png" alt="Hangout" class="filter-icons">
-            </div>
-            <div class="filter-text">Hangouts</div>
-        </div>
-        <div onclick="searchByCategory('Education')">
-            <div class="img-thumbnail m-1">
-                <img src="/images/education.png" alt="Education" class="filter-icons">
-            </div>
-            <div class="filter-text">Education</div>
-        </div>
-        <div onclick="searchByCategory('Entertainment')">
-            <div class="img-thumbnail m-1">
-                <img src="/images/entertainment.png" alt="Entertainment" class="filter-icons">
-            </div>
-            <div class="filter-text">Entertainment</div>
-        </div>
-        <div onclick="searchByCategory('Networking')">
-            <div class="img-thumbnail m-1">
-                <img src="/images/network.png" alt="Network" class="filter-icons">
-            </div>
-            <div class="filter-text">Network</div>
-        </div>
-        <div onclick="searchByCategory('Other')">
-            <div class="img-thumbnail m-1">
-                <img src="/images/other.png" alt="Other" class="filter-icons">
-            </div>
-            <div class="filter-text">Other</div>
-        </div>
-    </div>
+    <ul class="nav nav-pills nav-justified">
+        <li class="nav-item">
+            <a class="nav-link active" data-toggle="pill" onclick="searchByCategory('')">All</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" onclick="searchByCategory('Entertainment')">Entertainment</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" onclick="searchByCategory('Education')">Education</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" onclick="searchByCategory('Hangout')">Hangout</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" onclick="searchByCategory('Networking')">Networking</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="pill" onclick="searchByCategory('Other')">Other</a>
+        </li>
+    </ul>
 </div>
 
 <hr />

@@ -10,12 +10,11 @@ namespace Eventive.ApplicationLogic.DataModel
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string ProfileImage { get; set; }
-        public string SocialId { get; set; }
         public DateTime DateOfBirth { get; set; }
         public ContactDetails ContactDetails { get; set; }
         public List<EventRating> Ratings { get; set; }
 
-        public static Participant CreateUser(Guid userId, string firstName, string lastName, string socialId, string email)
+        public static Participant CreateUser(Guid userId, string firstName, string lastName, string country, string city, string email)
         {
             var newUser = new Participant()
             {
@@ -23,8 +22,7 @@ namespace Eventive.ApplicationLogic.DataModel
                 UserId = userId,
                 FirstName = firstName,
                 LastName = lastName,
-                SocialId = socialId,
-                ContactDetails = new ContactDetails(email)
+                ContactDetails = new ContactDetails(email, country, city)
             };
 
             return newUser;
@@ -36,8 +34,7 @@ namespace Eventive.ApplicationLogic.DataModel
                                 string address, 
                                 string city,            
                                 string country, 
-                                string phoneNo,         
-                                string email,
+                                string phoneNo,
                                 string linkToSocialM)
         {
             if (!string.IsNullOrEmpty(profileImage))
@@ -48,7 +45,7 @@ namespace Eventive.ApplicationLogic.DataModel
             FirstName = firstName;
             LastName = lastName;
 
-            ContactDetails.UpdateDetails(address, city, country, phoneNo, email, linkToSocialM);
+            ContactDetails.UpdateDetails(address, city, country, phoneNo, linkToSocialM);
 
             return this;
         }

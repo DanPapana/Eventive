@@ -5,9 +5,11 @@ using Eventive.ApplicationLogic.Services;
 using Eventive.Models.Users;
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Eventive.Controllers
 {
+    [Authorize]
     public class ProfileController : Controller
     {
         private readonly UserService userService;
@@ -38,7 +40,8 @@ namespace Eventive.Controllers
                     FullName = $"{user.FirstName} {user.LastName}",
                     ProfileImage = user.ProfileImage,
                     Email = user.ContactDetails.Email,
-                    CityCountry = $"{user.ContactDetails.City}, {user.ContactDetails.Country}",
+                    City = $"{user.ContactDetails.City}, ",
+                    Country = user.ContactDetails.Country,
                     PhoneNo = user.ContactDetails.PhoneNo,
                     LinkToSocialM = user.ContactDetails.LinkToSocialM
                 };
@@ -56,7 +59,6 @@ namespace Eventive.Controllers
             }
         }
 
-
         [HttpGet]
         public IActionResult EditProfile()
         {
@@ -72,7 +74,6 @@ namespace Eventive.Controllers
                     LastName = user.LastName,
                     City = user.ContactDetails.City,
                     Country = user.ContactDetails.Country,
-                    Email = user.ContactDetails.Email,
                     PhoneNo = user.ContactDetails.PhoneNo,
                     LinkToSocialM = user.ContactDetails.LinkToSocialM
                 };
@@ -115,7 +116,6 @@ namespace Eventive.Controllers
                                         updatedData.City,
                                         updatedData.Country,
                                         updatedData.PhoneNo,
-                                        updatedData.Email,
                                         updatedData.LinkToSocialM);
 
                 return PartialView("_EditProfilePartial", updatedData);
