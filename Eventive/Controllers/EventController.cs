@@ -1,22 +1,24 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Eventive.ApplicationLogic.DataModel;
+﻿using Eventive.ApplicationLogic.DataModel;
 using Eventive.ApplicationLogic.Services;
 using Eventive.Models.Events;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Eventive.Controllers
 {
     public class EventController : Controller
     {
+        private readonly BaseService baseService;
         private readonly EventService eventService;
         private readonly UserService userService;
         private readonly UserManager<IdentityUser> userManager;
 
-        public EventController(UserManager<IdentityUser> userManager, EventService eventService, UserService userService)
+        public EventController(UserManager<IdentityUser> userManager, 
+            EventService eventService, UserService userService, BaseService baseService)
         {
+            this.baseService = baseService;
             this.eventService = eventService;
             this.userService = userService;
             this.userManager = userManager;
@@ -204,13 +206,11 @@ namespace Eventive.Controllers
 
             try
             {
-                string image = string.Empty;
+                string resultImage = string.Empty;
+
                 if (eventData.EventImage != null)
                 {
-                    using var memoryStream = new MemoryStream();
-                    eventData.EventImage.CopyTo(memoryStream);
-
-                    image = Convert.ToBase64String(memoryStream.ToArray());
+                    resultImage = baseService.CompressImage(eventData.EventImage);
                 }
 
                 var userId = userManager.GetUserId(User);
@@ -227,7 +227,7 @@ namespace Eventive.Controllers
                 var createdEvent = userService.AddEvent(creatingUser.Id,
                                        eventData.Title,
                                        eventData.Category,
-                                       image,
+                                       resultImage,
                                        details);
 
                 ///The organizing user becomes a participant by default
@@ -439,9 +439,7 @@ namespace Eventive.Controllers
                 string image = string.Empty;
                 if (updatedData.EventImage != null)
                 {
-                    using var memoryStream = new MemoryStream();
-                    updatedData.EventImage.CopyTo(memoryStream);
-                    image = Convert.ToBase64String(memoryStream.ToArray());
+                    image = baseService.CompressImage(updatedData.EventImage);
                 }
 
                 eventService.UpdateEvent(eventToUpdate.Id,
@@ -511,8 +509,8 @@ namespace Eventive.Controllers
         private EventViewModel GetEventViewModel(EventOrganized organizedEvent)
         {
             Participant hostingUser = userService.GetCreatorById(organizedEvent.CreatorId);
-            string participationFee = FormatParticipationFee(organizedEvent.EventDetails.ParticipationFee);
-            string maximumParticipants = FormatMaximumParticipants(organizedEvent.EventDetails.MaximumParticipantNo);
+            string participationFee = eventService.FormatParticipationFee(organizedEvent.EventDetails.ParticipationFee);
+            string maximumParticipants = eventService.FormatMaximumParticipants(organizedEvent.EventDetails.MaximumParticipantNo);
             string currentUsername = null;
             string currentProfileImage = null;
             int? userScore = null;
@@ -521,7 +519,7 @@ namespace Eventive.Controllers
             {
                 var userId = userManager.GetUserId(User);
                 var currentUser = userService.GetParticipantByUserId(userId);
-                currentUsername = FormatUserName(currentUser);
+                currentUsername = eventService.FormatUserName(currentUser);
                 currentProfileImage = currentUser.ProfileImage;
                 userScore = eventService.GetUserRating(organizedEvent.Id, currentUser.Id)?.Score;
             }
@@ -531,15 +529,15 @@ namespace Eventive.Controllers
                 Id = organizedEvent.Id,
                 Title = organizedEvent.Title,
                 Image = organizedEvent.ImageByteArray,
-                HostName = FormatUserName(hostingUser),
+                HostName = eventService.FormatUserName(hostingUser),
                 HostEmail = hostingUser.ContactDetails.Email,
                 HostPhoneNo = hostingUser.ContactDetails.PhoneNo,
                 HostProfileImage = hostingUser.ProfileImage,
                 Location = organizedEvent.EventDetails.Location,
                 ParticipationFee = participationFee,
-                Deadline = FormatEventDate(organizedEvent.EventDetails.Deadline),
-                OccurenceDate = FormatEventDate(organizedEvent.EventDetails.OccurenceDate),
-                OccurenceTime = FormatEventTime(organizedEvent.EventDetails.OccurenceDate),
+                Deadline = eventService.FormatEventDate(organizedEvent.EventDetails.Deadline),
+                OccurenceDate = eventService.FormatEventDate(organizedEvent.EventDetails.OccurenceDate),
+                OccurenceTime = eventService.FormatEventTime(organizedEvent.EventDetails.OccurenceDate),
                 Description = organizedEvent.EventDetails.Description,
                 MaximumParticipants = maximumParticipants,
                 Category = organizedEvent.Category,
@@ -549,43 +547,6 @@ namespace Eventive.Controllers
             };
              
             return eventViewModel;
-        }
-
-        private string FormatParticipationFee(decimal participationFee)
-        {
-            string formattedFee = participationFee.ToString("#.##");
-
-            if (formattedFee.Length > 0)
-            {
-                return $"${formattedFee}";
-            }
-
-            return "None";
-        }
-
-        private string FormatMaximumParticipants(int maximumParticipants)
-        {
-            if (maximumParticipants > 0)
-            {
-                return $"{maximumParticipants}";
-            }
-
-            return "None";
-        }
-
-        private string FormatEventDate(DateTime eventDate)
-        {
-            return $"{eventDate:dd/MM/yyyy}";
-        }
-
-        private string FormatEventTime(DateTime eventTime)
-        {
-            return $"{eventTime:H:mm}";
-        }
-
-        private string FormatUserName(Participant hostingUser)
-        {
-            return $"{hostingUser.FirstName} {hostingUser.LastName}";
         }
     }
 }

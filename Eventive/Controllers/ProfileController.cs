@@ -1,11 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Eventive.ApplicationLogic.DataModel;
+﻿using Eventive.ApplicationLogic.DataModel;
 using Eventive.ApplicationLogic.Services;
 using Eventive.Models.Users;
-using System;
-using System.IO;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using System;
 
 namespace Eventive.Controllers
 {
@@ -13,11 +12,13 @@ namespace Eventive.Controllers
     public class ProfileController : Controller
     {
         private readonly UserService userService;
+        private readonly BaseService baseService;
         private readonly UserManager<IdentityUser> userManager;
 
-        public ProfileController(UserManager<IdentityUser> userManager, UserService userService)
+        public ProfileController(UserManager<IdentityUser> userManager, UserService userService, BaseService baseService)
         {
             this.userManager = userManager;
+            this.baseService = baseService;
             this.userService = userService;
         }
 
@@ -40,8 +41,9 @@ namespace Eventive.Controllers
                     FullName = $"{user.FirstName} {user.LastName}",
                     ProfileImage = user.ProfileImage,
                     Email = user.ContactDetails.Email,
-                    City = $"{user.ContactDetails.City}, ",
+                    City = user.ContactDetails.City,
                     Country = user.ContactDetails.Country,
+                    Address = user.ContactDetails.Address,
                     PhoneNo = user.ContactDetails.PhoneNo,
                     LinkToSocialM = user.ContactDetails.LinkToSocialM
                 };
@@ -72,6 +74,7 @@ namespace Eventive.Controllers
                     Id = user.Id.ToString(),
                     FirstName = user.FirstName,
                     LastName = user.LastName,
+                    Address = user.ContactDetails.Address,
                     City = user.ContactDetails.City,
                     Country = user.ContactDetails.Country,
                     PhoneNo = user.ContactDetails.PhoneNo,
@@ -103,9 +106,7 @@ namespace Eventive.Controllers
                 string image = string.Empty;
                 if (updatedData.ProfileImage != null)
                 {
-                    using var memoryStream = new MemoryStream();
-                    updatedData.ProfileImage.CopyTo(memoryStream);
-                    image = Convert.ToBase64String(memoryStream.ToArray());
+                    image = baseService.CompressImage(updatedData.ProfileImage);
                 }
 
                 userService.UpdateParticipant(userToUpdate.Id,

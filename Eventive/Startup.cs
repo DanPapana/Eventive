@@ -40,8 +40,10 @@ namespace Eventive
 
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<BaseService>();
             services.AddScoped<EventService>();
-            services.AddScoped<UserService>();
+            services.AddScoped<UserService>(); 
+            services.AddResponseCompression();
 
             services.AddAuthentication()
                 .AddGoogle(options =>
@@ -76,6 +78,7 @@ namespace Eventive
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseResponseCompression();
 
             app.UseCookiePolicy();
             app.UseAuthentication();

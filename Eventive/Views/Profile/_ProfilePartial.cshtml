@@ -25,6 +25,10 @@
                                         {
                                             @Model.City
                                         }
+                                        @if (!string.IsNullOrEmpty(Model.City) && !string.IsNullOrEmpty(Model.Country))
+                                        {
+                                            <span>, </span>
+                                        } 
                                         @if (!string.IsNullOrEmpty(Model.Country))
                                         {
                                             @Model.Country
@@ -53,12 +57,6 @@
             <div class="col-md-8">
                 <div class="card mb-3">
                     <div class="card-body profile-details">
-                        <div class="row">
-                            <div class="col-sm-3">
-                                <h6 class="d-flex justify-content-center">Profile details:</h6>
-                            </div>
-                        </div>
-                        <hr />
                         @if (!string.IsNullOrEmpty(Model.Email))
                         {
                             <div class="row">
@@ -83,21 +81,38 @@
                             </div>
                             <hr />
                         }
-                        @if (!string.IsNullOrEmpty(Model.Country) || !string.IsNullOrEmpty(Model.City))
+                        @if (!string.IsNullOrEmpty(Model.City))
+                        {
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">City</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    @Model.City
+                                </div>
+                            </div>
+                            <hr />
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Country))
+                        {
+                            <div class="row">
+                                <div class="col-sm-3">
+                                    <h6 class="mb-0">Country</h6>
+                                </div>
+                                <div class="col-sm-9 text-secondary">
+                                    @Model.Country
+                                </div>
+                            </div>
+                            <hr />
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Address))
                         {
                             <div class="row">
                                 <div class="col-sm-3">
                                     <h6 class="mb-0">Address</h6>
                                 </div>
                                 <div class="col-sm-9 text-secondary">
-                                    @if (!string.IsNullOrEmpty(Model.City))
-                                    {
-                                        @Model.City
-                                    }
-                                    @if (!string.IsNullOrEmpty(Model.Country))
-                                    {
-                                        @Model.Country
-                                    }
+                                    @Model.Address
                                 </div>
                             </div>
                             <hr />

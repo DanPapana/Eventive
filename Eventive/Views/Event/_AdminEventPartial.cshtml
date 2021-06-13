@@ -45,8 +45,12 @@
             <div class="card-body d-flex flex-column">
                 <h5 class="card-title">@oneEvent.Title</h5>
                 <div class="mt-auto">
-                    <button type="button" onclick="loadEditEvent('@oneEvent.Id')" data-toggle="modal" data-target="#editEventModal" class="btn btn-edit btn-light btn-lg btn-block">Edit Event</button>
-                    <button type="button" onclick="loadRemoveEvent('@oneEvent.Id')" data-toggle="modal" data-target="#removeEventModal" class="btn btn-outline-danger btn-lg btn-block">Delete Event</button>
+                    <button type="button" onclick="loadEditEvent('@oneEvent.Id')" data-toggle="modal" data-target="#editEventModal" class="btn btn-edit btn-light btn-lg btn-block">
+                        <i class="fa fa-edit" aria-hidden="true"></i> Edit
+                    </button>
+                    <button type="button" onclick="loadRemoveEvent('@oneEvent.Id')" data-toggle="modal" data-target="#removeEventModal" class="btn btn-danger btn-lg btn-block">
+                        <i class="fa fa-trash" aria-hidden="true"></i> Delete
+                    </button>
                 </div>
             </div>
         </div>

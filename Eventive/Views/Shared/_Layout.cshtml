@@ -5,21 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Eventive</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
 </head>
 <body>
+    <partial name="_BusyIndicatorPartial" />
     <header>
-        <nav class="navbar fixed-top navbar-expand-lg navbar-toggleable navbar-dark bg-menu border-bottom box-shadow mb-3">
+        <nav class="navbar fixed-top navbar-expand-lg navbar-toggleable navbar-dark bg-menu box-shadow mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-area="" asp-controller="Event" asp-action="Index">
                     <div class="logo-image">
                         <img src="~/images/logo.png" class="img-fluid" alt="Event logo" style="width: 50px">
                     </div>
                 </a>
-                
+
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon navbar-dark"></span>
@@ -47,3 +49,9 @@
     @RenderSection("Scripts", required: false)
 </body>
 </html>
+
+<script>
+    $(document).ready(function () {
+        hideBusyIndicator();
+    });
+</script>

@@ -179,8 +179,9 @@ namespace Eventive.EFDataAccess
             var allPastEvents = dbContext.Events
                     .Include(evnt => evnt.EventDetails)
                     .Include(evnt => evnt.Comments)
-                    .Include(evnt => evnt.Applications)
                     .Include(evnt => evnt.Followings)
+                    .Include(evnt => evnt.Applications)
+                    .ThenInclude(app => app.Participant)
                     .Where(evnt => evnt
                         .EventDetails.Deadline < DateTime.UtcNow
                         && evnt.Applications.Count > 0)

@@ -198,5 +198,42 @@ namespace Eventive.ApplicationLogic.Services
             eventRepository.AddInteraction(newClick);
             return newClick;
         }
+
+        public string FormatParticipationFee(decimal participationFee)
+        {
+            string formattedFee = participationFee.ToString("#.##");
+
+            if (formattedFee.Length > 0)
+            {
+                return $"${formattedFee}";
+            }
+
+            return "None";
+        }
+
+        public string FormatMaximumParticipants(int maximumParticipants)
+        {
+            if (maximumParticipants > 0)
+            {
+                return $"{maximumParticipants}";
+            }
+
+            return "None";
+        }
+
+        public string FormatEventDate(DateTime eventDate)
+        {
+            return $"{eventDate:dd/MM/yyyy}";
+        }
+
+        public string FormatEventTime(DateTime eventTime)
+        {
+            return $"{eventTime:H:mm}";
+        }
+
+        public string FormatUserName(Participant hostingUser)
+        {
+            return $"{hostingUser.FirstName} {hostingUser.LastName}";
+        }
     }
 }
