@@ -70,7 +70,17 @@ namespace Eventive.Controllers
         {
             try
             {
-                var events = eventService.GetActiveEvents();
+                IEnumerable<EventOrganized> events = null;
+                if (User.Identity.IsAuthenticated)
+                {
+                    var userId = userManager.GetUserId(User);
+                    var currentParticipant = userService.GetParticipantByUserId(userId);
+                    events = eventService.GetActiveEvents(currentParticipant.UserId);
+                } else
+                {
+                    events = eventService.GetActiveEvents();
+                }
+
                 var viewModel = GetEventListViewModel(events);
                 return PartialView("_ContainerPartial", viewModel);
             }
@@ -132,7 +142,7 @@ namespace Eventive.Controllers
 
                 EventListViewModel viewModel = GetEventListViewModel(createdEvents);
 
-                return PartialView("_AdminEventPartial", viewModel);
+                return PartialView("_ContainerPartial", viewModel);
             }
             catch (Exception e)
             {
@@ -462,6 +472,14 @@ namespace Eventive.Controllers
             }
         }
 
+        public IActionResult RemoveComment(string Id)
+        {
+            var comment = eventService.GetCommentById(Id);
+            eventService.RemoveInteraction(comment);
+
+            return RedirectToAction("Index");
+        }
+
         [HttpGet]
         public IActionResult Remove([FromRoute]string Id)
         {
@@ -530,6 +548,7 @@ namespace Eventive.Controllers
                 Title = organizedEvent.Title,
                 Image = organizedEvent.ImageByteArray,
                 HostName = eventService.FormatUserName(hostingUser),
+                CreatorId = hostingUser.Id.ToString(),
                 HostEmail = hostingUser.ContactDetails.Email,
                 HostPhoneNo = hostingUser.ContactDetails.PhoneNo,
                 HostProfileImage = hostingUser.ProfileImage,

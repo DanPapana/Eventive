@@ -18,6 +18,7 @@ namespace Eventive.Models.Events
         public string Location { get; set; }
         public string ParticipationFee { get; set; }
         public string Description { get; set; }
+        public string CreatorId { get; set; }
         public string HostName { get; set; }
         public string HostPhoneNo { get; set; }
         public string HostEmail { get; set; }

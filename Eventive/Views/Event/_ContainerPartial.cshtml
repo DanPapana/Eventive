@@ -39,7 +39,7 @@
                             <div class="d-flex justify-content-start">
                                 Location:
                             </div>
-                            <div class="d-flex justify-content-end">
+                            <div class="location d-flex justify-content-end">
                                 @oneEvent.Location
                             </div>
                         </div>
@@ -50,50 +50,62 @@
                     <div class="mt-auto">
                         @if (User.Identity.IsAuthenticated)
                         {
-                            @if (Model.EventsFollowed.Contains(oneEvent.Id))
+                            @if (User.Identity.Name.Equals(oneEvent.HostEmail))
                             {
-                                <button id="follow-@oneEvent.Id" style="display:none" onclick="followEvent('@oneEvent.Id')"
-                                        class="btn btn-follow btn-info btn-lg btn-block">
-                                    Follow
+                                <button type="button" onclick="loadEditEvent('@oneEvent.Id')" data-toggle="modal" data-target="#editEventModal" class="btn btn-edit btn-light btn-lg btn-block">
+                                    <i class="fa fa-edit" aria-hidden="true"></i> Edit
                                 </button>
-                                <button id="following-@oneEvent.Id" onclick="followEvent('@oneEvent.Id')"
-                                        class="btn btn-follow-success btn-success btn-lg btn-block">
-                                    Following <i class="fa fa-check" aria-hidden="true"></i>
+                                <button type="button" onclick="loadRemoveEvent('@oneEvent.Id')" data-toggle="modal" data-target="#removeEventModal" class="btn btn-danger btn-lg btn-block">
+                                    <i class="fa fa-trash" aria-hidden="true"></i> Delete
                                 </button>
                             }
                             else
                             {
-                                <button id="follow-@oneEvent.Id" onclick="followEvent('@oneEvent.Id')"
-                                        class="btn btn-follow btn-info btn-lg btn-block">
-                                    Follow
-                                </button>
-                                <button id="following-@oneEvent.Id" style="display:none" onclick="followEvent('@oneEvent.Id')"
-                                        class="btn btn-follow-success btn-success btn-lg btn-block">
-                                    Following <i class="fa fa-check" aria-hidden="true"></i>
-                                </button>
-                            }
+                                @if (Model.EventsFollowed.Contains(oneEvent.Id))
+                                {
+                                    <button id="follow-@oneEvent.Id" style="display:none" onclick="followEvent('@oneEvent.Id')"
+                                            class="btn btn-follow btn-info btn-lg btn-block">
+                                        Follow
+                                    </button>
+                                    <button id="following-@oneEvent.Id" onclick="followEvent('@oneEvent.Id')"
+                                            class="btn btn-follow-success btn-warning btn-lg btn-block">
+                                        Following <i class="fa fa-check" aria-hidden="true"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button id="follow-@oneEvent.Id" onclick="followEvent('@oneEvent.Id')"
+                                            class="btn btn-follow btn-info btn-lg btn-block">
+                                        Follow
+                                    </button>
+                                    <button id="following-@oneEvent.Id" style="display:none" onclick="followEvent('@oneEvent.Id')"
+                                            class="btn btn-follow-success btn-warning btn-lg btn-block">
+                                        Following <i class="fa fa-check" aria-hidden="true"></i>
+                                    </button>
+                                }
 
-                            @if (Model.EventsApplied.Contains(oneEvent.Id))
-                            {
-                                <button id="apply-@oneEvent.Id" onclick="loadApplyToEvent('@oneEvent.Id')" type="button" style="display:none"
-                                        class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#applyModal">
-                                    Apply
-                                </button>
-                                <button id="applied-@oneEvent.Id" onclick="loadApplyToEvent('@oneEvent.Id')" type="button"
-                                        class="btn btn-outline-warning btn-lg btn-block" data-toggle="modal" data-target="#applyModal">
-                                    Cancel Application <i class="fa fa-ban" aria-hidden="true"></i>
-                                </button>
-                            }
-                            else
-                            {
-                                <button id="apply-@oneEvent.Id" onclick="loadApplyToEvent('@oneEvent.Id')" type="button"
-                                        class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#applyModal">
-                                    Apply
-                                </button>
-                                <button id="applied-@oneEvent.Id" onclick="loadApplyToEvent('@oneEvent.Id')" type="button" style="display:none"
-                                        class="btn btn-outline-warning btn-lg btn-block" data-toggle="modal" data-target="#applyModal">
-                                    Cancel Application <i class="fa fa-ban" aria-hidden="true"></i>
-                                </button>
+                                @if (Model.EventsApplied.Contains(oneEvent.Id))
+                                {
+                                    <button id="apply-@oneEvent.Id" onclick="loadApplyToEvent('@oneEvent.Id')" type="button" style="display:none"
+                                            class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#applyModal">
+                                        Apply
+                                    </button>
+                                    <button id="applied-@oneEvent.Id" onclick="loadApplyToEvent('@oneEvent.Id')" type="button"
+                                            class="btn btn-outline-warning btn-lg btn-block" data-toggle="modal" data-target="#applyModal">
+                                        Cancel Application <i class="fa fa-ban" aria-hidden="true"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button id="apply-@oneEvent.Id" onclick="loadApplyToEvent('@oneEvent.Id')" type="button"
+                                            class="btn btn-primary btn-lg btn-block" data-toggle="modal" data-target="#applyModal">
+                                        Apply
+                                    </button>
+                                    <button id="applied-@oneEvent.Id" onclick="loadApplyToEvent('@oneEvent.Id')" type="button" style="display:none"
+                                            class="btn btn-outline-warning btn-lg btn-block" data-toggle="modal" data-target="#applyModal">
+                                        Cancel Application <i class="fa fa-ban" aria-hidden="true"></i>
+                                    </button>
+                                }
                             }
                         }
                     </div>

@@ -1,8 +1,8 @@
 ﻿@using Eventive.Models.Events;
 @model DetailsViewModel;
 
-<div class="details-content-container d-flex" id="detailsPartial">
-    <div class="container image-container">
+<div class="details-content-container" id="detailsPartial">
+    <div class="container">
         @if (!string.IsNullOrEmpty(Model.Image))
         {
             <img src="data:image/png;base64, @Model.Image" class="img-fluid" alt="Event thumbnail">
@@ -126,17 +126,27 @@
                 <div class="comment-avatar">
                     @if (comment.Participant != null && !string.IsNullOrEmpty(comment.Participant.ProfileImage))
                     {
-                        <img src="data:image/png;base64, @comment.Participant.ProfileImage" class="img-fluid" alt="Organizer profile picture">
+                        <img src="data:image/png;base64, @comment.Participant.ProfileImage" class="img-fluid" alt="Commenter profile picture">
                     }
                     else
                     {
-                        <img src="~/images/default_profile.png" class="img-fluid" alt="Organizer profile picture">
+                        <img src="~/images/default_profile.png" class="img-fluid" alt="Commenter profile picture">
                     }
                 </div>
-                <div class="comment-author">@comment.Participant.FirstName @comment.Participant.LastName</div>
-                <div class="comment-text">
-                    @comment.Message
-                    <div class="comment-date">@comment.Timestamp</div>
+                <div class="comment-author d-flex justify-content-between">
+                    <span>@comment.Participant.FirstName @comment.Participant.LastName</span>
+                    <span class="comment-date">@comment.Timestamp</span>
+                </div>
+                <div>
+                    <div class="comment-text">
+                        <span class="comment-message">@comment.Message</span>
+                        @if (User.Identity.IsAuthenticated && User.Identity.Name.Equals(comment.Participant.ContactDetails.Email))
+                        {
+                            <button class="btn btn-outline-danger comment-delete-button" onclick="removeComment('@comment.Id')">
+                                <i class="fa fa-trash" aria-hidden="true"></i>
+                            </button>
+                        }
+                    </div>
                 </div>
             </div>
         }
@@ -147,6 +157,16 @@
     $("#addCommentForm").submit(function (event) {
         event.preventDefault();
     });
+
+    function removeComment(commentId) {
+        $.ajax({
+            url: "/Event/RemoveComment?Id=" + commentId,
+            success: function () {
+                loadDetails('@Model.Id');
+            },
+            error: function (xhr) { alert(xhr.responseText) }
+        });
+    }
 
     $("#addCommentButton").on("click", function () {
         var createCommentForm = $("#addCommentForm").serialize();

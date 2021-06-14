@@ -7,10 +7,11 @@ namespace Eventive.ApplicationLogic.Abstraction
     public interface IEventRepository: IRepository<EventOrganized>
     {
         EventOrganized GetEventById(Guid eventId);
-        IEnumerable<EventOrganized> GetActiveEvents();
+        IEnumerable<EventOrganized> GetActiveEvents(Guid? participantId);
         IEnumerable<EventOrganized> GetEventsByCategory(EventOrganized.EventCategory eventCategory);
         IEnumerable<EventClick> GetClicks(Guid eventId, Guid participantId);
         IEnumerable<Comment> GetComments(Guid eventId);
+        Comment GetCommentById(Guid commentId);
         EventApplication GetApplication(Guid eventId, Guid participantId);
         EventFollowing GetFollowing(Guid eventId, Guid participantId);
         EventRating GetUserRating(Guid eventId, Guid participantId);

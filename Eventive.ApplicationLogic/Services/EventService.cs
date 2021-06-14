@@ -18,9 +18,9 @@ namespace Eventive.ApplicationLogic.Services
             this.userRepository = userRepository;
         }
 
-        public IEnumerable<EventOrganized> GetActiveEvents()
+        public IEnumerable<EventOrganized> GetActiveEvents(Guid? participantId = null)
         {
-            return eventRepository.GetActiveEvents();
+            return eventRepository.GetActiveEvents(participantId);
         }
 
         public EventOrganized GetEventById(Guid eventId)
@@ -182,6 +182,12 @@ namespace Eventive.ApplicationLogic.Services
         {
             Guid.TryParse(eventId, out Guid eventGuid);
             return eventRepository.RemoveEvent(eventGuid);
+        }
+
+        public Comment GetCommentById(string commentId)
+        {
+            Guid.TryParse(commentId, out Guid commentGuid);
+            return eventRepository.GetCommentById(commentGuid);
         }
 
         public EventClick RegisterClick(Guid eventId, Guid participantId)

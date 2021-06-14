@@ -25,13 +25,14 @@ namespace Eventive.EFDataAccess
                     .FirstOrDefault();
         }
 
-        public IEnumerable<EventOrganized> GetActiveEvents()
+        public IEnumerable<EventOrganized> GetActiveEvents(Guid? participantId = null)
         {
             return dbContext.Events
                     .Include(evnt => evnt.EventDetails)
                     .Include(evnt => evnt.Comments)
                     .Where(evnt => evnt
-                    .EventDetails.Deadline > DateTime.UtcNow)
+                    .EventDetails.Deadline > DateTime.Now
+                        && evnt.CreatorId != participantId)
                     .OrderBy(evnt => evnt.EventDetails.Deadline)
                     .AsEnumerable();
         }
@@ -85,6 +86,7 @@ namespace Eventive.EFDataAccess
         {
             return dbContext.Comments
                     .Include(e => e.Participant)
+                    .ThenInclude(e => e.ContactDetails)
                     .Include(e => e.EventOrganized)
                     .Where(e => e.EventOrganized.Id.Equals(eventId))
                     .AsEnumerable();
@@ -229,6 +231,15 @@ namespace Eventive.EFDataAccess
                     .Include(e => e.Participant)
                     .Where(e => e.EventOrganized.Id.Equals(eventId)
                         && e.Participant.Id.Equals(participantId))
+                    .FirstOrDefault();
+        }
+
+        public Comment GetCommentById(Guid commentId)
+        {
+            return dbContext.Comments
+                    .Include(com => com.Participant)
+                    .Include(com => com.EventOrganized)
+                    .Where(com => com.Id.Equals(commentId))
                     .FirstOrDefault();
         }
 
