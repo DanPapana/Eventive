@@ -83,14 +83,13 @@ namespace Eventive.ApplicationLogic.Services
         {
             GetCreatorById(creatorId);
 
-            var newEventOrganized = new EventOrganized() { 
-                Id = Guid.NewGuid(), 
-                Title = title, 
-                CreatorId = creatorId, 
-                Category = category,
-                EventDetails = details,
-                ImageByteArray = image
-            };
+            var newEventOrganized = Create(
+                creatorId,
+                title,
+                image,
+                category,
+                details
+            );
 
             eventRepository.Add(newEventOrganized);
             return newEventOrganized;

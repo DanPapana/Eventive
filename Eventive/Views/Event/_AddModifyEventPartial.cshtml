@@ -3,17 +3,15 @@
 @model AddModifyEventViewModel;
 
 <input type="hidden" asp-for="Id" />
-<input type="hidden" asp-for="CityLat" id="cityLat" />
-<input type="hidden" asp-for="CityLong" id="cityLong" />
-<input type="hidden" asp-for="IsLocationValid" id="isLocationValid" class="form-control" />
-<span asp-validation-for="IsLocationValid" class="text-danger"></span>
+<input value="" type="hidden" asp-for="CityLat" id="cityLat" />
+<input value="" type="hidden" asp-for="CityLong" id="cityLong" />
 
 <div class="d-flex justify-content-center">
     <div class="container w-50">
         <div class="d-flex justify-content-center form-title">Required:</div>
         <div class="form-group">
             <label asp-for="Title"></label>
-            <input asp-for="Title" type="text" class="form-control" />
+            <input value="" asp-for="Title" type="text" class="form-control" />
             <span asp-validation-for="Title" class="text-danger"></span>
         </div>
 
@@ -37,8 +35,10 @@
 
         <div class="form-group">
             <label asp-for="Location"></label>
-            <input id="locationInput" asp-for="Location" type="text" class="form-control" />
+            <input value="" id="locationInput" asp-for="Location" type="text" class="form-control" />
             <span asp-validation-for="Location" class="text-danger"></span>
+            <input type="hidden" asp-for="IsLocationValid" id="isLocationValid" class="form-control" />
+            <span asp-validation-for="IsLocationValid" class="text-danger"></span>
         </div>
     </div>
 

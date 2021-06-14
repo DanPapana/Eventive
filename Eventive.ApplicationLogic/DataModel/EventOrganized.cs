@@ -30,27 +30,15 @@ namespace Eventive.ApplicationLogic.DataModel
                     string title,
                     string image,
                     EventCategory category,
-                    string description,
-                    string location,
-                    double? langitude,
-                    double? longitude,
-                    string cityName,
-                    DateTime deadline,
-                    DateTime occurenceDate,
-                    int maximumParticipants,
-                    decimal fee,
-                    bool applicationRequired)
+                    EventDetails details)
         {
-            var eventDetails = EventDetails.Create(description, location, langitude, longitude, cityName, deadline, 
-                occurenceDate, maximumParticipants, fee, applicationRequired);
-
             var newEvent = new EventOrganized()
             {
                 Id = Guid.NewGuid(),
                 CreatorId = creatorId,
                 Title = title,
                 Category = category,
-                EventDetails = eventDetails,
+                EventDetails = details,
                 Comments = new List<Comment>(),
                 Clicks = new List<EventClick>(),
                 Followings = new List<EventFollowing>(),

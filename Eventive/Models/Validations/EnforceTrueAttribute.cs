@@ -4,8 +4,19 @@ namespace Eventive.Models.Validations
 {
     public class EnforceTrueAttribute : ValidationAttribute
     {
-        public EnforceTrueAttribute() : base("This field must be valid.") { }
+        public EnforceTrueAttribute() { }
 
-        public override bool IsValid(object value) => value is bool valueAsBool && valueAsBool;
+        public string GetErrorMessage() => $"More information required";
+
+        protected override ValidationResult IsValid(object value,
+        ValidationContext validationContext)
+        {
+            if (value is bool valueAsBool && valueAsBool)
+            {
+                return ValidationResult.Success;
+            }
+
+            return new ValidationResult(GetErrorMessage());
+        }
     }
 }
