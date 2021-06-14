@@ -3,8 +3,11 @@
 @model AddModifyEventViewModel;
 
 <input type="hidden" asp-for="Id" />
+<input type="hidden" asp-for="CityLat" id="cityLat" />
+<input type="hidden" asp-for="CityLong" id="cityLong" />
+<input type="hidden" asp-for="IsLocationValid" id="isLocationValid" class="form-control" />
+<span asp-validation-for="IsLocationValid" class="text-danger"></span>
 
-<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
 <div class="d-flex justify-content-center">
     <div class="container w-50">
         <div class="d-flex justify-content-center form-title">Required:</div>
@@ -34,7 +37,7 @@
 
         <div class="form-group">
             <label asp-for="Location"></label>
-            <input id="searchTextField" asp-for="Location" type="text" class="form-control" />
+            <input id="locationInput" asp-for="Location" type="text" class="form-control" />
             <span asp-validation-for="Location" class="text-danger"></span>
         </div>
     </div>
@@ -67,12 +70,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    function initialize() {
-        var input = document.getElementById('searchTextField');
-        new google.maps.places.Autocomplete(input);
-    }
-
-    google.maps.event.addDomListener(window, 'load', initialize);
-</script>

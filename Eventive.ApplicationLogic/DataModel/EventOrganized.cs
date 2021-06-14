@@ -32,13 +32,16 @@ namespace Eventive.ApplicationLogic.DataModel
                     EventCategory category,
                     string description,
                     string location,
+                    double? langitude,
+                    double? longitude,
+                    string cityName,
                     DateTime deadline,
                     DateTime occurenceDate,
                     int maximumParticipants,
                     decimal fee,
                     bool applicationRequired)
         {
-            var eventDetails = EventDetails.Create(description, location, deadline, 
+            var eventDetails = EventDetails.Create(description, location, langitude, longitude, cityName, deadline, 
                 occurenceDate, maximumParticipants, fee, applicationRequired);
 
             var newEvent = new EventOrganized()
@@ -67,6 +70,9 @@ namespace Eventive.ApplicationLogic.DataModel
                     EventCategory category, 
                     string description, 
                     string location,
+                    double? latitude,
+                    double? longitude,
+                    string cityName,
                     DateTime deadline, 
                     DateTime occurenceDate, 
                     string image,
@@ -80,7 +86,7 @@ namespace Eventive.ApplicationLogic.DataModel
 
             Title = title;
             Category = category;
-            EventDetails.UpdateDetails(description, location, 
+            EventDetails.UpdateDetails(description, location, latitude, longitude, cityName, 
                 deadline, occurenceDate, maximumParticipants, fee, applicationRequired);
 
             return this;

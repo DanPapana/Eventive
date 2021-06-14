@@ -517,6 +517,11 @@ div.modal .event-edit-form {
         min-height: 10rem;
     }
 
+/*Google maps PlacesAPI Result*/
+.pac-container {
+    z-index: 1600;
+}
+
 /* Absolute Center Spinner */
 .loading {
     position: fixed;

@@ -156,6 +156,9 @@ namespace Eventive.ApplicationLogic.Services
                     EventCategory category,
                     string description,
                     string location,
+                    double? latitude,
+                    double? longitude,
+                    string city,
                     DateTime deadline,
                     DateTime occurenceDate,
                     string image,
@@ -166,7 +169,7 @@ namespace Eventive.ApplicationLogic.Services
 
             var eventToUpdate = GetEventById(eventId);
 
-            eventToUpdate.UpdateEvent(title, category, description, location, deadline, occurenceDate,
+            eventToUpdate.UpdateEvent(title, category, description, location, latitude, longitude, city, deadline, occurenceDate,
                                                 image, maximumParticipants, fee, applicationRequired);
             eventRepository.Update(eventToUpdate);
 

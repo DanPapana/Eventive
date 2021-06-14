@@ -75,7 +75,7 @@ namespace Eventive.Controllers
                 {
                     var userId = userManager.GetUserId(User);
                     var currentParticipant = userService.GetParticipantByUserId(userId);
-                    events = eventService.GetActiveEvents(currentParticipant.UserId);
+                    events = eventService.GetActiveEvents(currentParticipant.Id);
                 } else
                 {
                     events = eventService.GetActiveEvents();
@@ -212,12 +212,15 @@ namespace Eventive.Controllers
         public IActionResult NewEvent([FromForm]AddModifyEventViewModel eventData)
         {
             if (!ModelState.IsValid || eventData is null || eventData.Deadline == null)
+            {
                 return PartialView("_AddModifyEventPartial", eventData);
+            }
 
             try
             {
-                string resultImage = string.Empty;
+                string cityLongName = baseService.GetCityFromAddress(eventData.Location).Result;
 
+                string resultImage = string.Empty;
                 if (eventData.EventImage != null)
                 {
                     resultImage = baseService.CompressImage(eventData.EventImage);
@@ -228,6 +231,9 @@ namespace Eventive.Controllers
 
                 EventDetails details = EventDetails.Create(eventData.EventDescription,
                                         eventData.Location,
+                                        eventData.CityLat,
+                                        eventData.CityLong,
+                                        cityLongName,
                                         eventData.Deadline,
                                         eventData.OccurenceDate,
                                         eventData.MaximumParticipants,
@@ -445,6 +451,7 @@ namespace Eventive.Controllers
             {
                 Guid.TryParse(updatedData.Id, out Guid eventGuid);
                 var eventToUpdate = eventService.GetEventById(eventGuid);
+                string cityLongName = baseService.GetCityFromAddress(updatedData.Location).Result;
 
                 string image = string.Empty;
                 if (updatedData.EventImage != null)
@@ -457,6 +464,9 @@ namespace Eventive.Controllers
                                         updatedData.Category,
                                         updatedData.EventDescription,
                                         updatedData.Location,
+                                        updatedData.CityLat,
+                                        updatedData.CityLong,
+                                        cityLongName,
                                         updatedData.Deadline,
                                         updatedData.OccurenceDate,
                                         image,

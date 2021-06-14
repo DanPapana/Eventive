@@ -3,8 +3,13 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Processors.Transforms;
+using System.Configuration;
 using System;
 using System.IO;
+using System.Net;
+using System.Xml.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Eventive.ApplicationLogic.Services
 {
@@ -44,6 +49,37 @@ namespace Eventive.ApplicationLogic.Services
             }
 
             return Convert.ToBase64String(memoryStream.ToArray());
+        }
+
+        public async Task<string> GetCityFromAddress(string address)
+        {
+            string apiKey = ConfigurationManager.AppSettings.Get("GOOGLE_API_KEY");
+            string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", Uri.EscapeDataString(address), apiKey);
+
+            using (var client = new HttpClient())
+            {
+                var request = await client.GetAsync(requestUri);
+                var content = await request.Content.ReadAsStringAsync();
+                var xmlDocument = XDocument.Parse(content);
+
+                if (request.IsSuccessStatusCode)
+                {
+                    XElement result = xmlDocument.Element("GeocodeResponse").Element("result");
+                    if (result != null)
+                    {
+                        var addressElements = result.Elements("address_component");
+
+                        foreach (var add in addressElements)
+                        {
+                            if (add.Element("type").Value.Equals("locality"))
+                            {
+                                return add.Element("long_name").Value;
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 }

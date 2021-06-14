@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Eventive.Models.Validations;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.ComponentModel.DataAnnotations;
 using static Eventive.ApplicationLogic.DataModel.EventOrganized;
@@ -8,6 +9,12 @@ namespace Eventive.Models.Events
     public class AddModifyEventViewModel
     {
         public string Id { get; set; }
+        public double CityLat { get; set; }
+        public double CityLong { get; set; }
+
+        [Required]
+        [EnforceTrue]
+        public bool IsLocationValid { get; set; }
 
         [Required(ErrorMessage = "There needs to a title!")]
         [Display(Name = "Title")]
@@ -25,7 +32,7 @@ namespace Eventive.Models.Events
         [Display(Name = "Event Date")]
         public DateTime OccurenceDate { get; set; }
 
-        [Required(ErrorMessage = "You don't want them stranded, do you?")]
+        [Required(ErrorMessage = "You don't want them stranded!")]
         [Display(Name = "Location")]
         public string Location { get; set; }
 
