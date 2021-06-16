@@ -3,6 +3,7 @@ using Eventive.ApplicationLogic.DataModel;
 using Eventive.ApplicationLogic.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using static Eventive.ApplicationLogic.DataModel.EventOrganized;
 
 namespace Eventive.ApplicationLogic.Services
@@ -21,6 +22,16 @@ namespace Eventive.ApplicationLogic.Services
         public IEnumerable<EventOrganized> GetActiveEvents(Guid? participantId = null)
         {
             return eventRepository.GetActiveEvents(participantId);
+        }
+
+        public IEnumerable<EventOrganized> GetActiveEvents(string category, Guid? participantId = null)
+        {
+            if (string.IsNullOrEmpty(category))
+            {
+                return eventRepository.GetActiveEvents(participantId);
+            }
+
+            return eventRepository.GetActiveEvents((EventCategory) Enum.Parse(typeof(EventCategory), category), participantId);
         }
 
         public EventOrganized GetEventById(Guid eventId)
@@ -95,9 +106,9 @@ namespace Eventive.ApplicationLogic.Services
             return eventRepository.GetFollowedEventsGuidForUser(participantId);
         }
 
-        public IEnumerable<Comment> GetComments(Guid eventId)
+        public IEnumerable<Comment> GetEventComments(Guid eventId)
         {
-            return eventRepository.GetComments(eventId);
+            return eventRepository.GetEventComments(eventId);
         }
 
         public IEnumerable<EventClick> GetEventClicks(Guid eventId, Guid participantId)
@@ -112,7 +123,22 @@ namespace Eventive.ApplicationLogic.Services
 
         public IEnumerable<EventRating> GetUserRatings(Guid participantId)
         {
-            return eventRepository.GetEventRatings(participantId);
+            return eventRepository.GetUserRatings(participantId);
+        }
+
+
+        public IEnumerable<EventApplication> GetEventApplications(Guid eventId)
+        {
+            return eventRepository.GetEventApplications(eventId);
+        }
+        public IEnumerable<EventFollowing> GetEventFollowings(Guid eventId)
+        {
+            return eventRepository.GetEventFollowings(eventId);
+        }
+
+        public IEnumerable<EventClick> GetEventClicks(Guid eventId)
+        {
+            return eventRepository.GetEventClicks(eventId);
         }
 
         public EventRating GetUserRating(Guid eventId, Guid participantId)
@@ -120,10 +146,65 @@ namespace Eventive.ApplicationLogic.Services
             return eventRepository.GetUserRating(eventId, participantId);
         }
 
-        public Comment AddComment(string creatorId, Guid eventId, string message)
+        private double GetInteractionDecay(IEnumerable<IEventInteraction> interactions)
         {
-            Guid.TryParse(creatorId, out Guid creatorGuid);
-            var participant = userRepository.GetUserByUserId(creatorGuid);
+            double gravity = 0.2;
+            double decay = 0;
+            foreach (var interaction in interactions)
+            {
+                double days = (DateTime.UtcNow - interaction.Timestamp).TotalDays;
+                decay += days * gravity;
+            }
+            return decay;
+        }
+
+        private double GetInteractionScore(IEnumerable<IEventInteraction> interactions, double interactionWeight)
+        {
+            var interactionDecay = GetInteractionDecay(interactions);
+            var interactionCount = interactions.ToList().Count;
+
+            return interactionCount * interactionWeight / (interactionDecay / (interactionCount + 1));
+        }
+
+        public IEnumerable<EventOrganized> GetTrendingEvents(Guid? participantId = null)
+        {
+            IEnumerable<EventOrganized> events = GetActiveEvents(participantId);
+            Dictionary<EventOrganized, double> eventScore = new Dictionary<EventOrganized, double>();
+
+            double applicationWeight = 3;
+            double followWeight = 2;
+            double clickWeight = 1;
+            double commentWeight = 1.5;
+            double numberOfTrendingEvents = 5;
+
+            foreach (EventOrganized eventOrganized in events)
+            {
+                var applicationScore = GetInteractionScore(GetEventApplications(eventOrganized.Id), applicationWeight);
+                var followingScore = GetInteractionScore(GetEventFollowings(eventOrganized.Id), followWeight);
+                var commentScore = GetInteractionScore(GetEventComments(eventOrganized.Id), commentWeight);
+                var clickScore = GetInteractionScore(GetEventClicks(eventOrganized.Id), clickWeight);
+
+                double totalScore = applicationScore + followingScore + commentScore + clickScore;
+
+                eventScore.Add(eventOrganized, totalScore);
+            }
+
+            var orderedScores = eventScore
+                .OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+
+            List<EventOrganized> trendingEvents = new List<EventOrganized>();
+
+            for (int i = 0; i < numberOfTrendingEvents; i++)
+            {
+                trendingEvents.Add(orderedScores.ElementAt(i).Key);
+            }
+
+            return trendingEvents.AsEnumerable();
+        }
+
+        public Comment AddComment(Guid creatorId, Guid eventId, string message)
+        {
+            var participant = userRepository.GetParticipantByGuid(creatorId);
             var eventOrganized = eventRepository.GetEventById(eventId);
 
             if (participant is null || eventOrganized is null)

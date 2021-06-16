@@ -16,7 +16,7 @@ namespace Eventive.ApplicationLogic.DataModel
             var newComment = new Comment()
             {
                 Id = Guid.NewGuid(),
-                Timestamp = DateTime.Now,
+                Timestamp = DateTime.UtcNow,
                 Participant = participant,
                 EventOrganized = organizedEvent,
                 Message = message

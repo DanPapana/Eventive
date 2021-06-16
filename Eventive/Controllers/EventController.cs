@@ -46,14 +46,13 @@ namespace Eventive.Controllers
 
             if (User.Identity.IsAuthenticated)
             {
-                var userId = userManager.GetUserId(User);
-                var currentParticipant = userService.GetParticipantByUserId(userId);
+                var currentParticipantId = GetCurrentParticipantId();
 
                 eventsFollowed = eventService
-                            .GetFollowedEventsGuidForUser(currentParticipant.Id);
+                            .GetFollowedEventsGuidForUser(currentParticipantId);
 
                 eventsApplied = eventService
-                            .GetAppliedEventsGuidForUser(currentParticipant.Id);
+                            .GetAppliedEventsGuidForUser(currentParticipantId);
             }
 
             EventListViewModel eventListViewModel = new EventListViewModel()
@@ -65,18 +64,67 @@ namespace Eventive.Controllers
 
             return eventListViewModel;
         }
-
-        public IActionResult EventContainer()
+        
+        [HttpGet]
+        public IActionResult EventContainer(string Id)
         {
             try
             {
-                IEnumerable<EventOrganized> events = null;
+                IEnumerable<EventOrganized> events;
                 if (User.Identity.IsAuthenticated)
                 {
-                    var userId = userManager.GetUserId(User);
-                    var currentParticipant = userService.GetParticipantByUserId(userId);
-                    events = eventService.GetActiveEvents(currentParticipant.Id);
-                } else
+                    var currentParticipantId = GetCurrentParticipantId();
+                    events = eventService.GetActiveEvents(Id, currentParticipantId);
+                } 
+                else
+                {
+                    events = eventService.GetActiveEvents(Id);
+                }
+
+                var viewModel = GetEventListViewModel(events);
+                return PartialView("_ContainerPartial", viewModel);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        public IActionResult TrendingContainer()
+        {
+            try
+            {
+                IEnumerable<EventOrganized> events;
+                if (User.Identity.IsAuthenticated)
+                {
+                    var currentParticipantId = GetCurrentParticipantId();
+                    events = eventService.GetTrendingEvents(currentParticipantId);
+                }
+                else
+                {
+                    events = eventService.GetTrendingEvents();
+                }
+
+                var viewModel = GetEventListViewModel(events);
+                return PartialView("_ContainerPartial", viewModel);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        public IActionResult RecommendedContainer()
+        {
+            try
+            {
+                IEnumerable<EventOrganized> events;
+                if (User.Identity.IsAuthenticated)
+                {
+                    var currentParticipantId = GetCurrentParticipantId();
+                    events = eventService.GetActiveEvents(currentParticipantId);
+                }
+                else
                 {
                     events = eventService.GetActiveEvents();
                 }
@@ -94,11 +142,10 @@ namespace Eventive.Controllers
         {
             try
             {
-                var currentUserId = userManager.GetUserId(User);
-                Participant participant = userService.GetParticipantByUserId(currentUserId);
+                var currentParticipantId = GetCurrentParticipantId();
 
                 IEnumerable<EventOrganized> appliedEvents = eventService
-                            .GetAppliedEventsForUser(participant.Id);
+                            .GetAppliedEventsForUser(currentParticipantId);
 
                 EventListViewModel viewModel = GetEventListViewModel(appliedEvents);
 
@@ -114,11 +161,10 @@ namespace Eventive.Controllers
         {
             try
             {
-                var currentUserId = userManager.GetUserId(User);
-                Participant participant = userService.GetParticipantByUserId(currentUserId);
+                var currentParticipantId = GetCurrentParticipantId();
 
                 IEnumerable<EventOrganized> followingEvents = eventService
-                            .GetFollowedEventsForUser(participant.Id);
+                            .GetFollowedEventsForUser(currentParticipantId);
 
                 EventListViewModel viewModel = GetEventListViewModel(followingEvents);
 
@@ -134,11 +180,10 @@ namespace Eventive.Controllers
         {
             try
             {
-                var currentUserId = userManager.GetUserId(User);
-                Participant participant = userService.GetParticipantByUserId(currentUserId);
+                var currentParticipantId = GetCurrentParticipantId();
 
                 IEnumerable<EventOrganized> createdEvents = userService
-                            .GetUserEvents(participant.Id);
+                            .GetUserEvents(currentParticipantId);
 
                 EventListViewModel viewModel = GetEventListViewModel(createdEvents);
 
@@ -154,11 +199,10 @@ namespace Eventive.Controllers
         {
             try
             {
-                var currentUserId = userManager.GetUserId(User);
-                Participant user = userService.GetParticipantByUserId(currentUserId);
+                var currentParticipantId = GetCurrentParticipantId();
 
                 IEnumerable<EventOrganized> pastEvents = eventService
-                            .GetPastEventsOfUser(user.Id);
+                            .GetPastEventsOfUser(currentParticipantId);
 
                 EventListViewModel viewModel = GetEventListViewModel(pastEvents);
 
@@ -180,20 +224,16 @@ namespace Eventive.Controllers
             try
             {
                 Guid.TryParse(eventId, out Guid eventGuid);
-                var eventToRate = eventService.GetEventById(eventGuid);
+                var currentParticipantId = GetCurrentParticipantId();
 
-                var userId = userManager.GetUserId(User);
-                var ratingUser = userService.GetParticipantByUserId(userId);
-
-                var oldRating = eventService.GetUserRating(eventGuid, ratingUser.Id);
+                var oldRating = eventService.GetUserRating(eventGuid, currentParticipantId);
 
                 if (oldRating != null)
                 {
                     eventService.RemoveInteraction(oldRating);
                 }
 
-                eventService.AddRating(ratingUser.Id, eventGuid, score);
-
+                eventService.AddRating(currentParticipantId, eventGuid, score);
                 return PastEvents();
             }
             catch (Exception e)
@@ -226,8 +266,7 @@ namespace Eventive.Controllers
                     resultImage = baseService.CompressImage(eventData.EventImage);
                 }
 
-                var userId = userManager.GetUserId(User);
-                var creatingUser = userService.GetParticipantByUserId(userId);
+                var currentParticipantId = GetCurrentParticipantId();
 
                 EventDetails details = EventDetails.Create(eventData.EventDescription,
                                         eventData.Location,
@@ -240,14 +279,14 @@ namespace Eventive.Controllers
                                         eventData.ParticipationFee,
                                         eventData.ApplicationRequired);
 
-                var createdEvent = userService.AddEvent(creatingUser.Id,
+                var createdEvent = userService.AddEvent(currentParticipantId,
                                        eventData.Title,
                                        eventData.Category,
                                        resultImage,
                                        details);
 
                 ///The organizing user becomes a participant by default
-                eventService.ApplyToEvent(createdEvent.Id, creatingUser.Id);
+                eventService.ApplyToEvent(createdEvent.Id, currentParticipantId);
 
                 return PartialView("_AddModifyEventPartial", eventData);
             }
@@ -263,14 +302,18 @@ namespace Eventive.Controllers
             {
                 Guid.TryParse(Id, out Guid eventGuid);
                 var eventToGo = eventService.GetEventById(eventGuid);
-                var comments = eventService.GetComments(eventToGo.Id);
                 var eventViewModel = GetEventViewModel(eventToGo);
+
+                var comments = eventService.GetEventComments(eventToGo.Id);
+                foreach (var comment in comments)
+                {
+                    comment.Timestamp = comment.Timestamp.ToLocalTime();
+                }
 
                 if (User.Identity.IsAuthenticated)
                 {
-                    var userId = userManager.GetUserId(User);
-                    var participant = userService.GetParticipantByUserId(userId);
-                    eventService.RegisterClick(eventGuid, participant.Id);
+                    var currentParticipantId = GetCurrentParticipantId();
+                    eventService.RegisterClick(eventGuid, currentParticipantId);
                 }
                 
                 var detailsViewModel = new DetailsViewModel()
@@ -310,14 +353,13 @@ namespace Eventive.Controllers
                 Guid.TryParse(id, out Guid eventGuid);
                 var eventToFollow = eventService.GetEventById(eventGuid);
 
-                var userId = userManager.GetUserId(User);
-                var followingUser = userService.GetParticipantByUserId(userId);
-                
-                var previousFollowing = eventService.GetFollowing(eventToFollow.Id, followingUser.Id);
+                var currentParticipantId = GetCurrentParticipantId();
+
+                var previousFollowing = eventService.GetFollowing(eventToFollow.Id, currentParticipantId);
 
                 if (previousFollowing is null)
                 {
-                    eventService.FollowEvent(eventToFollow.Id, followingUser.Id);
+                    eventService.FollowEvent(eventToFollow.Id, currentParticipantId);
                 }
                 else
                 {
@@ -339,14 +381,13 @@ namespace Eventive.Controllers
             {
                 Guid.TryParse(id, out Guid eventGuid);
 
-                var userId = userManager.GetUserId(User);
-                var applyingUser = userService.GetParticipantByUserId(userId);
+                var currentParticipantId = GetCurrentParticipantId();
 
                 var eventAppliedTo = eventService.GetEventById(eventGuid);
                 bool applied = false;
 
-                var eventApplied = eventService.GetApplication(eventGuid, applyingUser.Id);
-                var applicationText = eventService.GetApplicationText(eventGuid, applyingUser.Id);
+                var eventApplied = eventService.GetApplication(eventGuid, currentParticipantId);
+                var applicationText = eventService.GetApplicationText(eventGuid, currentParticipantId);
 
                 if (eventApplied != null)
                 {
@@ -377,24 +418,22 @@ namespace Eventive.Controllers
             {
                 Guid.TryParse(applyViewModel.EventId, out Guid eventGuid);
                 var eventToApply = eventService.GetEventById(eventGuid);
-
-                var userId = userManager.GetUserId(User);
-                var applyingUser = userService.GetParticipantByUserId(userId);
+                
+                var currentParticipantId = GetCurrentParticipantId();
 
                 var eventId = eventToApply.Id;
-                var participantId = applyingUser.Id;
 
-                var previousApplication = eventService.GetApplication(eventId, participantId);
-                var previousFollowing = eventService.GetFollowing(eventId, participantId);
+                var previousApplication = eventService.GetApplication(eventId, currentParticipantId);
+                var previousFollowing = eventService.GetFollowing(eventId, currentParticipantId);
 
                 if (previousFollowing is null && previousApplication is null)
                 {
-                    eventService.FollowEvent(eventId, participantId);
+                    eventService.FollowEvent(eventId, currentParticipantId);
                 }
 
                 if (previousApplication is null)
                 {
-                    eventService.ApplyToEvent(eventId, participantId, applyViewModel.ApplicationText);
+                    eventService.ApplyToEvent(eventId, currentParticipantId, applyViewModel.ApplicationText);
                 }
                 else
                 {
@@ -528,8 +567,8 @@ namespace Eventive.Controllers
                 return PartialView("_DetailsPartial", viewModel);
             }
 
-            var userId = userManager.GetUserId(User);
-            eventService.AddComment(userId, viewModel.NewCommentEventId, viewModel.NewCommentMessage);
+            var currentParticipantId = GetCurrentParticipantId();
+            eventService.AddComment(currentParticipantId, viewModel.NewCommentEventId, viewModel.NewCommentMessage);
             
             return PartialView("_DetailsPartial", viewModel);
         }
@@ -576,6 +615,12 @@ namespace Eventive.Controllers
             };
              
             return eventViewModel;
+        }
+
+        private Guid GetCurrentParticipantId()
+        {
+            var userId = userManager.GetUserId(User);
+            return userService.GetParticipantByUserId(userId).Id;
         }
     }
 }

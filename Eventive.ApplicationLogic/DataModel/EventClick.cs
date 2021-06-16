@@ -17,7 +17,7 @@ namespace Eventive.ApplicationLogic.DataModel
                 Id = Guid.NewGuid(),
                 EventOrganized = eventOrganized,
                 Participant = participant,
-                Timestamp = DateTime.Now
+                Timestamp = DateTime.UtcNow
             };
 
             return newInteraction;

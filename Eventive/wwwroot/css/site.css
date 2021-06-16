@@ -145,8 +145,25 @@ div.card.event {
     margin-left: 14rem
 }
 
-.search-bar {
-    height: 2.65rem;
+#searchLocationBar,
+#searchTitleBar,
+#selectpicker {
+    font-size: 1.2rem;
+}
+
+span.category-title {
+    line-height: 2.5rem;
+    font-size: 1.1rem;
+    margin-right: 1rem;
+    font-weight: 500;
+}
+
+select#selectpicker {
+    font-weight: 500;
+    border-radius: 3px;
+    line-height: 45px;
+    padding: 0 15px;
+    text-align: center;
 }
 
 .profile-image {
@@ -284,7 +301,6 @@ div.card.event {
         width: 100%;
     }
 }
-
 
 .card-img-parent {
     height: 50%;

@@ -38,15 +38,9 @@
         });
     });
 
-    function searchByCategory(category) {
-        if (category == '') {
-            $("#toSearch .card").show();
-        } else {
-            $("#toSearch .card").filter(function () {
-                $(this).toggle($(this).find('.event-category').text().indexOf(category) > -1)
-            });
-        }
-    }
+    $('#selectpicker').change(function () {
+        loadEvents();
+    });
 
     function rateEvent(eventId, score) {
         $.ajax({

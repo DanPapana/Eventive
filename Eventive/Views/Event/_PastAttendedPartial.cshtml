@@ -43,28 +43,30 @@
             </div>
             <div class="card-body d-flex flex-column">
                 <h5 class="card-title title">@oneEvent.Title</h5>
-                <div class="star-rating-text">Add your review:</div>
-                <div id="@oneEvent.Id" class="star-rating" value="@oneEvent.Rating">
-                    <input id="star-5" type="radio" name="rating" value="5" />
-                    <label for="star-5" title="5 stars">
-                        <i class="active fa fa-star" aria-hidden="true"></i>
-                    </label>
-                    <input id="star-4" type="radio" name="rating" value="4" />
-                    <label for="star-4" title="4 stars">
-                        <i class="active fa fa-star" aria-hidden="true"></i>
-                    </label>
-                    <input id="star-3" type="radio" name="rating" value="3" />
-                    <label for="star-3" title="3 stars">
-                        <i class="active fa fa-star" aria-hidden="true"></i>
-                    </label>
-                    <input id="star-2" type="radio" name="rating" value="2" />
-                    <label for="star-2" title="2 stars">
-                        <i class="active fa fa-star" aria-hidden="true"></i>
-                    </label>
-                    <input id="star-1" type="radio" name="rating" value="1" />
-                    <label for="star-1" title="1 star">
-                        <i class="active fa fa-star" aria-hidden="true"></i>
-                    </label>
+                <div class="mt-auto">
+                    <div class="star-rating-text">Add your review:</div>
+                    <div id="star-rating-@oneEvent.Id" class="star-rating" value="@oneEvent.Rating">
+                        <input onclick="rate('@oneEvent.Id')" id="star-5-@oneEvent.Id" type="radio" name="rating-@oneEvent.Id" value="5" />
+                        <label for="star-5-@oneEvent.Id" title="5 stars">
+                            <i class="active fa fa-star" aria-hidden="true"></i>
+                        </label>
+                        <input onclick="rate('@oneEvent.Id')" id="star-4-@oneEvent.Id" type="radio" name="rating-@oneEvent.Id" value="4" />
+                        <label for="star-4-@oneEvent.Id" title="4 stars">
+                            <i class="active fa fa-star" aria-hidden="true"></i>
+                        </label>
+                        <input onclick="rate('@oneEvent.Id')" id="star-3-@oneEvent.Id" type="radio" name="rating-@oneEvent.Id" value="3" />
+                        <label for="star-3-@oneEvent.Id" title="3 stars">
+                            <i class="active fa fa-star" aria-hidden="true"></i>
+                        </label>
+                        <input onclick="rate('@oneEvent.Id')" id="star-2-@oneEvent.Id" type="radio" name="rating-@oneEvent.Id" value="2" />
+                        <label for="star-2-@oneEvent.Id" title="2 stars">
+                            <i class="active fa fa-star" aria-hidden="true"></i>
+                        </label>
+                        <input onclick="rate('@oneEvent.Id')" id="star-1-@oneEvent.Id" type="radio" name="rating-@oneEvent.Id" value="1" />
+                        <label for="star-1-@oneEvent.Id" title="1 star">
+                            <i class="active fa fa-star" aria-hidden="true"></i>
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>
@@ -72,14 +74,26 @@
 </div>
 
 <script>
-    $(".star-rating input[name=rating]").click(function () {
-        var eventId = $('.star-rating').attr('id');
-        var score = $('input:radio[name=rating]:checked').val();
-        rateEvent(eventId, score);
-    });
+    function updateRatings() {
+        @foreach (var oneEvent in Model.EventViewModelList)
+        {
+            <text>
+                showRating('@oneEvent.Id');
+            </text>
+        }
+    }
 
     $(document).ready(function () {
-        var starRating = $('.star-rating').attr('value');
-        $("input[name=rating][value=" + starRating + "]").prop("checked", true);
+        updateRatings();
     });
+
+    function rate(eventId) {
+        var score = $("input:radio[name=rating-" + eventId + "]:checked").val();
+        rateEvent(eventId, score);
+    }
+
+    function showRating(eventId) {
+        var starRating = $('#star-rating-' + eventId).attr('value');
+        $("input[name=rating-" + eventId + "][value=" + starRating + "]").prop("checked", true);
+    }
 </script>

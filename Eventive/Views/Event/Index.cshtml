@@ -1,11 +1,23 @@
 ﻿@using System.Configuration;
 @using Eventive.Models.Events;
+@using Eventive.ApplicationLogic.DataModel;
 @model EventListViewModel;
 @{
     ViewData["Title"] = "Events";
 }
 
 <div class="d-flex justify-content-around m-xl-5">
+    <div class="col-3 mr-4 d-flex">
+        <span class="category-title">Category:</span>
+        <select id="selectpicker" class="form-select form-control">
+            <option value="">All</option>
+            @foreach (var category in Enum.GetValues(typeof(EventOrganized.EventCategory)))
+            {
+                <option value='@category'>@category</option>
+            }
+        </select>
+    </div>
+
     <input id="searchTitleBar" class="form-control search-bar col-3 mr-4" type="text" placeholder="Search by name" aria-label="Search">
     <input id="searchLocationBar" class="form-control search-bar col-3 mr-4" type="text" placeholder="Search by location" aria-label="Search">
 
@@ -20,22 +32,13 @@
 <div class="container">
     <ul class="nav nav-pills nav-justified">
         <li class="nav-item">
-            <a class="nav-link active" data-toggle="pill" onclick="searchByCategory('')">All</a>
+            <a class="nav-link active" data-toggle="pill" onclick="loadEvents()">All</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-toggle="pill" onclick="searchByCategory('Entertainment')">Entertainment</a>
+            <a class="nav-link" data-toggle="pill" onclick="loadRecommended()">Recommended</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-toggle="pill" onclick="searchByCategory('Education')">Education</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-toggle="pill" onclick="searchByCategory('Hangout')">Hangout</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-toggle="pill" onclick="searchByCategory('Networking')">Networking</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" data-toggle="pill" onclick="searchByCategory('Other')">Other</a>
+            <a class="nav-link" data-toggle="pill" onclick="loadTrending()">Trending</a>
         </li>
     </ul>
 </div>
@@ -61,7 +64,16 @@
         });
 
         function loadEvents() {
-            loadServerPartialView("#eventContainer", '@Url.Action("EventContainer", "Event")');
+            var category = $("#selectpicker").val();
+            loadServerPartialView("#eventContainer", '@Url.Action("EventContainer", "Event")' + "/" + category);
+        }
+
+        function loadTrending() {
+            loadServerPartialView("#eventContainer", '@Url.Action("TrendingContainer", "Event")');
+        }
+
+        function loadRecommended() {
+            loadServerPartialView("#eventContainer", '@Url.Action("RecommendedContainer", "Event")');
         }
 
         function modalFormComplete(modalName) {
@@ -71,10 +83,6 @@
         }
 
         function initializeGoogleApi() {
-            document.getElementById('cityLat').value = null;
-            document.getElementById('cityLong').value = null;
-            document.getElementById('isLocationValid').value = false;
-
             var input = document.getElementById('locationInput');
             var autocomplete = new google.maps.places.Autocomplete(input);
 

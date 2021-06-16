@@ -4,14 +4,16 @@ using Eventive.EFDataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Eventive.EFDataAccess.Migrations
 {
     [DbContext(typeof(EventManagerDbContext))]
-    partial class EventManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210615210324_Refactor")]
+    partial class Refactor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -89,9 +91,6 @@ namespace Eventive.EFDataAccess.Migrations
 
                     b.Property<Guid?>("ParticipantId")
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -179,9 +178,6 @@ namespace Eventive.EFDataAccess.Migrations
                     b.Property<Guid?>("ParticipantId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
 
                     b.HasIndex("EventOrganizedId");
@@ -233,9 +229,6 @@ namespace Eventive.EFDataAccess.Migrations
 
                     b.Property<int>("Score")
                         .HasColumnType("int");
-
-                    b.Property<DateTime>("Timestamp")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

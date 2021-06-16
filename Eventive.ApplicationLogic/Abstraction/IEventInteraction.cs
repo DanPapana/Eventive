@@ -8,5 +8,6 @@ namespace Eventive.ApplicationLogic.Abstraction
         Guid Id { get; set; }
         Participant Participant { get; set; }
         EventOrganized EventOrganized { get; set; }
+        DateTime Timestamp { get; set; }
     }
 }

@@ -9,6 +9,7 @@ namespace Eventive.ApplicationLogic.DataModel
         public EventOrganized EventOrganized { get; set; }
         public Participant Participant { get; set; }
         public int Score { get; set; }
+        public DateTime Timestamp { get; set; }
         
         public static EventRating Create(EventOrganized eventOrganized, Participant participant, int score = 3)
         {
@@ -17,7 +18,8 @@ namespace Eventive.ApplicationLogic.DataModel
                 Id = Guid.NewGuid(),
                 EventOrganized = eventOrganized,
                 Participant = participant,
-                Score = score
+                Score = score,
+                Timestamp = DateTime.UtcNow
             };
 
             return newRating;

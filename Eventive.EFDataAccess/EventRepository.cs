@@ -37,10 +37,16 @@ namespace Eventive.EFDataAccess
                     .AsEnumerable();
         }
 
-        public IEnumerable<EventOrganized> GetEventsByCategory(EventOrganized.EventCategory eventCategory)
+        public IEnumerable<EventOrganized> GetActiveEvents(EventOrganized.EventCategory eventCategory, Guid? participantId = null)
         {
             return dbContext.Events
-                    .Where(evnt => evnt.Category == eventCategory)
+                    .Include(evnt => evnt.EventDetails)
+                    .Include(evnt => evnt.Comments)
+                    .Where(evnt => evnt
+                    .EventDetails.Deadline > DateTime.Now
+                        && evnt.CreatorId != participantId
+                        && evnt.Category == eventCategory)
+                    .OrderBy(evnt => evnt.EventDetails.Deadline)
                     .AsEnumerable();
         }
 
@@ -82,7 +88,7 @@ namespace Eventive.EFDataAccess
                     .AsEnumerable();
         }
 
-        public IEnumerable<Comment> GetComments(Guid eventId)
+        public IEnumerable<Comment> GetEventComments(Guid eventId)
         {
             return dbContext.Comments
                     .Include(e => e.Participant)
@@ -166,9 +172,9 @@ namespace Eventive.EFDataAccess
         {
             List<Guid> followedEventIds = new List<Guid>();
 
-            var follows = GetUserFollowings(participantId);
+            var followings = GetUserFollowings(participantId);
 
-            foreach (IEventInteraction follow in follows)
+            foreach (IEventInteraction follow in followings)
             {
                 followedEventIds.Add(follow.EventOrganized.Id);
             }
@@ -194,11 +200,15 @@ namespace Eventive.EFDataAccess
 
             foreach (var pastEvent in allPastEvents)
             {
-                foreach (var application in pastEvent.Applications)
+                ///Wouldn't make sense for the organizer to rate his own event
+                if (pastEvent.CreatorId != participantId) 
                 {
-                    if (application.Participant.Id.Equals(participantId))
+                    foreach (var application in pastEvent.Applications)
                     {
-                        pastEventsList.Add(pastEvent);
+                        if (application.Participant.Id.Equals(participantId))
+                        {
+                            pastEventsList.Add(pastEvent);
+                        }
                     }
                 }
             }
@@ -313,6 +323,33 @@ namespace Eventive.EFDataAccess
         public void SaveChanges()
         {
             dbContext.SaveChanges();
+        }
+
+        public IEnumerable<EventApplication> GetEventApplications(Guid eventId)
+        {
+            return dbContext.Applications
+                    .Include(e => e.Participant)
+                    .Include(e => e.EventOrganized)
+                    .Where(e => e.EventOrganized.Id.Equals(eventId))
+                    .AsEnumerable();
+        }
+
+        public IEnumerable<EventFollowing> GetEventFollowings(Guid eventId)
+        {
+            return dbContext.Followings
+                    .Include(e => e.Participant)
+                    .Include(e => e.EventOrganized)
+                    .Where(e => e.EventOrganized.Id.Equals(eventId))
+                    .AsEnumerable();
+        }
+
+        public IEnumerable<EventClick> GetEventClicks(Guid eventId)
+        {
+            return dbContext.Clicks
+                    .Include(e => e.Participant)
+                    .Include(e => e.EventOrganized)
+                    .Where(e => e.EventOrganized.Id.Equals(eventId))
+                    .AsEnumerable();
         }
     }
 }

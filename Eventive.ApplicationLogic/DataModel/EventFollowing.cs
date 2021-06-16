@@ -8,6 +8,7 @@ namespace Eventive.ApplicationLogic.DataModel
         public Guid Id { get; set; }
         public Participant Participant { get; set; }
         public EventOrganized EventOrganized { get; set; }
+        public DateTime Timestamp { get; set; }
 
         public static EventFollowing Create(EventOrganized eventOrganized, Participant participant)
         {
@@ -15,7 +16,8 @@ namespace Eventive.ApplicationLogic.DataModel
             {
                 Id = Guid.NewGuid(),
                 EventOrganized = eventOrganized,
-                Participant = participant
+                Participant = participant,
+                Timestamp = DateTime.UtcNow
             };
 
             return newInteraction;

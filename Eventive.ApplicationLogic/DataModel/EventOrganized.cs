@@ -7,11 +7,23 @@ namespace Eventive.ApplicationLogic.DataModel
     {
         public enum EventCategory
         {
-            Education,
-            Entertainment,
+            Art,
+            Causes,
+            Comedy,
+            Crafts,
+            Dance,
+            Drinks,
+            Film,
+            Fitness,
+            Food,
+            Games,
+            Health,
+            Literature,
+            Music,
             Networking,
-            Hangout,
-            Other
+            Party,
+            Sports,
+            Theater
         }
 
         public Guid Id { get; set; }

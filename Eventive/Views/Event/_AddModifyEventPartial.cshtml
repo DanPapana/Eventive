@@ -37,7 +37,7 @@
             <label asp-for="Location"></label>
             <input value="" id="locationInput" asp-for="Location" type="text" class="form-control" />
             <span asp-validation-for="Location" class="text-danger"></span>
-            <input type="hidden" asp-for="IsLocationValid" id="isLocationValid" class="form-control" />
+            <input value="false" type="hidden" asp-for="IsLocationValid" id="isLocationValid" class="form-control" />
             <span asp-validation-for="IsLocationValid" class="text-danger"></span>
         </div>
     </div>
