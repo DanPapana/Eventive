@@ -3,6 +3,7 @@ using Eventive.ApplicationLogic.DataModel;
 using Eventive.ApplicationLogic.Exceptions;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using static Eventive.ApplicationLogic.DataModel.EventOrganized;
 
@@ -166,27 +167,31 @@ namespace Eventive.ApplicationLogic.Services
             return interactionCount * interactionWeight / (interactionDecay / (interactionCount + 1));
         }
 
-        public IEnumerable<EventOrganized> GetTrendingEvents(Guid? participantId = null)
+        private double GetTotalTrendingScoreForAnEvent(Guid eventId)
         {
-            IEnumerable<EventOrganized> events = GetActiveEvents(participantId);
+
+            double applicationWeight = double.Parse(ConfigurationManager.AppSettings.Get("EventApplicationWeight"));
+            double followWeight = double.Parse(ConfigurationManager.AppSettings.Get("EventFollowWeight"));
+            double commentWeight = double.Parse(ConfigurationManager.AppSettings.Get("EventCommentWeight"));
+            double clickWeight = double.Parse(ConfigurationManager.AppSettings.Get("EventClickWeight"));
+
+            var applicationScore = GetInteractionScore(GetEventApplications(eventId), applicationWeight);
+            var followingScore = GetInteractionScore(GetEventFollowings(eventId), followWeight);
+            var commentScore = GetInteractionScore(GetEventComments(eventId), commentWeight);
+            var clickScore = GetInteractionScore(GetEventClicks(eventId), clickWeight);
+
+            return applicationScore + followingScore + commentScore + clickScore;
+        }
+
+        private IEnumerable<EventOrganized> GetEventsOrderedByScore(IEnumerable<EventOrganized> eventsToScore)
+        {
             Dictionary<EventOrganized, double> eventScore = new Dictionary<EventOrganized, double>();
+            double maximumNumberOfTrendingEvents = double.Parse(ConfigurationManager.AppSettings.Get("NumberOfTrendingEventsShown"));
 
-            double applicationWeight = 3;
-            double followWeight = 2;
-            double clickWeight = 1;
-            double commentWeight = 1.5;
-            double numberOfTrendingEvents = 5;
-
-            foreach (EventOrganized eventOrganized in events)
+            foreach (EventOrganized eventOrganized in eventsToScore)
             {
-                var applicationScore = GetInteractionScore(GetEventApplications(eventOrganized.Id), applicationWeight);
-                var followingScore = GetInteractionScore(GetEventFollowings(eventOrganized.Id), followWeight);
-                var commentScore = GetInteractionScore(GetEventComments(eventOrganized.Id), commentWeight);
-                var clickScore = GetInteractionScore(GetEventClicks(eventOrganized.Id), clickWeight);
-
-                double totalScore = applicationScore + followingScore + commentScore + clickScore;
-
-                eventScore.Add(eventOrganized, totalScore);
+                double trendingScore = GetTotalTrendingScoreForAnEvent(eventOrganized.Id);
+                eventScore.Add(eventOrganized, trendingScore);
             }
 
             var orderedScores = eventScore
@@ -194,12 +199,28 @@ namespace Eventive.ApplicationLogic.Services
 
             List<EventOrganized> trendingEvents = new List<EventOrganized>();
 
-            for (int i = 0; i < numberOfTrendingEvents; i++)
+            if (maximumNumberOfTrendingEvents > orderedScores.Count())
+            {
+                maximumNumberOfTrendingEvents = orderedScores.Count();
+            }
+
+            for (int i = 0; i < maximumNumberOfTrendingEvents; i++)
             {
                 trendingEvents.Add(orderedScores.ElementAt(i).Key);
             }
 
             return trendingEvents.AsEnumerable();
+        }
+
+        public IEnumerable<EventOrganized> GetTrendingEvents(string category, Guid? participantId = null)
+        {
+            IEnumerable<EventOrganized> events = GetActiveEvents(category, participantId);
+            if (events.Count() > 0)
+            {
+                return GetEventsOrderedByScore(events);
+            }
+
+            return events;
         }
 
         public Comment AddComment(Guid creatorId, Guid eventId, string message)

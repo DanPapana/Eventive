@@ -455,6 +455,11 @@ div.modal-content {
     background-color: var(--nav-pills);
 }
 
+.nav-pills .nav-link {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
 div.container .form-check-label {
     margin-top: 0.5rem;
 }

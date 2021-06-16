@@ -39,7 +39,13 @@
     });
 
     $('#selectpicker').change(function () {
-        loadEvents();
+        if ($('.nav a.nav-link#loadRecommended').hasClass('active')) {
+            loadRecommended();
+        } else if ($('.nav a.nav-link#loadTrending').hasClass('active')) {
+            loadTrending();
+        } else {
+            loadEvents();
+        }
     });
 
     function rateEvent(eventId, score) {

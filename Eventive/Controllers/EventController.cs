@@ -10,15 +10,15 @@ namespace Eventive.Controllers
 {
     public class EventController : Controller
     {
-        private readonly BaseService baseService;
+        private readonly HelperService helperService;
         private readonly EventService eventService;
         private readonly UserService userService;
         private readonly UserManager<IdentityUser> userManager;
 
         public EventController(UserManager<IdentityUser> userManager, 
-            EventService eventService, UserService userService, BaseService baseService)
+            EventService eventService, UserService userService, HelperService helperService)
         {
-            this.baseService = baseService;
+            this.helperService = helperService;
             this.eventService = eventService;
             this.userService = userService;
             this.userManager = userManager;
@@ -65,7 +65,6 @@ namespace Eventive.Controllers
             return eventListViewModel;
         }
         
-        [HttpGet]
         public IActionResult EventContainer(string Id)
         {
             try
@@ -90,7 +89,7 @@ namespace Eventive.Controllers
             }
         }
 
-        public IActionResult TrendingContainer()
+        public IActionResult TrendingContainer(string Id)
         {
             try
             {
@@ -98,11 +97,11 @@ namespace Eventive.Controllers
                 if (User.Identity.IsAuthenticated)
                 {
                     var currentParticipantId = GetCurrentParticipantId();
-                    events = eventService.GetTrendingEvents(currentParticipantId);
+                    events = eventService.GetTrendingEvents(Id, currentParticipantId);
                 }
                 else
                 {
-                    events = eventService.GetTrendingEvents();
+                    events = eventService.GetTrendingEvents(Id);
                 }
 
                 var viewModel = GetEventListViewModel(events);
@@ -114,7 +113,7 @@ namespace Eventive.Controllers
             }
         }
 
-        public IActionResult RecommendedContainer()
+        public IActionResult RecommendedContainer(string Id)
         {
             try
             {
@@ -122,11 +121,11 @@ namespace Eventive.Controllers
                 if (User.Identity.IsAuthenticated)
                 {
                     var currentParticipantId = GetCurrentParticipantId();
-                    events = eventService.GetActiveEvents(currentParticipantId);
+                    events = eventService.GetActiveEvents(Id, currentParticipantId);
                 }
                 else
                 {
-                    events = eventService.GetActiveEvents();
+                    events = eventService.GetActiveEvents(Id);
                 }
 
                 var viewModel = GetEventListViewModel(events);
@@ -258,12 +257,12 @@ namespace Eventive.Controllers
 
             try
             {
-                string cityLongName = baseService.GetCityFromAddress(eventData.Location).Result;
+                string cityLongName = helperService.GetCityFromAddress(eventData.Location).Result;
 
                 string resultImage = string.Empty;
                 if (eventData.EventImage != null)
                 {
-                    resultImage = baseService.CompressImage(eventData.EventImage);
+                    resultImage = helperService.CompressImage(eventData.EventImage);
                 }
 
                 var currentParticipantId = GetCurrentParticipantId();
@@ -490,12 +489,12 @@ namespace Eventive.Controllers
             {
                 Guid.TryParse(updatedData.Id, out Guid eventGuid);
                 var eventToUpdate = eventService.GetEventById(eventGuid);
-                string cityLongName = baseService.GetCityFromAddress(updatedData.Location).Result;
+                string cityLongName = helperService.GetCityFromAddress(updatedData.Location).Result;
 
                 string image = string.Empty;
                 if (updatedData.EventImage != null)
                 {
-                    image = baseService.CompressImage(updatedData.EventImage);
+                    image = helperService.CompressImage(updatedData.EventImage);
                 }
 
                 eventService.UpdateEvent(eventToUpdate.Id,

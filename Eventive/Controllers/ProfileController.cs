@@ -12,13 +12,13 @@ namespace Eventive.Controllers
     public class ProfileController : Controller
     {
         private readonly UserService userService;
-        private readonly BaseService baseService;
+        private readonly HelperService helperService;
         private readonly UserManager<IdentityUser> userManager;
 
-        public ProfileController(UserManager<IdentityUser> userManager, UserService userService, BaseService baseService)
+        public ProfileController(UserManager<IdentityUser> userManager, UserService userService, HelperService helperService)
         {
             this.userManager = userManager;
-            this.baseService = baseService;
+            this.helperService = helperService;
             this.userService = userService;
         }
 
@@ -106,7 +106,7 @@ namespace Eventive.Controllers
                 string image = string.Empty;
                 if (updatedData.ProfileImage != null)
                 {
-                    image = baseService.CompressImage(updatedData.ProfileImage);
+                    image = helperService.CompressImage(updatedData.ProfileImage);
                 }
 
                 userService.UpdateParticipant(userToUpdate.Id,

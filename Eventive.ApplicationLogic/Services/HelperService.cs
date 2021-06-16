@@ -3,17 +3,16 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Processors.Transforms;
-using System.Configuration;
 using System;
+using System.Configuration;
 using System.IO;
-using System.Net;
-using System.Xml.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace Eventive.ApplicationLogic.Services
 {
-    public class BaseService
+    public class HelperService
     {
         public string CompressImage(IFormFile inputImage)
         {

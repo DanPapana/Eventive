@@ -29,16 +29,16 @@
     }
 </div>
 
-<div class="container">
+<div id="loadEventsContainer" class="container">
     <ul class="nav nav-pills nav-justified">
         <li class="nav-item">
             <a class="nav-link active" data-toggle="pill" onclick="loadEvents()">All</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-toggle="pill" onclick="loadRecommended()">Recommended</a>
+            <a class="nav-link" id="loadRecommended" data-toggle="pill" onclick="loadRecommended()">Recommended</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-toggle="pill" onclick="loadTrending()">Trending</a>
+            <a class="nav-link" id="loadTrending" data-toggle="pill" onclick="loadTrending()">Trending</a>
         </li>
     </ul>
 </div>
@@ -68,12 +68,14 @@
             loadServerPartialView("#eventContainer", '@Url.Action("EventContainer", "Event")' + "/" + category);
         }
 
-        function loadTrending() {
-            loadServerPartialView("#eventContainer", '@Url.Action("TrendingContainer", "Event")');
+        function loadRecommended() {
+            var category = $("#selectpicker").val();
+            loadServerPartialView("#eventContainer", '@Url.Action("RecommendedContainer", "Event")' + "/" + category);
         }
 
-        function loadRecommended() {
-            loadServerPartialView("#eventContainer", '@Url.Action("RecommendedContainer", "Event")');
+        function loadTrending() {
+            var category = $("#selectpicker").val();
+            loadServerPartialView("#eventContainer", '@Url.Action("TrendingContainer", "Event")' + "/" + category);
         }
 
         function modalFormComplete(modalName) {
