@@ -76,6 +76,7 @@ namespace Eventive.EFDataAccess
                     .Include(e => e.Participant)
                     .Include(e => e.EventOrganized)
                     .Where(app => app.Participant.Id == participantId)
+                    .OrderBy(evnt => evnt.EventOrganized.EventDetails.Deadline)
                     .AsEnumerable();
         }
 
@@ -85,6 +86,7 @@ namespace Eventive.EFDataAccess
                     .Include(e => e.Participant)
                     .Include(e => e.EventOrganized)
                     .Where(follow => follow.Participant.Id == participantId)
+                    .OrderBy(evnt => evnt.EventOrganized.EventDetails.Deadline)
                     .AsEnumerable();
         }
 
@@ -95,6 +97,7 @@ namespace Eventive.EFDataAccess
                     .ThenInclude(e => e.ContactDetails)
                     .Include(e => e.EventOrganized)
                     .Where(e => e.EventOrganized.Id.Equals(eventId))
+                    .OrderBy(e => e.Timestamp)
                     .AsEnumerable();
         }
 
@@ -135,10 +138,7 @@ namespace Eventive.EFDataAccess
             foreach (EventApplication application in applications)
             {
                 var eventApplied = GetEventById(application.EventOrganized.Id);
-                if (eventApplied.CreatorId != participantId)
-                {
-                    appliedEvents.Add(eventApplied);
-                }
+                appliedEvents.Add(eventApplied);
             }
 
             return appliedEvents.AsEnumerable();
@@ -153,10 +153,7 @@ namespace Eventive.EFDataAccess
             foreach (EventFollowing follow in followings)
             {
                 var eventFollowed = GetEventById(follow.EventOrganized.Id);
-                if (eventFollowed.CreatorId != participantId)
-                {
-                    followedEvents.Add(eventFollowed);
-                }
+                followedEvents.Add(eventFollowed);
             }
 
             return followedEvents.AsEnumerable();
@@ -199,24 +196,20 @@ namespace Eventive.EFDataAccess
                     .Include(evnt => evnt.Applications)
                     .ThenInclude(app => app.Participant)
                     .Where(evnt => evnt
-                        .EventDetails.Deadline < DateTime.UtcNow
+                        .EventDetails.OccurenceDate < DateTime.UtcNow
                         && evnt.Applications.Count > 0)
-                    .OrderBy(evnt => evnt.EventDetails.Deadline)
+                    .OrderBy(evnt => evnt.EventDetails.OccurenceDate)
                     .AsEnumerable();
 
             List<EventOrganized> pastEventsList = new List<EventOrganized>();
 
             foreach (var pastEvent in allPastEvents)
             {
-                ///Wouldn't make sense for the organizer to rate his own event
-                if (pastEvent.CreatorId != participantId) 
+                foreach (var application in pastEvent.Applications)
                 {
-                    foreach (var application in pastEvent.Applications)
+                    if (application.Participant.Id.Equals(participantId))
                     {
-                        if (application.Participant.Id.Equals(participantId))
-                        {
-                            pastEventsList.Add(pastEvent);
-                        }
+                        pastEventsList.Add(pastEvent);
                     }
                 }
             }

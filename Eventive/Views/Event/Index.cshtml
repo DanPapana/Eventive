@@ -18,8 +18,8 @@
         </select>
     </div>
 
-    <input id="searchTitleBar" class="form-control search-bar col-3 mr-4" type="text" placeholder="Search by name" aria-label="Search">
-    <input id="searchLocationBar" class="form-control search-bar col-3 mr-4" type="text" placeholder="Search by location" aria-label="Search">
+    <input id="searchTitleBar" class="form-control search-bar col-3 mr-4" type="text" placeholder="Filter by name" aria-label="Search">
+    <input id="searchLocationBar" class="form-control search-bar col-3 mr-4" type="text" placeholder="Filter by location" aria-label="Search">
 
     @if (User.Identity.IsAuthenticated)
     {
@@ -96,9 +96,25 @@
             loadServerPartialView("#eventContainer", '@Url.Action("TrendingContainer", "Event")?category=' + category);
         }
 
+        $('#selectpicker').change(function () {
+            if ($('.nav a.nav-link#loadRecommended').hasClass('active')) {
+                loadRecommended();
+            } else if ($('.nav a.nav-link#loadTrending').hasClass('active')) {
+                loadTrending();
+            } else {
+                loadEvents();
+            }
+        });
+
         function modalFormComplete(modalName) {
-            $(modalName).modal("hide");
+            hideModal(modalName);
             loadEvents();
+        }
+
+        function editModalFormComplete(modalName) {
+            hideModal(modalName);
+            loadEvents();
+            initializeGoogleApi();
         }
     </script>
 }

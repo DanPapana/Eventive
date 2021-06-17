@@ -243,15 +243,15 @@ namespace Eventive.Controllers
         [HttpGet]
         public IActionResult NewEvent()
         {
-            return PartialView("_AddModifyEventPartial", new AddModifyEventViewModel());
+            return PartialView("_AddEventPartial", new AddEventViewModel());
         }
 
         [HttpPost]
-        public IActionResult NewEvent([FromForm]AddModifyEventViewModel eventData)
+        public IActionResult NewEvent([FromForm]AddEventViewModel eventData)
         {
             if (!ModelState.IsValid || eventData is null)
             {
-                return PartialView("_AddModifyEventPartial", eventData);
+                return PartialView("_AddEventPartial", eventData);
             }
 
             try
@@ -283,10 +283,7 @@ namespace Eventive.Controllers
                                        resultImage,
                                        details);
 
-                ///The organizing user becomes a participant by default
-                eventService.ApplyToEvent(createdEvent.Id, currentParticipantId);
-
-                return PartialView("_AddModifyEventPartial", eventData);
+                return PartialView("_AddEventPartial", eventData);
             }
             catch (Exception e)
             {
@@ -454,7 +451,7 @@ namespace Eventive.Controllers
                 Guid.TryParse(id, out Guid eventGuid);
                 var eventToUpdate = eventService.GetEventById(eventGuid);
 
-                var editEventViewModel = new AddModifyEventViewModel()
+                var editEventViewModel = new ModifyEventViewModel()
                 {
                     Id = id,
                     Title = eventToUpdate.Title,
@@ -465,10 +462,12 @@ namespace Eventive.Controllers
                     EventDescription = eventToUpdate.EventDetails.Description,
                     MaximumParticipants = eventToUpdate.EventDetails.MaximumParticipantNo,
                     ParticipationFee = eventToUpdate.EventDetails.ParticipationFee,
-                    ApplicationRequired = eventToUpdate.EventDetails.ApplicationRequired
+                    ApplicationRequired = eventToUpdate.EventDetails.ApplicationRequired,
+                    CityLat = (double)eventToUpdate.EventDetails.Latitude,
+                    CityLong = (double)eventToUpdate.EventDetails.Longitude
                 };
 
-                return PartialView("_AddModifyEventPartial", editEventViewModel);
+                return PartialView("_ModifyEventPartial", editEventViewModel);
             }
             catch (Exception e)
             {
@@ -477,11 +476,11 @@ namespace Eventive.Controllers
         }
 
         [HttpPost]
-        public IActionResult Edit([FromForm] AddModifyEventViewModel updatedData)
+        public IActionResult Edit([FromForm] ModifyEventViewModel updatedData)
         {
             if (!ModelState.IsValid)
             {
-                return PartialView("_AddModifyEventPartial", new AddModifyEventViewModel());
+                return PartialView("_ModifyEventPartial", new ModifyEventViewModel());
             }
 
             try
@@ -511,7 +510,7 @@ namespace Eventive.Controllers
                                         updatedData.ParticipationFee,
                                         updatedData.ApplicationRequired);
 
-                return PartialView("_AddModifyEventPartial", updatedData);
+                return PartialView("_ModifyEventPartial", updatedData);
             }
             catch (Exception e)
             {

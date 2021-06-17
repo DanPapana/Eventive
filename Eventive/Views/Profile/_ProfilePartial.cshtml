@@ -28,14 +28,14 @@
                                         @if (!string.IsNullOrEmpty(Model.City) && !string.IsNullOrEmpty(Model.Country))
                                         {
                                             <span>, </span>
-                                        } 
+                                        }
                                         @if (!string.IsNullOrEmpty(Model.Country))
                                         {
                                             @Model.Country
                                         }
                                     </p>
                                 }
-                                <button class="btn btn-outline-primary">Message</button>
+                                <a href="#" class="btn btn-outline-primary" onclick="LoadEditProfile('@Model.Id')" data-toggle="modal" data-target="#editProfileModal">Edit</a>
                             </div>
                         </div>
                     </div>
@@ -129,11 +129,6 @@
                             </div>
                             <hr />
                         }
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <a href="#" class="btn btn-primary" onclick="LoadEditProfile('@Model.Id')" data-toggle="modal" data-target="#editProfileModal">Edit</a>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

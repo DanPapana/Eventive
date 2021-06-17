@@ -7,20 +7,32 @@
 <div class="mt-4">
     <div id="profileContainer"></div>
 
+    <div class="d-flex justify-content-around m-xl-5">
+        <input id="searchTitleBar" class="form-control search-bar col-3 mr-4" type="text" placeholder="Filter by name" aria-label="Search">
+        <input id="searchLocationBar" class="form-control search-bar col-3 mr-4" type="text" placeholder="Filter by location" aria-label="Search">
+
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div>
+                <button class="btn createButton ml-3" data-toggle="modal" data-target="#newEventModal">Create</button>
+            </div>
+        }
+    </div>
+
     <hr />
 
     <ul class="nav nav-pills nav-justified">
         <li class="nav-item">
-            <a class="nav-link active" data-toggle="pill" onclick="loadCreatedEvents()">Created Events</a>
+            <a class="nav-link active" id="loadCreated" data-toggle="pill" onclick="loadCreatedEvents()">Created Events</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-toggle="pill" onclick="loadAppliedEvents()">Applied Events</a>
+            <a class="nav-link" id="loadApplied" data-toggle="pill" onclick="loadAppliedEvents()">Applied Events</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-toggle="pill" onclick="loadFollowingEvents()">Following Events</a>
+            <a class="nav-link" id="loadFollowing" data-toggle="pill" onclick="loadFollowingEvents()">Following Events</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-toggle="pill" onclick="loadPastEvents()">Past Events</a>
+            <a class="nav-link" id="loadPast" data-toggle="pill" onclick="loadPastEvents()">Past Events</a>
         </li>
     </ul>
 </div>
@@ -82,13 +94,42 @@
         }
 
         function modalFormComplete(modalName) {
-            $(modalName).modal("hide");
+            hideModal(modalName);
             loadCreatedEvents();
+        }
+
+        function editModalFormComplete(modalName) {
+            hideModal(modalName);
+            loadCreatedEvents();
+            initializeGoogleApi();
         }
 
         function updateProfileComplete(modalName) {
             $(modalName).modal("hide");
             loadProfile();
+        }
+
+        function loadCreatedEvents() {
+            if (!$('.nav a.nav-link#loadCreated').hasClass('active')) {
+                $('.nav a.nav-link#loadCreated').addClass('active');
+            }
+            $('.nav a.nav-link#loadApplied').removeClass('active');
+            $('.nav a.nav-link#loadFollowing').removeClass('active');
+            $('.nav a.nav-link#loadPast').removeClass('active');
+
+            loadServerPartialView("#eventsContainer", '@Url.Action("CreatedEvents", "Event")');
+        }
+
+        function loadAppliedEvents() {
+            loadServerPartialView("#eventsContainer", '@Url.Action("AppliedEvents", "Event")');
+        }
+
+        function loadFollowingEvents() {
+            loadServerPartialView("#eventsContainer", '@Url.Action("FollowingEvents", "Event")');
+        }
+
+        function loadPastEvents() {
+            loadServerPartialView("#eventsContainer", '@Url.Action("PastEvents", "Event")');
         }
     </script>
 }

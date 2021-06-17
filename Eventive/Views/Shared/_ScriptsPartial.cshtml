@@ -38,16 +38,6 @@
         });
     });
 
-    $('#selectpicker').change(function () {
-        if ($('.nav a.nav-link#loadRecommended').hasClass('active')) {
-            loadRecommended();
-        } else if ($('.nav a.nav-link#loadTrending').hasClass('active')) {
-            loadTrending();
-        } else {
-            loadEvents();
-        }
-    });
-
     function rateEvent(eventId, score) {
         $.ajax({
             url: "/Event/Rate?eventId=" + eventId + "&score=" + score,
@@ -76,22 +66,6 @@
         applyToEvent(response.Id);
     }
 
-    function loadCreatedEvents() {
-        loadServerPartialView("#eventsContainer", '@Url.Action("CreatedEvents", "Event")');
-    }
-
-    function loadAppliedEvents() {
-        loadServerPartialView("#eventsContainer", '@Url.Action("AppliedEvents", "Event")');
-    }
-
-    function loadFollowingEvents() {
-        loadServerPartialView("#eventsContainer", '@Url.Action("FollowingEvents", "Event")');
-    }
-
-    function loadPastEvents() {
-        loadServerPartialView("#eventsContainer", '@Url.Action("PastEvents", "Event")');
-    }
-
     function initializeGoogleApi() {
         var input = document.getElementById('locationInput');
         var autocomplete = new google.maps.places.Autocomplete(input);
@@ -104,13 +78,12 @@
         });
     }
 
+    function hideModal(modalName) {
+        $(modalName).modal("hide");
+        $('form .form-event-description').val("");
+    }
+
     $("#locationInput").keydown(function () {
         document.getElementById('isLocationValid').value = false;
     });
-
-    function editModalFormComplete(modalName) {
-        $(modalName).modal("hide");
-        loadEvents();
-        initializeGoogleApi();
-    }
 </script>

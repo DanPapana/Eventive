@@ -1,17 +1,17 @@
 ﻿@using Eventive.Models.Events;
 @using Eventive.ApplicationLogic.DataModel;
-@model AddModifyEventViewModel;
+@model ModifyEventViewModel;
 
 <input type="hidden" asp-for="Id" />
-<input value="" type="hidden" asp-for="CityLat" id="cityLat" />
-<input value="" type="hidden" asp-for="CityLong" id="cityLong" />
+<input type="hidden" asp-for="CityLat" id="cityLat" />
+<input type="hidden" asp-for="CityLong" id="cityLong" />
 
 <div class="d-flex justify-content-center">
     <div class="container w-50">
         <div class="d-flex justify-content-center form-title">Required:</div>
         <div class="form-group">
             <label asp-for="Title"></label>
-            <input value="" asp-for="Title" type="text" class="form-control" />
+            <input asp-for="Title" type="text" class="form-control" />
             <span asp-validation-for="Title" class="text-danger"></span>
         </div>
 
@@ -23,22 +23,20 @@
 
         <div class="form-group">
             <label asp-for="Deadline"></label>
-            <input value="@DateTime.Now.ToString("s")" asp-for="Deadline" type="datetime-local" class="form-control" />
+            <input asp-for="Deadline" type="datetime-local" class="form-control" />
             <span asp-validation-for="Deadline" class="text-danger"></span>
         </div>
 
         <div class="form-group">
             <label asp-for="OccurenceDate"></label>
-            <input value="@DateTime.Now.ToString("s")" asp-for="OccurenceDate" type="datetime-local" class="form-control" />
+            <input asp-for="OccurenceDate" type="datetime-local" class="form-control" />
             <span asp-validation-for="OccurenceDate" class="text-danger"></span>
         </div>
 
         <div class="form-group">
             <label asp-for="Location"></label>
-            <input value="" id="locationInput" asp-for="Location" type="text" class="form-control" />
+            <input id="locationInput" asp-for="Location" type="text" class="form-control" />
             <span asp-validation-for="Location" class="text-danger"></span>
-            <input value="false" type="hidden" asp-for="IsLocationValid" id="isLocationValid" class="form-control" />
-            <span asp-validation-for="IsLocationValid" class="text-danger"></span>
         </div>
     </div>
 

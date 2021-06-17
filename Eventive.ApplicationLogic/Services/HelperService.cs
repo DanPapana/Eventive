@@ -83,22 +83,5 @@ namespace Eventive.ApplicationLogic.Services
             }
             return null;
         }
-
-        public static async Task<Location> GetCurrentUserLocationAsync()
-        {
-            string apiKey = ConfigurationManager.AppSettings.Get("GOOGLE_API_KEY");
-            string requestUri = string.Format("https://www.googleapis.com/geolocation/v1/geolocate?key={0}", apiKey);
-
-            using var client = new HttpClient();
-            var request = await client.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead);
-
-            if (request.IsSuccessStatusCode && request.Content.Headers.ContentType.MediaType == "application/json")
-            {
-                var responseObject = request.Content.ReadAsAsync<GeolocationResponse>();
-                return responseObject.Result.Location;
-            }
-
-            return null;
-        }
     }
 }

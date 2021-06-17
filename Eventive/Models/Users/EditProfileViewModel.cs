@@ -32,7 +32,7 @@ namespace Eventive.Models.Users
         [Display(Name = "Phone number")]
         public string PhoneNo { get; set; }
 
-        [Display(Name = "Link to your social media")]
+        [Display(Name = "Link to a social media account")]
         public string LinkToSocialM { get; set; }
     }
 }
