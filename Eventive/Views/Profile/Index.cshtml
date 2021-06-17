@@ -1,4 +1,5 @@
-﻿@using Eventive.Models.Users;
+﻿@using System.Configuration;
+@using Eventive.Models.Users;
 @{
     ViewData["Title"] = "Profile";
 }
@@ -55,20 +56,28 @@
 </form>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    @{
+        string apiKey = ConfigurationManager.AppSettings.Get("GOOGLE_API_KEY");
+        string scriptUrl = string.Format("https://maps.googleapis.com/maps/api/js?key={0}&libraries=places", apiKey);
+
+        <script src="@scriptUrl"></script>
+    }
+
     <partial name="_ScriptsPartial" />
+    <partial name="_ValidationScriptsPartial" />
 
     <script>
         $(document).ready(function () {
             loadProfile();
             loadCreatedEvents();
+            initializeGoogleApi();
         });
 
         function loadProfile() {
             loadServerPartialView("#profileContainer", '@Url.Action("GetProfile", "Profile")');
         }
 
-        function LoadEditProfile(Id) {
+        function LoadEditProfile() {
             loadServerPartialView("#editProfileBody", '@Url.Action("EditProfile", "Profile")');
         }
 

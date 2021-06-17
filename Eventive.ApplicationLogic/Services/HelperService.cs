@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Eventive.ApplicationLogic.DataModel;
+using Eventive.ApplicationLogic.Dtos;
+using Microsoft.AspNetCore.Http;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Processing.Processors.Transforms;
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Net.Http;
@@ -12,9 +15,9 @@ using System.Xml.Linq;
 
 namespace Eventive.ApplicationLogic.Services
 {
-    public class HelperService
+    public static class HelperService
     {
-        public string CompressImage(IFormFile inputImage)
+        public static string CompressImage(IFormFile inputImage)
         {
             using var memoryStream = new MemoryStream();
 
@@ -50,7 +53,7 @@ namespace Eventive.ApplicationLogic.Services
             return Convert.ToBase64String(memoryStream.ToArray());
         }
 
-        public async Task<string> GetCityFromAddress(string address)
+        public static async Task<string> GetCityFromAddress(string address)
         {
             string apiKey = ConfigurationManager.AppSettings.Get("GOOGLE_API_KEY");
             string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", Uri.EscapeDataString(address), apiKey);
@@ -78,6 +81,23 @@ namespace Eventive.ApplicationLogic.Services
                     }
                 }
             }
+            return null;
+        }
+
+        public static async Task<Location> GetCurrentUserLocationAsync()
+        {
+            string apiKey = ConfigurationManager.AppSettings.Get("GOOGLE_API_KEY");
+            string requestUri = string.Format("https://www.googleapis.com/geolocation/v1/geolocate?key={0}", apiKey);
+
+            using var client = new HttpClient();
+            var request = await client.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead);
+
+            if (request.IsSuccessStatusCode && request.Content.Headers.ContentType.MediaType == "application/json")
+            {
+                var responseObject = request.Content.ReadAsAsync<GeolocationResponse>();
+                return responseObject.Result.Location;
+            }
+
             return null;
         }
     }

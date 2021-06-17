@@ -91,4 +91,26 @@
     function loadPastEvents() {
         loadServerPartialView("#eventsContainer", '@Url.Action("PastEvents", "Event")');
     }
+
+    function initializeGoogleApi() {
+        var input = document.getElementById('locationInput');
+        var autocomplete = new google.maps.places.Autocomplete(input);
+
+        google.maps.event.addListener(autocomplete, 'place_changed', function () {
+            document.getElementById('isLocationValid').value = true;
+            var place = autocomplete.getPlace();
+            document.getElementById('cityLat').value = place.geometry.location.lat();
+            document.getElementById('cityLong').value = place.geometry.location.lng();
+        });
+    }
+
+    $("#locationInput").keydown(function () {
+        document.getElementById('isLocationValid').value = false;
+    });
+
+    function editModalFormComplete(modalName) {
+        $(modalName).modal("hide");
+        loadEvents();
+        initializeGoogleApi();
+    }
 </script>

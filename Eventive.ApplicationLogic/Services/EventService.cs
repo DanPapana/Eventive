@@ -1,10 +1,13 @@
 ﻿using Eventive.ApplicationLogic.Abstraction;
 using Eventive.ApplicationLogic.DataModel;
+using Eventive.ApplicationLogic.Dtos;
 using Eventive.ApplicationLogic.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using static Eventive.ApplicationLogic.DataModel.EventOrganized;
 
 namespace Eventive.ApplicationLogic.Services
@@ -170,10 +173,10 @@ namespace Eventive.ApplicationLogic.Services
         private double GetTotalTrendingScoreForAnEvent(Guid eventId)
         {
 
-            double applicationWeight = double.Parse(ConfigurationManager.AppSettings.Get("EventApplicationWeight"));
-            double followWeight = double.Parse(ConfigurationManager.AppSettings.Get("EventFollowWeight"));
-            double commentWeight = double.Parse(ConfigurationManager.AppSettings.Get("EventCommentWeight"));
-            double clickWeight = double.Parse(ConfigurationManager.AppSettings.Get("EventClickWeight"));
+            double applicationWeight = double.Parse(ConfigurationManager.AppSettings.Get("TrendingApplicationWeight"));
+            double followWeight = double.Parse(ConfigurationManager.AppSettings.Get("TrendingFollowWeight"));
+            double commentWeight = double.Parse(ConfigurationManager.AppSettings.Get("TrendingCommentWeight"));
+            double clickWeight = double.Parse(ConfigurationManager.AppSettings.Get("TrendingClickWeight"));
 
             var applicationScore = GetInteractionScore(GetEventApplications(eventId), applicationWeight);
             var followingScore = GetInteractionScore(GetEventFollowings(eventId), followWeight);
@@ -221,6 +224,48 @@ namespace Eventive.ApplicationLogic.Services
             }
 
             return events;
+        }
+
+        /*
+         * Calculate a score from 0.0 to 1.0
+         * 1.0 meaning the distance from the user's current location is 0
+         * 0.0 meaning the distance is > 1000 km 
+         */
+        public async Task<double> GetEventProximityScoreForUserAsync(string category, Guid participantId, string latitude, string longitude)
+        {
+            double defaultScore = 0.5;
+            if (string.IsNullOrEmpty(latitude) || string.IsNullOrEmpty(longitude))
+            {
+                return defaultScore;
+            }
+
+            double userLatitude = Convert.ToDouble(latitude);
+            double userLongitude = Convert.ToDouble(longitude);
+            Dictionary<EventOrganized, double> distanceToEventInMeters = new Dictionary<EventOrganized, double>();
+
+            IEnumerable<EventOrganized> events = GetActiveEvents(category, participantId);
+            string destinations = string.Empty;
+            foreach (var eventOrganized in events)
+            {
+                destinations += string.Format("{0},{1}|", eventOrganized.EventDetails.Latitude, eventOrganized.EventDetails.Longitude);
+            }
+
+            if (!string.IsNullOrEmpty(destinations))
+            {
+                string apiKey = ConfigurationManager.AppSettings.Get("GOOGLE_API_KEY");
+                string requestUri = string.Format("https://maps.googleapis.com/maps/api/distancematrix/json?origins={0},{1}&destinations={2}&key={3}",
+                    userLatitude, userLongitude, destinations, apiKey);
+
+                using var client = new HttpClient();
+                var request = await client.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead);
+
+                if (request.IsSuccessStatusCode && request.Content.Headers.ContentType.MediaType == "application/json")
+                {
+                    var responseObject = request.Content.ReadAsAsync<DistanceResponse>();
+                }
+            }
+
+            return 2;
         }
 
         public Comment AddComment(Guid creatorId, Guid eventId, string message)

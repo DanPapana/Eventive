@@ -36,7 +36,7 @@
 <form enctype="multipart/form-data" method="post" asp-controller="Event" asp-action="NewEvent"
       data-ajax="true"
       data-ajax-method="POST"
-      data-ajax-complete="modalFormComplete('#newEventModal')"
+      data-ajax-complete="editModalFormComplete('#newEventModal')"
       data-ajax-mode="replace"
       data-ajax-update="#newEventBody">
 
@@ -65,7 +65,7 @@
 <form enctype="multipart/form-data" method="post" asp-controller="Event" asp-action="Edit"
       data-ajax="true"
       data-ajax-method="POST"
-      data-ajax-complete="modalFormComplete('#editEventModal')"
+      data-ajax-complete="editModalFormComplete('#editEventModal')"
       data-ajax-mode="replace"
       data-ajax-update="#editEventBody">
 

@@ -34,9 +34,12 @@
         <li class="nav-item">
             <a class="nav-link active" data-toggle="pill" onclick="loadEvents()">All</a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link" id="loadRecommended" data-toggle="pill" onclick="loadRecommended()">Recommended</a>
-        </li>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <li class="nav-item">
+                <a class="nav-link" id="loadRecommended" data-toggle="pill" onclick="loadRecommended()">Recommended</a>
+            </li>
+        }
         <li class="nav-item">
             <a class="nav-link" id="loadTrending" data-toggle="pill" onclick="loadTrending()">Trending</a>
         </li>
@@ -61,45 +64,41 @@
     <script>
         $(document).ready(function () {
             loadEvents();
+            initializeGoogleApi();
         });
 
         function loadEvents() {
             var category = $("#selectpicker").val();
-            loadServerPartialView("#eventContainer", '@Url.Action("EventContainer", "Event")' + "/" + category);
+            loadServerPartialView("#eventContainer", '@Url.Action("EventContainer", "Event")?category=' + category);
         }
 
         function loadRecommended() {
             var category = $("#selectpicker").val();
-            loadServerPartialView("#eventContainer", '@Url.Action("RecommendedContainer", "Event")' + "/" + category);
+            var latitude = null;
+            var longitude = null;
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(success, error);
+                function success(position) {
+                    latitude = position.coords.latitude;
+                    longitude = position.coords.longitude;
+                    loadServerPartialView("#eventContainer", '@Url.Action("RecommendedContainer", "Event")?category=' + category + "&lat=" + latitude + "&lng=" + longitude);
+                }
+
+                function error() {
+                    loadServerPartialView("#eventContainer", '@Url.Action("RecommendedContainer", "Event")?category=' + category);
+                }
+            }
         }
 
         function loadTrending() {
             var category = $("#selectpicker").val();
-            loadServerPartialView("#eventContainer", '@Url.Action("TrendingContainer", "Event")' + "/" + category);
+            loadServerPartialView("#eventContainer", '@Url.Action("TrendingContainer", "Event")?category=' + category);
         }
 
         function modalFormComplete(modalName) {
             $(modalName).modal("hide");
             loadEvents();
-            initializeGoogleApi();
         }
-
-        function initializeGoogleApi() {
-            var input = document.getElementById('locationInput');
-            var autocomplete = new google.maps.places.Autocomplete(input);
-
-            google.maps.event.addListener(autocomplete, 'place_changed', function () {
-                document.getElementById('isLocationValid').value = true;
-                var place = autocomplete.getPlace();
-                document.getElementById('cityLat').value = place.geometry.location.lat();
-                document.getElementById('cityLong').value = place.geometry.location.lng();
-            });
-        }
-
-        google.maps.event.addDomListener(window, 'load', initializeGoogleApi);
-
-        $("#locationInput").keydown(function () {
-            document.getElementById('isLocationValid').value = false;
-        });
     </script>
 }

@@ -10,15 +10,13 @@ namespace Eventive.Controllers
 {
     public class EventController : Controller
     {
-        private readonly HelperService helperService;
         private readonly EventService eventService;
         private readonly UserService userService;
         private readonly UserManager<IdentityUser> userManager;
 
         public EventController(UserManager<IdentityUser> userManager, 
-            EventService eventService, UserService userService, HelperService helperService)
+            EventService eventService, UserService userService)
         {
-            this.helperService = helperService;
             this.eventService = eventService;
             this.userService = userService;
             this.userManager = userManager;
@@ -65,7 +63,7 @@ namespace Eventive.Controllers
             return eventListViewModel;
         }
         
-        public IActionResult EventContainer(string Id)
+        public IActionResult EventContainer(string category)
         {
             try
             {
@@ -73,11 +71,11 @@ namespace Eventive.Controllers
                 if (User.Identity.IsAuthenticated)
                 {
                     var currentParticipantId = GetCurrentParticipantId();
-                    events = eventService.GetActiveEvents(Id, currentParticipantId);
+                    events = eventService.GetActiveEvents(category, currentParticipantId);
                 } 
                 else
                 {
-                    events = eventService.GetActiveEvents(Id);
+                    events = eventService.GetActiveEvents(category);
                 }
 
                 var viewModel = GetEventListViewModel(events);
@@ -89,7 +87,7 @@ namespace Eventive.Controllers
             }
         }
 
-        public IActionResult TrendingContainer(string Id)
+        public IActionResult TrendingContainer(string category)
         {
             try
             {
@@ -97,11 +95,11 @@ namespace Eventive.Controllers
                 if (User.Identity.IsAuthenticated)
                 {
                     var currentParticipantId = GetCurrentParticipantId();
-                    events = eventService.GetTrendingEvents(Id, currentParticipantId);
+                    events = eventService.GetTrendingEvents(category, currentParticipantId);
                 }
                 else
                 {
-                    events = eventService.GetTrendingEvents(Id);
+                    events = eventService.GetTrendingEvents(category);
                 }
 
                 var viewModel = GetEventListViewModel(events);
@@ -113,7 +111,7 @@ namespace Eventive.Controllers
             }
         }
 
-        public IActionResult RecommendedContainer(string Id)
+        public IActionResult RecommendedContainer(string category, string lat = null, string lng = null)
         {
             try
             {
@@ -121,11 +119,12 @@ namespace Eventive.Controllers
                 if (User.Identity.IsAuthenticated)
                 {
                     var currentParticipantId = GetCurrentParticipantId();
-                    events = eventService.GetActiveEvents(Id, currentParticipantId);
+                    events = eventService.GetActiveEvents(category, currentParticipantId);
+                    var proximityScore = eventService.GetEventProximityScoreForUserAsync(category, currentParticipantId, lat, lng);
                 }
                 else
                 {
-                    events = eventService.GetActiveEvents(Id);
+                    events = eventService.GetActiveEvents(category);
                 }
 
                 var viewModel = GetEventListViewModel(events);
@@ -250,19 +249,19 @@ namespace Eventive.Controllers
         [HttpPost]
         public IActionResult NewEvent([FromForm]AddModifyEventViewModel eventData)
         {
-            if (!ModelState.IsValid || eventData is null || eventData.Deadline == null)
+            if (!ModelState.IsValid || eventData is null)
             {
                 return PartialView("_AddModifyEventPartial", eventData);
             }
 
             try
             {
-                string cityLongName = helperService.GetCityFromAddress(eventData.Location).Result;
+                string cityLongName = HelperService.GetCityFromAddress(eventData.Location).Result;
 
                 string resultImage = string.Empty;
                 if (eventData.EventImage != null)
                 {
-                    resultImage = helperService.CompressImage(eventData.EventImage);
+                    resultImage = HelperService.CompressImage(eventData.EventImage);
                 }
 
                 var currentParticipantId = GetCurrentParticipantId();
@@ -489,12 +488,12 @@ namespace Eventive.Controllers
             {
                 Guid.TryParse(updatedData.Id, out Guid eventGuid);
                 var eventToUpdate = eventService.GetEventById(eventGuid);
-                string cityLongName = helperService.GetCityFromAddress(updatedData.Location).Result;
+                string cityLongName = HelperService.GetCityFromAddress(updatedData.Location).Result;
 
                 string image = string.Empty;
                 if (updatedData.EventImage != null)
                 {
-                    image = helperService.CompressImage(updatedData.EventImage);
+                    image = HelperService.CompressImage(updatedData.EventImage);
                 }
 
                 eventService.UpdateEvent(eventToUpdate.Id,

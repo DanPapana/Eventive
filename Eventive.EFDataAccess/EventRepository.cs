@@ -134,7 +134,11 @@ namespace Eventive.EFDataAccess
 
             foreach (EventApplication application in applications)
             {
-                appliedEvents.Add(GetEventById(application.EventOrganized.Id));
+                var eventApplied = GetEventById(application.EventOrganized.Id);
+                if (eventApplied.CreatorId != participantId)
+                {
+                    appliedEvents.Add(eventApplied);
+                }
             }
 
             return appliedEvents.AsEnumerable();
@@ -148,7 +152,11 @@ namespace Eventive.EFDataAccess
 
             foreach (EventFollowing follow in followings)
             {
-                followedEvents.Add(GetEventById(follow.EventOrganized.Id));
+                var eventFollowed = GetEventById(follow.EventOrganized.Id);
+                if (eventFollowed.CreatorId != participantId)
+                {
+                    followedEvents.Add(eventFollowed);
+                }
             }
 
             return followedEvents.AsEnumerable();

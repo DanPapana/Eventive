@@ -12,7 +12,6 @@ namespace Eventive.ApplicationLogic.DataModel
         public string ProfileImage { get; set; }
         public DateTime DateOfBirth { get; set; }
         public ContactDetails ContactDetails { get; set; }
-        public List<EventRating> Ratings { get; set; }
 
         public static Participant CreateUser(Guid userId, string firstName, string lastName, string country, string city, string email)
         {

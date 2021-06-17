@@ -40,7 +40,6 @@ namespace Eventive
 
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<HelperService>();
             services.AddScoped<EventService>();
             services.AddScoped<UserService>(); 
             services.AddResponseCompression();
