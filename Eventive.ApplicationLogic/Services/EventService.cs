@@ -152,7 +152,7 @@ namespace Eventive.ApplicationLogic.Services
 
         private double GetInteractionDecay(IEnumerable<IEventInteraction> interactions)
         {
-            double gravity = 0.2;
+            double gravity = double.Parse(ConfigurationManager.AppSettings.Get("TrendingGravity"));
             double decay = 0;
             foreach (var interaction in interactions)
             {
