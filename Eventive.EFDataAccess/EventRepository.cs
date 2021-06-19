@@ -4,6 +4,7 @@ using Eventive.ApplicationLogic.DataModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static Eventive.ApplicationLogic.DataModel.EventOrganized;
 
 namespace Eventive.EFDataAccess
 {
@@ -25,7 +26,18 @@ namespace Eventive.EFDataAccess
                     .FirstOrDefault();
         }
 
-        public IEnumerable<EventOrganized> GetActiveEvents(Guid? participantId = null)
+        public IEnumerable<EventOrganized> GetActiveEvents()
+        {
+            return dbContext.Events
+                    .Include(evnt => evnt.EventDetails)
+                    .Include(evnt => evnt.Comments)
+                    .Where(evnt => evnt
+                    .EventDetails.Deadline > DateTime.Now)
+                    .OrderBy(evnt => evnt.EventDetails.Deadline)
+                    .AsEnumerable();
+        }
+
+        public IEnumerable<EventOrganized> GetActiveEvents(Guid? participantId)
         {
             return dbContext.Events
                     .Include(evnt => evnt.EventDetails)
@@ -37,7 +49,19 @@ namespace Eventive.EFDataAccess
                     .AsEnumerable();
         }
 
-        public IEnumerable<EventOrganized> GetActiveEvents(EventOrganized.EventCategory eventCategory, Guid? participantId = null)
+        public IEnumerable<EventOrganized> GetActiveEvents(EventCategory eventCategory)
+        {
+            return dbContext.Events
+                    .Include(evnt => evnt.EventDetails)
+                    .Include(evnt => evnt.Comments)
+                    .Where(evnt => evnt
+                    .EventDetails.Deadline > DateTime.Now
+                        && evnt.Category == eventCategory)
+                    .OrderBy(evnt => evnt.EventDetails.Deadline)
+                    .AsEnumerable();
+        }
+
+        public IEnumerable<EventOrganized> GetActiveEvents(EventCategory eventCategory, Guid? participantId)
         {
             return dbContext.Events
                     .Include(evnt => evnt.EventDetails)
@@ -46,6 +70,33 @@ namespace Eventive.EFDataAccess
                     .EventDetails.Deadline > DateTime.Now
                         && evnt.CreatorId != participantId
                         && evnt.Category == eventCategory)
+                    .OrderBy(evnt => evnt.EventDetails.Deadline)
+                    .AsEnumerable();
+        }
+
+        public IEnumerable<EventOrganized> GetEventsToRecommend(Guid participantId)
+        {
+            List<Guid> eventIdsToIgnore = new List<Guid>();
+            
+            var userApplications = GetUserApplications(participantId);
+            foreach(var application in userApplications)
+            {
+                eventIdsToIgnore.Add(application.EventOrganized.Id);
+            }
+
+            var userFollowings = GetUserFollowings(participantId);
+            foreach(var following in userFollowings)
+            {
+                eventIdsToIgnore.Add(following.EventOrganized.Id);
+            }
+
+            return dbContext.Events
+                    .Include(evnt => evnt.EventDetails)
+                    .Include(evnt => evnt.Comments)
+                    .Where(evnt => evnt
+                    .EventDetails.Deadline > DateTime.Now
+                        && evnt.CreatorId != participantId
+                        && !eventIdsToIgnore.Contains(evnt.Id))
                     .OrderBy(evnt => evnt.EventDetails.Deadline)
                     .AsEnumerable();
         }
@@ -127,6 +178,26 @@ namespace Eventive.EFDataAccess
                     .Include(e => e.EventOrganized)
                     .Where(e => e.Participant.Id.Equals(participantId))
                     .AsEnumerable();
+        }
+
+        public int GetClicksPerCategoryForUser(Guid participantId, EventCategory category)
+        {
+            return dbContext.Clicks
+                .Where(ev => ev.EventOrganized.Category.Equals(category)
+                    && ev.Participant.Id.Equals(participantId)).Count();
+        }
+
+        public int GetTotalNumberOfClicksForUser(Guid participantId)
+        {
+            return dbContext.Clicks
+                .Where(ev => ev.Participant.Id.Equals(participantId)).Count();
+        }
+
+        public UserBehaviour GetUserBehaviour(Guid participantId)
+        {
+            return dbContext.UserBehaviours
+                .Where(ub => ub.Participant.Id.Equals(participantId))
+                .FirstOrDefault();
         }
 
         public IEnumerable<EventOrganized> GetAppliedEventsForUser(Guid participantId)
@@ -287,6 +358,20 @@ namespace Eventive.EFDataAccess
             dbContext.Comments.Add(comment);
             SaveChanges();
             return comment;
+        }
+
+        public UserBehaviour AddUserBehaviour(UserBehaviour userBehaviour)
+        {
+            dbContext.UserBehaviours.Add(userBehaviour);
+            SaveChanges();
+            return userBehaviour;
+        }
+
+        public UserBehaviour Update(UserBehaviour userBehaviour)
+        {
+            dbContext.UserBehaviours.Update(userBehaviour);
+            SaveChanges();
+            return userBehaviour;
         }
 
         public bool RemoveInteraction(IEventInteraction interactionToRemove)

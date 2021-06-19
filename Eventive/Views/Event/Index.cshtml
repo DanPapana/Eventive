@@ -82,11 +82,11 @@
                 function success(position) {
                     latitude = position.coords.latitude;
                     longitude = position.coords.longitude;
-                    loadServerPartialView("#eventContainer", '@Url.Action("RecommendedContainer", "Event")?category=' + category + "&lat=" + latitude + "&lng=" + longitude);
+                    loadServerPartialView("#eventContainer", '@Url.Action("RecommendedContainer", "Event")?lat=' + latitude + "&lng=" + longitude);
                 }
 
                 function error() {
-                    loadServerPartialView("#eventContainer", '@Url.Action("RecommendedContainer", "Event")?category=' + category);
+                    loadServerPartialView("#eventContainer", '@Url.Action("RecommendedContainer", "Event")');
                 }
             }
         }

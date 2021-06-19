@@ -11,7 +11,7 @@ namespace Eventive.ApplicationLogic.DataModel
         public int Score { get; set; }
         public DateTime Timestamp { get; set; }
         
-        public static EventRating Create(EventOrganized eventOrganized, Participant participant, int score = 3)
+        public static EventRating Create(EventOrganized eventOrganized, Participant participant, int score = 0)
         {
             var newRating = new EventRating()
             {

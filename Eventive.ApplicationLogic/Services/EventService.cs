@@ -1,4 +1,5 @@
 ﻿using Eventive.ApplicationLogic.Abstraction;
+using Eventive.ApplicationLogic.Common;
 using Eventive.ApplicationLogic.DataModel;
 using Eventive.ApplicationLogic.Dtos;
 using Eventive.ApplicationLogic.Exceptions;
@@ -25,6 +26,11 @@ namespace Eventive.ApplicationLogic.Services
 
         public IEnumerable<EventOrganized> GetActiveEvents(Guid? participantId = null)
         {
+            if (participantId is null)
+            {
+                return eventRepository.GetActiveEvents();
+            }
+
             return eventRepository.GetActiveEvents(participantId);
         }
 
@@ -32,10 +38,108 @@ namespace Eventive.ApplicationLogic.Services
         {
             if (string.IsNullOrEmpty(category))
             {
+                if (participantId is null) {
+                    return eventRepository.GetActiveEvents();
+                }
+
                 return eventRepository.GetActiveEvents(participantId);
             }
 
-            return eventRepository.GetActiveEvents((EventCategory) Enum.Parse(typeof(EventCategory), category), participantId);
+            if (participantId is null)
+            {
+                return eventRepository.GetActiveEvents((EventCategory)Enum.Parse(typeof(EventCategory), category));
+            }
+
+            return eventRepository.GetActiveEvents((EventCategory)Enum.Parse(typeof(EventCategory), category), participantId);
+        }
+
+        public IEnumerable<EventOrganized> GetTrendingEvents(string category, Guid? participantId = null)
+        {
+            IEnumerable<EventOrganized> events = GetActiveEvents(category, participantId);
+            if (events.Count() == 0)
+            {
+                return events;
+            }
+
+            return GetEventsOrderedByScore(events);
+        }
+
+        private UserBehaviour GetUpdatedUserBehaviour(Guid participantId, Dictionary<EventOrganized, double> proximityScores,
+            Dictionary<EventOrganized, double> categoryScores)
+        {
+            var userBehaviour = eventRepository.GetUserBehaviour(participantId);
+            if (userBehaviour is null)
+            {
+                var participant = userRepository.GetParticipantByGuid(participantId);
+                userBehaviour = UserBehaviour.Create(proximityScores, categoryScores, participant);
+                eventRepository.AddUserBehaviour(userBehaviour);
+            }
+            else
+            {
+                userBehaviour.Update(proximityScores, categoryScores);
+                eventRepository.Update(userBehaviour);
+            }
+
+            return userBehaviour;
+        }
+
+        private Dictionary<EventOrganized, double> GetTotalRecommendationScore(Guid participantId, Dictionary<EventOrganized, double> proximityScores,
+            Dictionary<EventOrganized, double> categoryScores)
+        {
+            Dictionary<EventOrganized, double> totalScores = new Dictionary<EventOrganized, double>();
+            var events = eventRepository.GetEventsToRecommend(participantId);
+            foreach (var organizedEvent in events)
+            {
+                totalScores.Add(organizedEvent, 0);
+                if (proximityScores.ContainsKey(organizedEvent))
+                {
+                    totalScores[organizedEvent] += proximityScores[organizedEvent] * Constants.RecommendationProximityWeight;
+                }
+
+                if (categoryScores.ContainsKey(organizedEvent))
+                {
+                    totalScores[organizedEvent] += categoryScores[organizedEvent] * Constants.RecommendationCategoryWeight;
+                }
+            }
+
+            return totalScores;
+        }
+
+        public IEnumerable<EventOrganized> GetRecommendedEvents(Guid participantId, string lat = null, string lng = null) 
+        {
+            var events = eventRepository.GetEventsToRecommend(participantId);
+            if (events.Count() == 0)
+            {
+                return events;
+            }
+
+            var proximityScores = GetEventProximityScoreForUserAsync(participantId, lat, lng).Result;
+            var categoryScores = GetEventCategoryScoreForUser(participantId);
+
+            //Save the current user's behaviour
+            var userBehaviour = GetUpdatedUserBehaviour(participantId, proximityScores, categoryScores);
+
+            //Add the scores to the events according to their weight
+            var totalEventScores = GetTotalRecommendationScore(participantId, proximityScores, categoryScores);
+
+            //Order events by the score
+            var orderedScores = totalEventScores
+                .OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+
+            //Return the top x events
+            var maximumNumberOfRecommendedEvents = Constants.NumberOfRecommendedEventsShown;
+            if (maximumNumberOfRecommendedEvents > orderedScores.Count())
+            {
+                maximumNumberOfRecommendedEvents = orderedScores.Count();
+            }
+
+            List<EventOrganized> recommendedEvents = new List<EventOrganized>();
+            for (int i = 0; i < maximumNumberOfRecommendedEvents; i++)
+            {
+                recommendedEvents.Add(orderedScores.ElementAt(i).Key);
+            }
+
+            return recommendedEvents;
         }
 
         public EventOrganized GetEventById(Guid eventId)
@@ -152,7 +256,7 @@ namespace Eventive.ApplicationLogic.Services
 
         private double GetInteractionDecay(IEnumerable<IEventInteraction> interactions)
         {
-            double gravity = double.Parse(ConfigurationManager.AppSettings.Get("TrendingGravity"));
+            double gravity = Constants.TrendingGravity;
             double decay = 0;
             foreach (var interaction in interactions)
             {
@@ -173,10 +277,10 @@ namespace Eventive.ApplicationLogic.Services
         private double GetTotalTrendingScoreForAnEvent(Guid eventId)
         {
 
-            double applicationWeight = double.Parse(ConfigurationManager.AppSettings.Get("TrendingApplicationWeight"));
-            double followWeight = double.Parse(ConfigurationManager.AppSettings.Get("TrendingFollowWeight"));
-            double commentWeight = double.Parse(ConfigurationManager.AppSettings.Get("TrendingCommentWeight"));
-            double clickWeight = double.Parse(ConfigurationManager.AppSettings.Get("TrendingClickWeight"));
+            double applicationWeight = Constants.TrendingApplicationWeight;
+            double followWeight = Constants.TrendingFollowWeight;
+            double commentWeight = Constants.TrendingCommentWeight;
+            double clickWeight = Constants.TrendingClickWeight;
 
             var applicationScore = GetInteractionScore(GetEventApplications(eventId), applicationWeight);
             var followingScore = GetInteractionScore(GetEventFollowings(eventId), followWeight);
@@ -189,7 +293,6 @@ namespace Eventive.ApplicationLogic.Services
         private IEnumerable<EventOrganized> GetEventsOrderedByScore(IEnumerable<EventOrganized> eventsToScore)
         {
             Dictionary<EventOrganized, double> eventScore = new Dictionary<EventOrganized, double>();
-            double maximumNumberOfTrendingEvents = double.Parse(ConfigurationManager.AppSettings.Get("NumberOfTrendingEventsShown"));
 
             foreach (EventOrganized eventOrganized in eventsToScore)
             {
@@ -200,13 +303,13 @@ namespace Eventive.ApplicationLogic.Services
             var orderedScores = eventScore
                 .OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
 
-            List<EventOrganized> trendingEvents = new List<EventOrganized>();
-
+            var maximumNumberOfTrendingEvents = Constants.NumberOfTrendingEventsShown;
             if (maximumNumberOfTrendingEvents > orderedScores.Count())
             {
                 maximumNumberOfTrendingEvents = orderedScores.Count();
             }
 
+            List<EventOrganized> trendingEvents = new List<EventOrganized>();
             for (int i = 0; i < maximumNumberOfTrendingEvents; i++)
             {
                 trendingEvents.Add(orderedScores.ElementAt(i).Key);
@@ -215,57 +318,266 @@ namespace Eventive.ApplicationLogic.Services
             return trendingEvents.AsEnumerable();
         }
 
-        public IEnumerable<EventOrganized> GetTrendingEvents(string category, Guid? participantId = null)
+        public Dictionary<EventOrganized, double> GetEventCategoryScoreForUser(Guid participantId)
         {
-            IEnumerable<EventOrganized> events = GetActiveEvents(category, participantId);
-            if (events.Count() > 0)
+            Dictionary<EventOrganized, double> categoryScoreForEvents = new Dictionary<EventOrganized, double>();
+            Dictionary<EventCategory, double> categoryTotalScore = new Dictionary<EventCategory, double>();
+            Dictionary<EventCategory, double> categoryRatingScore = GetCategoryRatingScoreForUser(participantId);
+            Dictionary<EventCategory, double> categoryInteractionScore = GetCategoryInteractionScoreForUser(participantId);
+
+            var events = eventRepository.GetEventsToRecommend(participantId);
+            foreach (EventCategory category in Enum.GetValues(typeof(EventCategory)))
             {
-                return GetEventsOrderedByScore(events);
+                int numberOfScores = 0;
+                double totalWeightedScore = 0;
+                if (categoryRatingScore.ContainsKey(category))
+                {
+                    totalWeightedScore += categoryRatingScore[category] * Constants.RecommendationRatingWeight;
+                    numberOfScores++;
+                }
+
+                if (categoryInteractionScore.ContainsKey(category))
+                {
+                    totalWeightedScore += categoryInteractionScore[category];
+                    numberOfScores++;
+                }
+
+                categoryTotalScore.Add(category, totalWeightedScore / numberOfScores);
             }
 
-            return events;
+            foreach(var eventOrganized in events)
+            {
+                if (categoryTotalScore.ContainsKey(eventOrganized.Category))
+                {
+                    categoryScoreForEvents.Add(eventOrganized, categoryTotalScore[eventOrganized.Category]);
+                }
+            }
+
+            return categoryScoreForEvents;
+        }
+
+        private Dictionary<EventCategory, double> GetCategoryInteractionScoreForUser(Guid participantId)
+        {
+            Dictionary<EventCategory, double> categoryInteractionScoreForUser = new Dictionary<EventCategory, double>();
+            var clickScorePerCategory = GetCategoryClickScoreForUser(participantId);
+            var followingScorePerCategory = GetFollowingScoreForUser(participantId);
+            var applicationScorePerCategory = GetApplicationScoreForUser(participantId);
+
+            foreach(EventCategory category in Enum.GetValues(typeof(EventCategory)))
+            {
+                int numberOfScores = 0;
+                double weightedTotalScore = 0;
+                if (clickScorePerCategory.ContainsKey(category))
+                {
+                    weightedTotalScore += clickScorePerCategory[category] * Constants.RecommendationClickWeight;
+                    numberOfScores++;
+                }
+
+                if (followingScorePerCategory.ContainsKey(category))
+                {
+                    weightedTotalScore += followingScorePerCategory[category] * Constants.RecommendationFollowWeight;
+                    numberOfScores++;
+                }
+
+                if (applicationScorePerCategory.ContainsKey(category))
+                {
+                    weightedTotalScore += applicationScorePerCategory[category] * Constants.RecommendationApplicationWeight;
+                    numberOfScores++;
+                }
+
+                categoryInteractionScoreForUser.Add(category, weightedTotalScore / numberOfScores);
+            }
+
+            return categoryInteractionScoreForUser;
+        }
+
+        private Dictionary<EventCategory, double> GetApplicationScoreForUser(Guid participantId)
+        {
+            List<EventApplication> eventApplications = eventRepository.GetUserApplications(participantId).ToList();
+            Dictionary<EventCategory, int> applicationCategories = new Dictionary<EventCategory, int>();
+            foreach (var application in eventApplications)
+            {
+                if (applicationCategories.ContainsKey(application.EventOrganized.Category))
+                {
+                    applicationCategories[application.EventOrganized.Category]++;
+                }
+                else
+                {
+                    applicationCategories.Add(application.EventOrganized.Category, 1);
+                }
+            }
+
+            //Normalize applications
+            Dictionary<EventCategory, double> applicationScorePerCategory = new Dictionary<EventCategory, double>();
+            foreach (EventCategory category in applicationCategories.Keys)
+            {
+                applicationScorePerCategory.Add(category, applicationCategories[category] / eventApplications.Count);
+            }
+
+            return applicationScorePerCategory;
+        }
+
+        private Dictionary<EventCategory, double> GetFollowingScoreForUser(Guid participantId)
+        {
+            List<EventFollowing> eventFollowings = eventRepository.GetUserFollowings(participantId).ToList();
+            Dictionary<EventCategory, int> followingCategories = new Dictionary<EventCategory, int>();
+            foreach(var following in eventFollowings)
+            {
+                if (followingCategories.ContainsKey(following.EventOrganized.Category))
+                {
+                    followingCategories[following.EventOrganized.Category]++;
+                } 
+                else
+                {
+                    followingCategories.Add(following.EventOrganized.Category, 1);
+                }
+            }
+
+            //Normalize followings
+            Dictionary<EventCategory, double> followingScorePerCategory = new Dictionary<EventCategory, double>();
+            foreach (EventCategory category in followingCategories.Keys)
+            {
+                followingScorePerCategory.Add(category, followingCategories[category] / eventFollowings.Count);
+            }
+
+            return followingScorePerCategory;
+        }
+
+        private Dictionary<EventCategory, double> GetCategoryRatingScoreForUser(Guid participantId)
+        {
+            List<EventRating> userRatings = GetUserRatings(participantId).ToList();
+            Dictionary<EventCategory, List<int>> categoryRatingScores = new Dictionary<EventCategory, List<int>>();
+            foreach (var userRating in userRatings)
+            {
+                if (categoryRatingScores.ContainsKey(userRating.EventOrganized.Category))
+                {
+                    categoryRatingScores[userRating.EventOrganized.Category].Add(userRating.Score);
+                }
+                else
+                {
+                    categoryRatingScores.Add(userRating.EventOrganized.Category, new List<int>(userRating.Score));
+                }
+            }
+
+            //Normalize ratings
+            return GetNormalizedEventRatingScoreForUser(categoryRatingScores);
+        }
+
+        private Dictionary<EventCategory, double> GetCategoryClickScoreForUser(Guid participantId)
+        {
+            Dictionary<EventCategory, int> clicksPerCategory = new Dictionary<EventCategory, int>();
+            foreach (EventCategory category in Enum.GetValues(typeof(EventCategory)))
+            {
+                var numberOfClicks = eventRepository.GetClicksPerCategoryForUser(participantId, category);
+                clicksPerCategory.Add(category, numberOfClicks);
+            }
+
+            //Normalize clicks
+            var totalClicks = eventRepository.GetTotalNumberOfClicksForUser(participantId);
+
+            Dictionary<EventCategory, double> clickScorePerCategory = new Dictionary<EventCategory, double>();
+            foreach (EventCategory category in Enum.GetValues(typeof(EventCategory)))
+            {
+                if (clicksPerCategory.ContainsKey(category))
+                {
+                    clickScorePerCategory.Add(category, clicksPerCategory[category] / totalClicks);
+                }
+            }
+
+            return clickScorePerCategory;
+        }
+
+        private Dictionary<EventCategory, double> GetNormalizedEventRatingScoreForUser(Dictionary<EventCategory, List<int>> categoryRatingList)
+        {
+            Dictionary<EventCategory, double> categoryRatingScore = new Dictionary<EventCategory, double>();
+
+            foreach(var category in categoryRatingList.Keys)
+            {
+                var ratingList = categoryRatingList[category];
+                double normalizedRating = ratingList.Sum() / ratingList.Count;
+                categoryRatingScore.Add(category, normalizedRating);
+            }
+
+            return categoryRatingScore;
         }
 
         /*
          * Calculate a score from 0.0 to 1.0
          * 1.0 meaning the distance from the user's current location is 0
-         * 0.0 meaning the distance is > 1000 km 
+         * 0.0 meaning the distance is >= 1000 km (Specified as ProximityScoreMaximumDistanceInMeters in app.config)
          */
-        public async Task<double> GetEventProximityScoreForUserAsync(string category, Guid participantId, string latitude, string longitude)
+        public async Task<Dictionary<EventOrganized, double>> GetEventProximityScoreForUserAsync(Guid participantId, string latitude, string longitude)
         {
-            double defaultScore = 0.5;
+            Dictionary<EventOrganized, double> proximityScoreForEvents = new Dictionary<EventOrganized, double>();
             if (string.IsNullOrEmpty(latitude) || string.IsNullOrEmpty(longitude))
             {
-                return defaultScore;
+                return proximityScoreForEvents;
             }
 
+            List<EventOrganized> events = eventRepository.GetEventsToRecommend(participantId).ToList();
+
+            string destinations = GetDestinationsString(events);
+            if (!string.IsNullOrEmpty(destinations))
+            {
+                var requestUri = GetResponseUriForDistanceMatrix(destinations, latitude, longitude);
+                HttpClient client = new HttpClient();
+                var request = await client.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead);
+
+                if (request.IsSuccessStatusCode && request.Content.Headers.ContentType.MediaType == "application/json")
+                {
+                    var responseObject = request.Content.ReadAsAsync<DistanceResponse>();
+                    proximityScoreForEvents = GetProximityScoresFromResponse(responseObject.Result?.Rows[0]?.Elements, events);
+                }
+            }
+            
+            return proximityScoreForEvents;
+        }
+
+        private string GetResponseUriForDistanceMatrix(string destinations, string latitude, string longitude)
+        {
             double userLatitude = Convert.ToDouble(latitude);
             double userLongitude = Convert.ToDouble(longitude);
-            Dictionary<EventOrganized, double> distanceToEventInMeters = new Dictionary<EventOrganized, double>();
+            string apiKey = ConfigurationManager.AppSettings.Get("GOOGLE_API_KEY");
+            string requestUri = string.Format("https://maps.googleapis.com/maps/api/distancematrix/json?origins={0},{1}&destinations={2}&key={3}",
+                userLatitude, userLongitude, destinations, apiKey);
 
-            IEnumerable<EventOrganized> events = GetActiveEvents(category, participantId);
+            return requestUri;
+        }
+
+        private string GetDestinationsString(IEnumerable<EventOrganized> events)
+        {
             string destinations = string.Empty;
             foreach (var eventOrganized in events)
             {
                 destinations += string.Format("{0},{1}|", eventOrganized.EventDetails.Latitude, eventOrganized.EventDetails.Longitude);
             }
 
-            if (!string.IsNullOrEmpty(destinations))
+            return destinations;
+        }
+
+        private Dictionary<EventOrganized, double> GetProximityScoresFromResponse(List<Element> elements, IEnumerable<EventOrganized> events)
+        {
+            double maximumDistanceToScore = Constants.ProximityScoreMaximumDistanceInMeters;
+            Dictionary<EventOrganized, double> proximityScoreForEvents = new Dictionary<EventOrganized, double>();
+
+            int currentIndex = 0;
+            foreach (var element in elements)
             {
-                string apiKey = ConfigurationManager.AppSettings.Get("GOOGLE_API_KEY");
-                string requestUri = string.Format("https://maps.googleapis.com/maps/api/distancematrix/json?origins={0},{1}&destinations={2}&key={3}",
-                    userLatitude, userLongitude, destinations, apiKey);
-
-                using var client = new HttpClient();
-                var request = await client.GetAsync(requestUri, HttpCompletionOption.ResponseHeadersRead);
-
-                if (request.IsSuccessStatusCode && request.Content.Headers.ContentType.MediaType == "application/json")
+                if (element.Status.Equals("OK"))
                 {
-                    var responseObject = request.Content.ReadAsAsync<DistanceResponse>();
+                    double proximityScore = 1 - element.Distance.Value / maximumDistanceToScore;
+                    if (proximityScore < 0)
+                    {
+                        proximityScore = 0;
+                    }
+
+                    proximityScoreForEvents.Add(events.ElementAt(currentIndex), proximityScore);
                 }
+
+                currentIndex++;
             }
 
-            return 2;
+            return proximityScoreForEvents;
         }
 
         public Comment AddComment(Guid creatorId, Guid eventId, string message)
@@ -345,7 +657,8 @@ namespace Eventive.ApplicationLogic.Services
             var commenter = userRepository.GetParticipantByGuid(participantId);
             var eventToRegisterFor = eventRepository.GetEventById(eventId);
 
-            if (commenter is null || eventToRegisterFor is null)
+            if (eventToRegisterFor.CreatorId.Equals(participantId) 
+                || commenter is null || eventToRegisterFor is null)
             {
                 return null;
             }

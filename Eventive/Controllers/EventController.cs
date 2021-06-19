@@ -1,6 +1,7 @@
 ﻿using Eventive.ApplicationLogic.DataModel;
 using Eventive.ApplicationLogic.Services;
 using Eventive.Models.Events;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -8,6 +9,7 @@ using System.Collections.Generic;
 
 namespace Eventive.Controllers
 {
+    [Authorize]
     public class EventController : Controller
     {
         private readonly EventService eventService;
@@ -22,6 +24,7 @@ namespace Eventive.Controllers
             this.userManager = userManager;
         }
 
+        [AllowAnonymous]
         public IActionResult Index()
         {
             return View();
@@ -62,7 +65,8 @@ namespace Eventive.Controllers
 
             return eventListViewModel;
         }
-        
+
+        [AllowAnonymous]
         public IActionResult EventContainer(string category)
         {
             try
@@ -87,6 +91,7 @@ namespace Eventive.Controllers
             }
         }
 
+        [AllowAnonymous]
         public IActionResult TrendingContainer(string category)
         {
             try
@@ -111,22 +116,14 @@ namespace Eventive.Controllers
             }
         }
 
-        public IActionResult RecommendedContainer(string category, string lat = null, string lng = null)
+        public IActionResult RecommendedContainer(string lat = null, string lng = null)
         {
             try
             {
                 IEnumerable<EventOrganized> events;
-                if (User.Identity.IsAuthenticated)
-                {
-                    var currentParticipantId = GetCurrentParticipantId();
-                    events = eventService.GetActiveEvents(category, currentParticipantId);
-                    var proximityScore = eventService.GetEventProximityScoreForUserAsync(category, currentParticipantId, lat, lng);
-                }
-                else
-                {
-                    events = eventService.GetActiveEvents(category);
-                }
-
+                var currentParticipantId = GetCurrentParticipantId();
+                events = eventService.GetRecommendedEvents(currentParticipantId, lat, lng);
+                
                 var viewModel = GetEventListViewModel(events);
                 return PartialView("_ContainerPartial", viewModel);
             }
@@ -291,6 +288,7 @@ namespace Eventive.Controllers
             }
         }
 
+        [AllowAnonymous]
         public IActionResult Details([FromRoute] string Id)
         {
             try

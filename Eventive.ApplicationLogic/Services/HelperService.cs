@@ -1,6 +1,4 @@
-﻿using Eventive.ApplicationLogic.DataModel;
-using Eventive.ApplicationLogic.Dtos;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;

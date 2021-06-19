@@ -17,6 +17,7 @@ namespace Eventive.EFDataAccess
         public DbSet<ContactDetails> ContactDetails { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<EventRating> Ratings { get; set; }
+        public DbSet<UserBehaviour> UserBehaviours { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<EventDetails>().Property(P => P.ParticipationFee).HasColumnType("decimal(18,2)");
