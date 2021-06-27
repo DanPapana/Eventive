@@ -111,6 +111,14 @@ namespace Eventive.EFDataAccess
                     .FirstOrDefault();
         }
 
+        public EventApplication GetApplication(Guid applicationId)
+        {
+            return dbContext.Applications.Include(e => e.Participant)
+                    .Include(e => e.EventOrganized)
+                    .Where(app => app.Id.Equals(applicationId))
+                    .FirstOrDefault();
+        }
+
         public EventFollowing GetFollowing(Guid eventId, Guid participantId)
         {
             return dbContext.Followings
@@ -278,7 +286,8 @@ namespace Eventive.EFDataAccess
             {
                 foreach (var application in pastEvent.Applications)
                 {
-                    if (application.Participant.Id.Equals(participantId))
+                    if (application.Participant.Id.Equals(participantId) 
+                        && application.Status.Equals(EventApplication.ApplicationStatus.Approved))
                     {
                         pastEventsList.Add(pastEvent);
                     }
@@ -374,6 +383,13 @@ namespace Eventive.EFDataAccess
             return userBehaviour;
         }
 
+        public EventApplication Update(EventApplication eventApplication)
+        {
+            dbContext.Applications.Update(eventApplication);
+            SaveChanges();
+            return eventApplication;
+        }
+
         public bool RemoveInteraction(IEventInteraction interactionToRemove)
         {
             if (interactionToRemove is null)
@@ -415,6 +431,7 @@ namespace Eventive.EFDataAccess
         {
             return dbContext.Applications
                     .Include(e => e.Participant)
+                    .ThenInclude(e => e.ContactDetails)
                     .Include(e => e.EventOrganized)
                     .Where(e => e.EventOrganized.Id.Equals(eventId))
                     .AsEnumerable();

@@ -6,7 +6,7 @@ namespace Eventive.Models.Validations
     {
         public EnforceTrueAttribute() { }
 
-        public string GetErrorMessage() => $"More information required";
+        public string GetErrorMessage() => $"Choose a location from the list";
 
         protected override ValidationResult IsValid(object value,
         ValidationContext validationContext)

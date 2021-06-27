@@ -24,6 +24,7 @@ namespace Eventive.ApplicationLogic.Abstraction
         Comment GetCommentById(Guid commentId);
         IEnumerable<EventClick> GetClicks(Guid eventId, Guid participantId);
         EventApplication GetApplication(Guid eventId, Guid participantId);
+        EventApplication GetApplication(Guid applicationId);
         EventFollowing GetFollowing(Guid eventId, Guid participantId);
         EventRating GetUserRating(Guid eventId, Guid participantId);
 
@@ -43,8 +44,10 @@ namespace Eventive.ApplicationLogic.Abstraction
         EventFollowing AddInteraction(EventFollowing followInteraction);
         EventApplication AddInteraction(EventApplication applyInteraction);
         EventClick AddInteraction(EventClick clickInteraction);
+        
         UserBehaviour AddUserBehaviour(UserBehaviour userBehaviour);
         UserBehaviour Update(UserBehaviour userBehaviour);
+        EventApplication Update(EventApplication eventApplication);
 
         bool RemoveInteraction(IEventInteraction interactionToRemove);
         bool RemoveEvent(Guid eventId);

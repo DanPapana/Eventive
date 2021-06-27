@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Eventive.Models.Users
@@ -34,5 +35,11 @@ namespace Eventive.Models.Users
 
         [Display(Name = "Link to a social media account")]
         public string LinkToSocialM { get; set; }
+
+        [Display(Name = "Age")]
+        public int Age { get; set; }
+
+        [Display(Name = "Bio")]
+        public string Description { get; set; }
     }
 }

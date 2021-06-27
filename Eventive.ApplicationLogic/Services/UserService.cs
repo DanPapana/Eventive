@@ -66,12 +66,12 @@ namespace Eventive.ApplicationLogic.Services
         public Participant UpdateParticipant(Guid participantId, string firstName, string lastName,
                                 string profileImage, string address,
                                 string city, string country,
-                                string phoneNo, string linkToSocialM)
+                                string phoneNo, string linkToSocialM, int age, string description)
         {
             var userToUpdate = userRepository.GetParticipantByGuid(participantId);
 
             userToUpdate.UpdateUser(firstName, lastName, profileImage, 
-                address, city, country, phoneNo, linkToSocialM);
+                address, city, country, phoneNo, linkToSocialM, age, description);
             
             userRepository.Update(userToUpdate);
 

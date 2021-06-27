@@ -6,7 +6,7 @@
         public const double TrendingFollowWeight = 2;
         public const double TrendingCommentWeight = 1.5;
         public const double TrendingClickWeight = 0.5;
-        public const double TrendingGravity = 0.2;
+        public const double TrendingGravity = 0.05;
         public const int NumberOfTrendingEventsShown = 4;
 
         public const double ProximityScoreMaximumDistanceInMeters = 1000000;
@@ -17,6 +17,6 @@
 
         public const double RecommendationCategoryWeight = 5;
         public const double RecommendationProximityWeight = 5;
-        public const int NumberOfRecommendedEventsShown = 4;
+        public const int NumberOfRecommendedEventsShown = 8;
     }
 }

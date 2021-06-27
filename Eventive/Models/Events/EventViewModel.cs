@@ -11,6 +11,8 @@ namespace Eventive.Models.Events
         public string Title { get; set; }
         public string Image { get; set; }
         public EventCategory Category { get; set; }
+        public string City { get; set; }
+        public string ApplicationStatus { get; set; }
         public string Deadline { get; set; }
         public string OccurenceDate { get; set; }
         public string OccurenceTime { get; set; }

@@ -1,0 +1,108 @@
+﻿@using Eventive.Models.Events
+@using Eventive.ApplicationLogic.DataModel
+@model GetApplicationsViewModel
+
+<div>
+    @if (Model.Applications != null && Model.Applications.Count() > 0)
+    {
+        @foreach (var application in Model.Applications)
+        {
+            <div class="application-container">
+                <div class="applicant-info">
+                    <div>
+                        @if (!string.IsNullOrEmpty(application.Participant.ProfileImage))
+                        {
+                            <img src="data:image/png;base64, @application.Participant.ProfileImage" class="img-fluid" alt="Application profile picture">
+                        }
+                        else
+                        {
+                            <img src="~/images/default_profile.png" class="img-fluid" alt="Application profile picture">
+                        }
+                    </div>
+                    <div class="applicant-details">
+                        <div class="d-flex justify-content-between">
+                            <p>Username: </p>
+                            <p>@application.Participant.FirstName @application.Participant.LastName</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            @if (application.Participant.ContactDetails.Email != null)
+                            {
+                                <p>Email: </p>
+                                <p>@application.Participant.ContactDetails.Email</p>
+                            }
+                        </div>
+                    </div>
+                    <button class="btn goToUserBtn" onclick="goToApplication('@application.Participant.UserId', '@application.Id')">
+                        View Applicant
+                    </button>
+                </div>
+                @if (User.Identity.IsAuthenticated && application.EventOrganized.CreatorId.ToString().Equals(Model.CreatorId)
+                    && application.EventOrganized.EventDetails.ApplicationRequired)
+                {
+                    <div class="btn-group-sm acceptance-buttons-group">
+                        @if (application.Status.Equals(EventApplication.ApplicationStatus.Approved))
+                        {
+                            <button type="button" class="btn btn-success">
+                                Accepted <i class="fa fa-check" aria-hidden="true"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-light" 
+                                    onclick="acceptApplication('@application.Id', '@application.EventOrganized.Id')">
+                                Accept
+                            </button>
+                        }
+
+                        @if (application.Status.Equals(EventApplication.ApplicationStatus.Rejected))
+                        {
+                            <button type="button" class="btn btn-danger">
+                                Rejected <i class="fa fa-check" aria-hidden="true"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-light" 
+                                    onclick="rejectApplication('@application.Id', '@application.EventOrganized.Id')">
+                                Reject
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <div>There are no applicants for this event yet</div>
+    }
+</div>
+
+<script>
+    function goToApplication(Id, applicationId) {
+        window.open(
+            '@Url.Action("UserApplication", "Profile")?Id=' + Id + '&applicationId=' + applicationId,
+            '_blank'
+        );
+    }
+
+    function acceptApplication(applicationId, eventId) {
+        $.ajax({
+            url: '@Url.Action("AcceptApplication", "Event")' + '/' + applicationId,
+            success: function () {
+                loadGetApplications(eventId);
+            },
+            error: function (xhr) { alert(xhr.responseText) }
+        });
+    }
+
+    function rejectApplication(applicationId, eventId) {
+        $.ajax({
+            url: '@Url.Action("RejectApplication", "Event")' + '/' + applicationId,
+            success: function () {
+                loadGetApplications(eventId);
+            },
+            error: function (xhr) { alert(xhr.responseText) }
+        });
+    }
+</script>

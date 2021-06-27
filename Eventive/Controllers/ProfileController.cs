@@ -12,14 +12,17 @@ namespace Eventive.Controllers
     public class ProfileController : Controller
     {
         private readonly UserService userService;
+        private readonly EventService eventService;
         private readonly UserManager<IdentityUser> userManager;
 
-        public ProfileController(UserManager<IdentityUser> userManager, UserService userService)
+        public ProfileController(UserManager<IdentityUser> userManager, UserService userService, EventService eventService)
         {
             this.userManager = userManager;
             this.userService = userService;
+            this.eventService = eventService;
         }
 
+        [AllowAnonymous]
         public IActionResult Index()
         {
             return View();
@@ -29,34 +32,66 @@ namespace Eventive.Controllers
         {
             try
             {
-                var thisUserId = userManager.GetUserId(User);
-                Participant user = userService.GetParticipantByUserId(thisUserId);
-
-                UserProfileViewModel viewModel = new UserProfileViewModel()
+                if (User.Identity.IsAuthenticated)
                 {
-                    Id = user.Id.ToString(),
-                    DateOfBirth = $"{user.DateOfBirth: dd MMMM yyyy}",
-                    FullName = $"{user.FirstName} {user.LastName}",
-                    ProfileImage = user.ProfileImage,
-                    Email = user.ContactDetails.Email,
-                    City = user.ContactDetails.City,
-                    Country = user.ContactDetails.Country,
-                    Address = user.ContactDetails.Address,
-                    PhoneNo = user.ContactDetails.PhoneNo,
-                    LinkToSocialM = user.ContactDetails.LinkToSocialM
-                };
+                    var thisUserId = userManager.GetUserId(User);
+                    var user = userService.GetParticipantByUserId(thisUserId);
+                    var viewModel = GetUserProfileViewModel(user);
 
-                if (user.DateOfBirth.Equals(DateTime.MinValue))
+                    return PartialView("_ProfilePartial", viewModel);
+                } 
+                else
                 {
-                    viewModel.DateOfBirth = null;
+                    return PartialView("_ProfilePartial", new UserProfileViewModel());
                 }
-
-                return PartialView("_ProfilePartial", viewModel);
             }
             catch (Exception e)
             {
                 return BadRequest(e);
             }
+        }
+
+        [AllowAnonymous]
+        public IActionResult UserApplication(string Id, Guid applicationId)
+        {
+            try
+            {
+                var user = userService.GetParticipantByUserId(Id);
+                var profileViewModel = GetUserProfileViewModel(user);
+                var application = eventService.GetApplication(applicationId);
+
+                var viewModel = new UserApplicationViewModel()
+                {
+                    Profile = profileViewModel,
+                    ApplicationMessage = application.ApplicationText
+                };
+
+                return View("_ApplicationPartial", viewModel);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        private UserProfileViewModel GetUserProfileViewModel(Participant user)
+        {
+            var viewModel = new UserProfileViewModel()
+            {
+                Id = user.Id.ToString(),
+                FullName = $"{user.FirstName} {user.LastName}",
+                ProfileImage = user.ProfileImage,
+                Email = user.ContactDetails.Email,
+                City = user.ContactDetails.City,
+                Country = user.ContactDetails.Country,
+                Address = user.ContactDetails.Address,
+                PhoneNo = user.ContactDetails.PhoneNo,
+                LinkToSocialM = user.ContactDetails.LinkToSocialM,
+                Age = user.Age,
+                Description = user.Description
+            };
+
+            return viewModel;
         }
 
         [HttpGet]
@@ -76,7 +111,9 @@ namespace Eventive.Controllers
                     City = user.ContactDetails.City,
                     Country = user.ContactDetails.Country,
                     PhoneNo = user.ContactDetails.PhoneNo,
-                    LinkToSocialM = user.ContactDetails.LinkToSocialM
+                    LinkToSocialM = user.ContactDetails.LinkToSocialM,
+                    Age = user.Age,
+                    Description = user.Description
                 };
 
                 return PartialView("_EditProfilePartial", editProfileViewModel);
@@ -115,7 +152,9 @@ namespace Eventive.Controllers
                                         updatedData.City,
                                         updatedData.Country,
                                         updatedData.PhoneNo,
-                                        updatedData.LinkToSocialM);
+                                        updatedData.LinkToSocialM,
+                                        updatedData.Age,
+                                        updatedData.Description);
 
                 return PartialView("_EditProfilePartial", updatedData);
             }

@@ -30,6 +30,11 @@ namespace Eventive.Controllers
             return View();
         }
 
+        public IActionResult MyEvents()
+        {
+            return View();
+        }
+
         private EventListViewModel GetEventListViewModel(IEnumerable<EventOrganized> events)
         {
             List<EventViewModel> eventViewModels = new List<EventViewModel>();
@@ -90,7 +95,7 @@ namespace Eventive.Controllers
                 return BadRequest(e);
             }
         }
-
+        
         [AllowAnonymous]
         public IActionResult TrendingContainer(string category)
         {
@@ -235,6 +240,28 @@ namespace Eventive.Controllers
             {
                 return BadRequest(e);
             }
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult GetApplications([FromRoute] Guid Id)
+        {
+            string creatorId = string.Empty;
+            if (User.Identity.IsAuthenticated)
+            {
+                var userId = userManager.GetUserId(User);
+                var user = userService.GetParticipantByUserId(userId);
+                creatorId = user.Id.ToString();
+            }
+
+            var viewModel = new GetApplicationsViewModel()
+            {
+                CreatorId = creatorId,
+                Event = eventService.GetEventById(Id),
+                Applications = eventService.GetEventApplications(Id)
+            };
+
+            return PartialView("_ApproveApplicationPartial", viewModel);
         }
 
         [HttpGet]
@@ -568,6 +595,16 @@ namespace Eventive.Controllers
             return PartialView("_DetailsPartial", viewModel);
         }
 
+        public void AcceptApplication([FromRoute] Guid Id)
+        {
+            eventService.AcceptApplication(Id);
+        }
+
+        public void RejectApplication([FromRoute] Guid Id)
+        {
+            eventService.RejectApplication(Id);
+        }
+
         private EventViewModel GetEventViewModel(EventOrganized organizedEvent)
         {
             Participant hostingUser = userService.GetCreatorById(organizedEvent.CreatorId);
@@ -575,6 +612,7 @@ namespace Eventive.Controllers
             string maximumParticipants = eventService.FormatMaximumParticipants(organizedEvent.EventDetails.MaximumParticipantNo);
             string currentUsername = null;
             string currentProfileImage = null;
+            var applicationStatus = EventApplication.ApplicationStatus.Pending.ToString();
             int? userScore = null;
 
             if (User.Identity.IsAuthenticated)
@@ -584,6 +622,11 @@ namespace Eventive.Controllers
                 currentUsername = eventService.FormatUserName(currentUser);
                 currentProfileImage = currentUser.ProfileImage;
                 userScore = eventService.GetUserRating(organizedEvent.Id, currentUser.Id)?.Score;
+                var application = eventService.GetApplication(organizedEvent.Id, currentUser.Id);
+                if (application != null)
+                {
+                    applicationStatus = application.Status.ToString();
+                }
             }
 
             var eventViewModel = new EventViewModel
@@ -598,6 +641,7 @@ namespace Eventive.Controllers
                 HostProfileImage = hostingUser.ProfileImage,
                 Location = organizedEvent.EventDetails.Location,
                 ParticipationFee = participationFee,
+                City = organizedEvent.EventDetails.City,
                 Deadline = eventService.FormatEventDate(organizedEvent.EventDetails.Deadline),
                 OccurenceDate = eventService.FormatEventDate(organizedEvent.EventDetails.OccurenceDate),
                 OccurenceTime = eventService.FormatEventTime(organizedEvent.EventDetails.OccurenceDate),
@@ -606,7 +650,8 @@ namespace Eventive.Controllers
                 Category = organizedEvent.Category,
                 UserName = currentUsername,
                 UserProfileImage = currentProfileImage,
-                Rating = userScore
+                Rating = userScore,
+                ApplicationStatus = applicationStatus
             };
              
             return eventViewModel;

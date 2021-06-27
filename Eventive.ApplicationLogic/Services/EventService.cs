@@ -9,6 +9,7 @@ using System.Configuration;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using static Eventive.ApplicationLogic.DataModel.EventApplication;
 using static Eventive.ApplicationLogic.DataModel.EventOrganized;
 
 namespace Eventive.ApplicationLogic.Services
@@ -169,7 +170,13 @@ namespace Eventive.ApplicationLogic.Services
             var eventOrganized = eventRepository.GetEventById(eventId);
             var participant = userRepository.GetParticipantByGuid(participantId);
 
-            EventApplication application = EventApplication.Create(eventOrganized, participant, applicationText);
+            EventApplication application = Create(eventOrganized, participant, applicationText);
+            //if an application is not required, users are accepted by default
+            if (!eventOrganized.EventDetails.ApplicationRequired)
+            {
+                application.Status = ApplicationStatus.Approved;
+            }
+
             eventRepository.AddInteraction(application);
             return application;
         }
@@ -177,6 +184,11 @@ namespace Eventive.ApplicationLogic.Services
         public EventApplication GetApplication(Guid eventId, Guid participantId)
         {
             return eventRepository.GetApplication(eventId, participantId);
+        }
+
+        public EventApplication GetApplication(Guid applicationId)
+        {
+            return eventRepository.GetApplication(applicationId);
         }
 
         public EventFollowing GetFollowing(Guid eventId, Guid participantId)
@@ -260,23 +272,28 @@ namespace Eventive.ApplicationLogic.Services
             double decay = 0;
             foreach (var interaction in interactions)
             {
-                double days = (DateTime.UtcNow - interaction.Timestamp).TotalDays;
-                decay += days * gravity;
+                double hours = (DateTime.UtcNow - interaction.Timestamp).TotalHours;
+                decay += hours * gravity;
             }
             return decay;
         }
 
         private double GetInteractionScore(IEnumerable<IEventInteraction> interactions, double interactionWeight)
         {
+            double interactionScore = 0;
             var interactionDecay = GetInteractionDecay(interactions);
             var interactionCount = interactions.ToList().Count;
 
-            return interactionCount * interactionWeight / (interactionDecay / (interactionCount + 1));
+            if (interactions != null && interactionCount > 0)
+            {
+                interactionScore = interactionCount * interactionWeight / (interactionDecay / (interactionCount + 1));
+            }
+
+            return interactionScore;
         }
 
         private double GetTotalTrendingScoreForAnEvent(Guid eventId)
         {
-
             double applicationWeight = Constants.TrendingApplicationWeight;
             double followWeight = Constants.TrendingFollowWeight;
             double commentWeight = Constants.TrendingCommentWeight;
@@ -330,7 +347,7 @@ namespace Eventive.ApplicationLogic.Services
             {
                 int numberOfScores = 0;
                 double totalWeightedScore = 0;
-                if (categoryRatingScore.ContainsKey(category))
+                if (categoryRatingScore != null && categoryRatingScore.ContainsKey(category))
                 {
                     totalWeightedScore += categoryRatingScore[category] * Constants.RecommendationRatingWeight;
                     numberOfScores++;
@@ -342,7 +359,10 @@ namespace Eventive.ApplicationLogic.Services
                     numberOfScores++;
                 }
 
-                categoryTotalScore.Add(category, totalWeightedScore / numberOfScores);
+                if (numberOfScores > 0)
+                {
+                    categoryTotalScore.Add(category, totalWeightedScore / numberOfScores);
+                }
             }
 
             foreach(var eventOrganized in events)
@@ -367,25 +387,28 @@ namespace Eventive.ApplicationLogic.Services
             {
                 int numberOfScores = 0;
                 double weightedTotalScore = 0;
-                if (clickScorePerCategory.ContainsKey(category))
+                if (clickScorePerCategory != null && clickScorePerCategory.ContainsKey(category))
                 {
                     weightedTotalScore += clickScorePerCategory[category] * Constants.RecommendationClickWeight;
                     numberOfScores++;
                 }
 
-                if (followingScorePerCategory.ContainsKey(category))
+                if (followingScorePerCategory != null && followingScorePerCategory.ContainsKey(category))
                 {
                     weightedTotalScore += followingScorePerCategory[category] * Constants.RecommendationFollowWeight;
                     numberOfScores++;
                 }
 
-                if (applicationScorePerCategory.ContainsKey(category))
+                if (applicationScorePerCategory != null && applicationScorePerCategory.ContainsKey(category))
                 {
                     weightedTotalScore += applicationScorePerCategory[category] * Constants.RecommendationApplicationWeight;
                     numberOfScores++;
                 }
 
-                categoryInteractionScoreForUser.Add(category, weightedTotalScore / numberOfScores);
+                if (numberOfScores > 0)
+                {
+                    categoryInteractionScoreForUser.Add(category, weightedTotalScore / numberOfScores);
+                }
             }
 
             return categoryInteractionScoreForUser;
@@ -394,6 +417,11 @@ namespace Eventive.ApplicationLogic.Services
         private Dictionary<EventCategory, double> GetApplicationScoreForUser(Guid participantId)
         {
             List<EventApplication> eventApplications = eventRepository.GetUserApplications(participantId).ToList();
+            if (eventApplications.Count == 0)
+            {
+                return null;
+            }
+
             Dictionary<EventCategory, int> applicationCategories = new Dictionary<EventCategory, int>();
             foreach (var application in eventApplications)
             {
@@ -420,6 +448,11 @@ namespace Eventive.ApplicationLogic.Services
         private Dictionary<EventCategory, double> GetFollowingScoreForUser(Guid participantId)
         {
             List<EventFollowing> eventFollowings = eventRepository.GetUserFollowings(participantId).ToList();
+            if (eventFollowings.Count == 0)
+            {
+                return null;
+            }
+
             Dictionary<EventCategory, int> followingCategories = new Dictionary<EventCategory, int>();
             foreach(var following in eventFollowings)
             {
@@ -446,6 +479,11 @@ namespace Eventive.ApplicationLogic.Services
         private Dictionary<EventCategory, double> GetCategoryRatingScoreForUser(Guid participantId)
         {
             List<EventRating> userRatings = GetUserRatings(participantId).ToList();
+            if (userRatings.Count == 0)
+            {
+                return null;
+            }
+
             Dictionary<EventCategory, List<int>> categoryRatingScores = new Dictionary<EventCategory, List<int>>();
             foreach (var userRating in userRatings)
             {
@@ -474,6 +512,10 @@ namespace Eventive.ApplicationLogic.Services
 
             //Normalize clicks
             var totalClicks = eventRepository.GetTotalNumberOfClicksForUser(participantId);
+            if (totalClicks == 0)
+            {
+                return null;
+            }
 
             Dictionary<EventCategory, double> clickScorePerCategory = new Dictionary<EventCategory, double>();
             foreach (EventCategory category in Enum.GetValues(typeof(EventCategory)))
@@ -494,8 +536,11 @@ namespace Eventive.ApplicationLogic.Services
             foreach(var category in categoryRatingList.Keys)
             {
                 var ratingList = categoryRatingList[category];
-                double normalizedRating = ratingList.Sum() / ratingList.Count;
-                categoryRatingScore.Add(category, normalizedRating);
+                if (ratingList.Count > 0)
+                {
+                    double normalizedRating = ratingList.Sum() / ratingList.Count;
+                    categoryRatingScore.Add(category, normalizedRating);
+                }
             }
 
             return categoryRatingScore;
@@ -666,6 +711,20 @@ namespace Eventive.ApplicationLogic.Services
             var newClick = EventClick.Create(eventToRegisterFor, commenter);
             eventRepository.AddInteraction(newClick);
             return newClick;
+        }
+
+        public void AcceptApplication(Guid applicationId)
+        {
+            var application = eventRepository.GetApplication(applicationId);
+            application.JudgeApplication(ApplicationStatus.Approved);
+            eventRepository.Update(application);
+        }
+
+        public void RejectApplication(Guid applicationId)
+        {
+            var application = eventRepository.GetApplication(applicationId);
+            application.JudgeApplication(ApplicationStatus.Rejected);
+            eventRepository.Update(application);
         }
 
         public string FormatParticipationFee(decimal participationFee)

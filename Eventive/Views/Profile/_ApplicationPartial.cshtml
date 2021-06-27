@@ -1,5 +1,5 @@
 ﻿@using Eventive.Models.Users;
-@model UserProfileViewModel
+@model UserApplicationViewModel;
 
 <div class="container">
     <div class="main-body">
@@ -8,48 +8,45 @@
                 <div class="card">
                     <div class="card-body profile-info">
                         <div class="d-flex flex-column align-items-center text-center">
-                            @if (!string.IsNullOrEmpty(Model.ProfileImage))
+                            @if (!string.IsNullOrEmpty(Model.Profile.ProfileImage))
                             {
-                                <img src="data:image/png;base64, @Model.ProfileImage" width="150">
+                                <img src="data:image/png;base64, @Model.Profile.ProfileImage" width="150">
                             }
                             else
                             {
                                 <img src="~/images/default_profile.png" width="150" alt="Profile Picture">
                             }
                             <div class="mt-3">
-                                <h4>@Model.FullName</h4>
-                                @if (!string.IsNullOrEmpty(Model.Country) || !string.IsNullOrEmpty(Model.City))
+                                <h4>@Model.Profile.FullName</h4>
+                                @if (!string.IsNullOrEmpty(Model.Profile.Country) || !string.IsNullOrEmpty(Model.Profile.City))
                                 {
                                     <p class="text-secondary mb-1">
-                                        @if (!string.IsNullOrEmpty(Model.City))
+                                        @if (!string.IsNullOrEmpty(Model.Profile.City))
                                         {
-                                            @Model.City
+                                            @Model.Profile.City
                                         }
-                                        @if (!string.IsNullOrEmpty(Model.City) && !string.IsNullOrEmpty(Model.Country))
+                                        @if (!string.IsNullOrEmpty(Model.Profile.City) && !string.IsNullOrEmpty(Model.Profile.Country))
                                         {
                                             <span>, </span>
                                         }
-                                        @if (!string.IsNullOrEmpty(Model.Country))
+                                        @if (!string.IsNullOrEmpty(Model.Profile.Country))
                                         {
-                                            @Model.Country
+                                            @Model.Profile.Country
                                         }
                                     </p>
-                                }
-                                @if (User.Identity.IsAuthenticated) {
-                                    <a href="#" class="btn btn-outline-primary" onclick="LoadEditProfile('@Model.Id')" data-toggle="modal" data-target="#editProfileModal">Edit</a>
                                 }
                             </div>
                         </div>
                     </div>
                 </div>
 
-                @if (!string.IsNullOrEmpty(Model.LinkToSocialM))
+                @if (!string.IsNullOrEmpty(Model.Profile.LinkToSocialM))
                 {
                     <div class="card mt-3">
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
                                 <h6 class="mb-0"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-globe mr-2 icon-inline"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>Social Media</h6>
-                                <span class="text-secondary">@Model.LinkToSocialM</span>
+                                <span class="text-secondary">@Model.Profile.LinkToSocialM</span>
                             </li>
                         </ul>
                     </div>
@@ -59,86 +56,86 @@
             <div class="col-md-8">
                 <div class="card mb-3">
                     <div class="card-body profile-details">
-                        @if (!string.IsNullOrEmpty(Model.Email))
+                        @if (!string.IsNullOrEmpty(Model.Profile.Email))
                         {
                             <div class="row">
                                 <div class="col-sm-3">
                                     <h6 class="mb-0">Email</h6>
                                 </div>
                                 <div class="col-sm-9 text-secondary">
-                                    @Model.Email
+                                    @Model.Profile.Email
                                 </div>
                             </div>
                             <hr />
                         }
-                        @if (!string.IsNullOrEmpty(Model.PhoneNo))
+                        @if (!string.IsNullOrEmpty(Model.Profile.PhoneNo))
                         {
                             <div class="row">
                                 <div class="col-sm-3">
                                     <h6 class="mb-0">Phone number</h6>
                                 </div>
                                 <div class="col-sm-9 text-secondary">
-                                    @Model.PhoneNo
+                                    @Model.Profile.PhoneNo
                                 </div>
                             </div>
                             <hr />
                         }
-                        @if (!string.IsNullOrEmpty(Model.City))
+                        @if (!string.IsNullOrEmpty(Model.Profile.City))
                         {
                             <div class="row">
                                 <div class="col-sm-3">
                                     <h6 class="mb-0">City</h6>
                                 </div>
                                 <div class="col-sm-9 text-secondary">
-                                    @Model.City
+                                    @Model.Profile.City
                                 </div>
                             </div>
                             <hr />
                         }
-                        @if (!string.IsNullOrEmpty(Model.Country))
+                        @if (!string.IsNullOrEmpty(Model.Profile.Country))
                         {
                             <div class="row">
                                 <div class="col-sm-3">
                                     <h6 class="mb-0">Country</h6>
                                 </div>
                                 <div class="col-sm-9 text-secondary">
-                                    @Model.Country
+                                    @Model.Profile.Country
                                 </div>
                             </div>
                             <hr />
                         }
-                        @if (!string.IsNullOrEmpty(Model.Address))
+                        @if (!string.IsNullOrEmpty(Model.Profile.Address))
                         {
                             <div class="row">
                                 <div class="col-sm-3">
                                     <h6 class="mb-0">Address</h6>
                                 </div>
                                 <div class="col-sm-9 text-secondary">
-                                    @Model.Address
+                                    @Model.Profile.Address
                                 </div>
                             </div>
                             <hr />
                         }
-                        @if (Model.Age > 0)
+                        @if (Model.Profile.Age > 0)
                         {
                             <div class="row">
                                 <div class="col-sm-3">
                                     <h6 class="mb-0">Age</h6>
                                 </div>
                                 <div class="col-sm-9 text-secondary">
-                                    @Model.Age
+                                    @Model.Profile.Age
                                 </div>
                             </div>
                             <hr />
                         }
-                        @if (!string.IsNullOrWhiteSpace(Model.Description))
+                        @if (!string.IsNullOrWhiteSpace(Model.Profile.Description))
                         {
                             <div class="row">
                                 <div class="col-sm-3">
                                     <h6 class="mb-0">Bio</h6>
                                 </div>
                                 <div class="col-sm-9 text-secondary">
-                                    @Model.Description
+                                    @Model.Profile.Description
                                 </div>
                             </div>
                             <hr />
@@ -146,6 +143,13 @@
                     </div>
                 </div>
             </div>
+            @if (!string.IsNullOrWhiteSpace(Model.ApplicationMessage))
+            {
+                <div class="application-text-area">
+                    <h2>Application text:</h2>
+                    @Html.TextAreaFor(m => m.ApplicationMessage, new { @readonly = "readonly" })
+                </div>
+            }
         </div>
     </div>
 </div>

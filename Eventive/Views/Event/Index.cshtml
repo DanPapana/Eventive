@@ -32,7 +32,7 @@
 <div id="loadEventsContainer" class="container">
     <ul class="nav nav-pills nav-justified">
         <li class="nav-item">
-            <a class="nav-link active" data-toggle="pill" onclick="loadEvents()">All</a>
+            <a class="nav-link active" data-toggle="pill" onclick="loadEvents()">Active</a>
         </li>
         @if (User.Identity.IsAuthenticated)
         {
@@ -73,7 +73,6 @@
         }
 
         function loadRecommended() {
-            var category = $("#selectpicker").val();
             var latitude = null;
             var longitude = null;
 

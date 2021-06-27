@@ -42,7 +42,7 @@
         $.ajax({
             url: "/Event/Rate?eventId=" + eventId + "&score=" + score,
             success: function () {},
-            error: function (xhr) { alert(xhr.responseText) }   
+            error: function (xhr) { alert(xhr.responseText) }
         });
     }
 
@@ -62,6 +62,10 @@
         loadServerPartialView("#applyBody", '@Url.Action("Apply", "Event")' + "/" + Id).then(successCallback);
     }
 
+    function loadGetApplications(Id) {
+        loadServerPartialView("#getApplicationsBody", '@Url.Action("GetApplications", "Event")' + "/" + Id);
+    }
+
     function successCallback(response) {
         applyToEvent(response.Id);
     }
@@ -69,6 +73,7 @@
     function initializeGoogleApi() {
         var input = document.getElementById('locationInput');
         var autocomplete = new google.maps.places.Autocomplete(input);
+        document.getElementById('isLocationValid').value = false;
 
         google.maps.event.addListener(autocomplete, 'place_changed', function () {
             document.getElementById('isLocationValid').value = true;

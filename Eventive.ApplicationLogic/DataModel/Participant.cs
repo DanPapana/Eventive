@@ -10,7 +10,8 @@ namespace Eventive.ApplicationLogic.DataModel
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string ProfileImage { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public string Description { get; set; }
+        public int Age { get; set; }
         public ContactDetails ContactDetails { get; set; }
 
         public static Participant CreateUser(Guid userId, string firstName, string lastName, string country, string city, string email)
@@ -34,7 +35,9 @@ namespace Eventive.ApplicationLogic.DataModel
                                 string city,            
                                 string country, 
                                 string phoneNo,
-                                string linkToSocialM)
+                                string linkToSocialM,
+                                int age,
+                                string description)
         {
             if (!string.IsNullOrEmpty(profileImage))
             {
@@ -43,6 +46,8 @@ namespace Eventive.ApplicationLogic.DataModel
 
             FirstName = firstName;
             LastName = lastName;
+            Description = description;
+            Age = age;
 
             ContactDetails.UpdateDetails(address, city, country, phoneNo, linkToSocialM);
 
