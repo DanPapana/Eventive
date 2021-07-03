@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Eventive.Models.Users
@@ -29,15 +30,16 @@ namespace Eventive.Models.Users
         [Display(Name = "City *")]
         public string City { get; set; }
 
-        [Required(ErrorMessage = "We need to have a phone number")]
-        [Display(Name = "Phone number *")]
+        [Display(Name = "Phone number")]
         public string PhoneNo { get; set; }
 
-        [Required(ErrorMessage = "We need to have an email")]
-        [Display(Name = "Email *")]
-        public string Email { get; set; }
-
-        [Display(Name = "Link to your social media")]
+        [Display(Name = "Link to a social media account")]
         public string LinkToSocialM { get; set; }
+
+        [Display(Name = "Age")]
+        public int Age { get; set; }
+
+        [Display(Name = "Bio")]
+        public string Description { get; set; }
     }
 }

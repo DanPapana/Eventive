@@ -1,27 +1,28 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Eventive.ApplicationLogic.DataModel;
+﻿using Eventive.ApplicationLogic.DataModel;
 using Eventive.ApplicationLogic.Services;
-using Eventive.Models.Events;
 using Eventive.Models.Users;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.IO;
 
 namespace Eventive.Controllers
 {
+    [Authorize]
     public class ProfileController : Controller
     {
         private readonly UserService userService;
+        private readonly EventService eventService;
         private readonly UserManager<IdentityUser> userManager;
 
-        public ProfileController(UserManager<IdentityUser> userManager, UserService userService)
+        public ProfileController(UserManager<IdentityUser> userManager, UserService userService, EventService eventService)
         {
             this.userManager = userManager;
             this.userService = userService;
+            this.eventService = eventService;
         }
 
-
+        [AllowAnonymous]
         public IActionResult Index()
         {
             return View();
@@ -31,22 +32,18 @@ namespace Eventive.Controllers
         {
             try
             {
-                var thisUserId = userManager.GetUserId(User);
-                User user = userService.GetUserByUserId(thisUserId);
-
-                UserProfileViewModel viewModel = new UserProfileViewModel()
+                if (User.Identity.IsAuthenticated)
                 {
-                    Id = user.Id.ToString(),
-                    DateOfBirth = $"{user.DateOfBirth: dd MMMM yyyy} 🎂",
-                    FullName = $"{user.FirstName} {user.LastName}",
-                    ProfileImage = user.ProfileImage,
-                    Email = user.ContactDetails.Email,
-                    CityCountry = $"{user.ContactDetails.City}, {user.ContactDetails.Country}",
-                    PhoneNo = user.ContactDetails.PhoneNo,
-                    LinkToSocialM = user.ContactDetails.LinkToSocialM
-                };
+                    var thisUserId = userManager.GetUserId(User);
+                    var user = userService.GetParticipantByUserId(thisUserId);
+                    var viewModel = GetUserProfileViewModel(user);
 
-                return PartialView("_ProfilePartial", viewModel);
+                    return PartialView("_ProfilePartial", viewModel);
+                } 
+                else
+                {
+                    return PartialView("_ProfilePartial", new UserProfileViewModel());
+                }
             }
             catch (Exception e)
             {
@@ -54,6 +51,48 @@ namespace Eventive.Controllers
             }
         }
 
+        [AllowAnonymous]
+        public IActionResult UserApplication(string Id, Guid applicationId)
+        {
+            try
+            {
+                var user = userService.GetParticipantByUserId(Id);
+                var profileViewModel = GetUserProfileViewModel(user);
+                var application = eventService.GetApplication(applicationId);
+
+                var viewModel = new UserApplicationViewModel()
+                {
+                    Profile = profileViewModel,
+                    ApplicationMessage = application.ApplicationText
+                };
+
+                return View("_ApplicationPartial", viewModel);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        private UserProfileViewModel GetUserProfileViewModel(Participant user)
+        {
+            var viewModel = new UserProfileViewModel()
+            {
+                Id = user.Id.ToString(),
+                FullName = $"{user.FirstName} {user.LastName}",
+                ProfileImage = user.ProfileImage,
+                Email = user.ContactDetails.Email,
+                City = user.ContactDetails.City,
+                Country = user.ContactDetails.Country,
+                Address = user.ContactDetails.Address,
+                PhoneNo = user.ContactDetails.PhoneNo,
+                LinkToSocialM = user.ContactDetails.LinkToSocialM,
+                Age = user.Age,
+                Description = user.Description
+            };
+
+            return viewModel;
+        }
 
         [HttpGet]
         public IActionResult EditProfile()
@@ -61,18 +100,20 @@ namespace Eventive.Controllers
             try
             {
                 var thisUserId = userManager.GetUserId(User);
-                User user = userService.GetUserByUserId(thisUserId);
+                Participant user = userService.GetParticipantByUserId(thisUserId);
 
                 var editProfileViewModel = new EditProfileViewModel()
                 {
                     Id = user.Id.ToString(),
                     FirstName = user.FirstName,
                     LastName = user.LastName,
+                    Address = user.ContactDetails.Address,
                     City = user.ContactDetails.City,
                     Country = user.ContactDetails.Country,
-                    Email = user.ContactDetails.Email,
                     PhoneNo = user.ContactDetails.PhoneNo,
-                    LinkToSocialM = user.ContactDetails.LinkToSocialM
+                    LinkToSocialM = user.ContactDetails.LinkToSocialM,
+                    Age = user.Age,
+                    Description = user.Description
                 };
 
                 return PartialView("_EditProfilePartial", editProfileViewModel);
@@ -94,29 +135,26 @@ namespace Eventive.Controllers
 
             try
             {
-                string image = "";
                 var thisUserId = userManager.GetUserId(User);
-                User userToUpdate = userService.GetUserByUserId(thisUserId);
+                Participant userToUpdate = userService.GetParticipantByUserId(thisUserId);
 
+                string image = string.Empty;
                 if (updatedData.ProfileImage != null)
                 {
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        updatedData.ProfileImage.CopyTo(memoryStream);
-                        image = Convert.ToBase64String(memoryStream.ToArray());
-                    }
+                    image = HelperService.CompressImage(updatedData.ProfileImage);
                 }
 
-                userService.UpdateUser(userToUpdate.Id,
-                                                updatedData.FirstName,
-                                                updatedData.LastName,
-                                                image,
-                                                updatedData.Address,
-                                                updatedData.City,
-                                                updatedData.Country,
-                                                updatedData.PhoneNo,
-                                                updatedData.Email,
-                                                updatedData.LinkToSocialM);
+                userService.UpdateParticipant(userToUpdate.Id,
+                                        updatedData.FirstName,
+                                        updatedData.LastName,
+                                        image,
+                                        updatedData.Address,
+                                        updatedData.City,
+                                        updatedData.Country,
+                                        updatedData.PhoneNo,
+                                        updatedData.LinkToSocialM,
+                                        updatedData.Age,
+                                        updatedData.Description);
 
                 return PartialView("_EditProfilePartial", updatedData);
             }

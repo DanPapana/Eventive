@@ -1,11 +1,11 @@
 ﻿@using Eventive.Models.Events;
-@model EventViewModel;
+@model DetailsViewModel;
 
-<div class="details-content-container d-flex">
-    <div class="container image-container">
-        @if (!string.IsNullOrEmpty(Model.EventImage))
+<div class="details-content-container" id="detailsPartial">
+    <div class="container">
+        @if (!string.IsNullOrEmpty(Model.Image))
         {
-            <img src="data:image/png;base64, @Model.EventImage" class="img-fluid" alt="Event thumbnail">
+            <img src="data:image/png;base64, @Model.Image" class="img-fluid" alt="Event thumbnail">
         }
         else
         {
@@ -48,111 +48,135 @@
     </div>
 
     <div class="container details-container">
-        <div class="d-flex justify-content-between">
-            <p>Event Name</p>
-            <p class="title">@Model.Title</p>
+        <div class="d-flex justify-content-start">
+            Event Name:
+        </div>
+        <div class="title d-flex justify-content-end mb-3">
+            @Model.Title
+        </div>
+
+        <div class="d-flex justify-content-start">
+            Location:
+        </div>
+        <div class="title d-flex justify-content-end mb-3">
+            @Model.Location
         </div>
 
         <div class="d-flex justify-content-between">
-            <p>Category</p>
+            <p>Category:</p>
             <p>@Model.Category</p>
         </div>
-
         <div class="d-flex justify-content-between">
-            <p>Application Deadline</p>
+            <p>Application Deadline:</p>
             <p>@Model.Deadline</p>
         </div>
-
         <div class="d-flex justify-content-between">
-            <p>Occurence Date</p>
-            <p>@Model.OccurenceDate</p>
+            <p>Occurence Date:</p>
+            <p>@Model.OccurenceDate @Model.OccurenceTime</p>
         </div>
-
         <div class="d-flex justify-content-between">
-            <p>Location</p>
-            <p>@Model.Location</p>
+            <p>Attendance fee:</p>
+            <p>@Model.ParticipationFee</p>
         </div>
-
-        <p>@Model.ParticipationFee</p>
-        <p>@Model.MaximumParticipants</p>
-        <p>@Model.EventDescription</p>
+        <div class="d-flex justify-content-between">
+            <p>Maximum participants:</p>
+            <p>@Model.MaximumParticipants</p>
+        </div>
+        @if (!string.IsNullOrEmpty(Model.Description))
+        {
+            <div class="d-flex justify-content-start">
+                Description:
+            </div>
+            <div class="d-flex justify-content-end mb-3">
+                @Model.Description
+            </div>
+        }
     </div>
 </div>
 
-@*Reply function?*@
-
-<div>
-    @*Comment to add*@
-    @* @if (User.Identity.IsAuthenticated) {*@
+@if (User.Identity.IsAuthenticated)
+{
     <div class="comment">
-        <div class="comment-avatar">
+        <div class="form-comment-avatar">
             @if (!string.IsNullOrEmpty(Model.UserProfileImage))
             {
                 <img src="data:image/png;base64, @Model.UserProfileImage" class="img-fluid" alt="Commenter profile picture">
             }
             else
             {
-                <img src="~/images/default_profile.png" class="img-fluid" alt="Commenter profile picture">
+                <img src="~/images/default_profile.png" class="img-fluid default-avatar-img" alt="Commenter profile picture">
             }
         </div>
-        <div class="comment-text">
-            <textarea placeholder="Write a comment..."></textarea>
-            <div>
-                <button class="btn btn-success comment-button">
-                    Comment
-                </button>
+        <form method="post" class="comment-text" id="addCommentForm">
+            <input style="display: none" asp-for="NewCommentEventId" value="@Model.Id" class="form-control" />
+            @Html.TextAreaFor(m => m.NewCommentMessage, new { @class = "form-control" })
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-success comment-button" id="addCommentButton">Comment</button>
             </div>
-        </div>
-        @*
-            <a href="#reply" title="Reply" class="comment-reply">
-                <i class="fas fa-reply"></i>
-            </a>
-        *@
+        </form>
     </div>
-    @*}*@
+}
 
-    @if (Model.Comments != null)
-    {
-        @foreach (var comment in Model.Comments)
+@if (Model.Comments != null)
+{
+    <div>
+        @foreach (var comment in Model.Comments.OrderByDescending(com => com.Timestamp))
         {
             <div class="comment">
                 <div class="comment-avatar">
-                    @if (!string.IsNullOrEmpty(comment.Commenter.ProfileImage))
+                    @if (comment.Participant != null && !string.IsNullOrEmpty(comment.Participant.ProfileImage))
                     {
-                        <img src="data:image/png;base64, @comment.Commenter.ProfileImage" class="img-fluid" alt="Organizer profile picture">
+                        <img src="data:image/png;base64, @comment.Participant.ProfileImage" class="img-fluid" alt="Commenter profile picture">
                     }
                     else
                     {
-                        <img src="~/images/other.png" class="img-fluid" alt="Organizer profile picture">
+                        <img src="~/images/default_profile.png" class="img-fluid" alt="Commenter profile picture">
                     }
                 </div>
-                <div class="comment-author">@comment.Commenter.FirstName @comment.Commenter.LastName</div>
-                <div class="comment-text">
-                    @comment.Message
-                    <div class="comment-date">@comment.Timestamp</div>
+                <div class="comment-author d-flex justify-content-between">
+                    <span>@comment.Participant.FirstName @comment.Participant.LastName</span>
+                    <span class="comment-date">@comment.Timestamp</span>
                 </div>
-                <a href="#reply" title="Reply" class="comment-reply">
-                    <i class="fas fa-reply"></i>
-                </a>
+                <div>
+                    <div class="comment-text">
+                        <span class="comment-message">@comment.Message</span>
+                        @if (User.Identity.IsAuthenticated && User.Identity.Name.Equals(comment.Participant.ContactDetails.Email))
+                        {
+                            <button class="btn btn-outline-danger comment-delete-button" onclick="removeComment('@comment.Id')">
+                                <i class="fa fa-trash" aria-hidden="true"></i>
+                            </button>
+                        }
+                    </div>
+                </div>
             </div>
         }
-    }
-</div>
+    </div>
+}
 
-@*
-$("#createVehicleButton").on("click", function () {
-    var createVehicleForm = $("#createVehicleForm").serialize();
-    $.ajax({
-        type: "POST",
-        data: createVehicleForm,
-        url: "/Vehicles/Create",
-        success: function (htmlContent) {
-            $("#createVehicleContainer").html(htmlContent);
-            if (htmlContent.indexOf("field-validation-error") == -1) {
-                $("#createVehicleModal").modal("hide");
-                loadTable();
-            }
-        }
+<script>
+    $("#addCommentForm").submit(function (event) {
+        event.preventDefault();
     });
-});
-*@
+
+    function removeComment(commentId) {
+        $.ajax({
+            url: "/Event/RemoveComment?Id=" + commentId,
+            success: function () {
+                loadDetails('@Model.Id');
+            },
+            error: function (xhr) { alert(xhr.responseText) }
+        });
+    }
+
+    $("#addCommentButton").on("click", function () {
+        var createCommentForm = $("#addCommentForm").serialize();
+        $.ajax({
+            type: "POST",
+            data: createCommentForm,
+            url: '@Url.Action("AddComment", "Event")',
+            success: function () {
+                loadDetails('@Model.Id');
+            }
+        });
+    });
+</script>

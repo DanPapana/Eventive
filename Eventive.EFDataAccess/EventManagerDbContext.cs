@@ -8,12 +8,16 @@ namespace Eventive.EFDataAccess
         public EventManagerDbContext(DbContextOptions<EventManagerDbContext> options) : base(options)
         {
         }
-        public DbSet<Event> Events { get; set; }
-        public DbSet<User> Users { get; set; }
-        public DbSet<Participation> Participations { get; set; }
+        public DbSet<EventOrganized> Events { get; set; }
+        public DbSet<Participant> Participants { get; set; }
+        public DbSet<EventApplication> Applications { get; set; }
+        public DbSet<EventFollowing> Followings { get; set; }
+        public DbSet<EventClick> Clicks { get; set; }
         public DbSet<EventDetails> EventDetails { get; set; }
         public DbSet<ContactDetails> ContactDetails { get; set; }
-
+        public DbSet<Comment> Comments { get; set; }
+        public DbSet<EventRating> Ratings { get; set; }
+        public DbSet<UserBehaviour> UserBehaviours { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<EventDetails>().Property(P => P.ParticipationFee).HasColumnType("decimal(18,2)");

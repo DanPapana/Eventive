@@ -1,8 +1,6 @@
 ﻿using Eventive.ApplicationLogic.Abstraction;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Eventive.EFDataAccess
 {
@@ -35,7 +33,7 @@ namespace Eventive.EFDataAccess
 
         public T Update(T itemToUpdate)
         {
-            var entity = dbContext.Update<T>(itemToUpdate);
+            var entity = dbContext.Update(itemToUpdate);
             dbContext.SaveChanges();
             return entity.Entity;
         }

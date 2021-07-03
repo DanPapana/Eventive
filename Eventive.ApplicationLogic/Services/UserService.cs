@@ -3,7 +3,7 @@ using Eventive.ApplicationLogic.DataModel;
 using Eventive.ApplicationLogic.Exceptions;
 using System;
 using System.Collections.Generic;
-using static Eventive.ApplicationLogic.DataModel.Event;
+using static Eventive.ApplicationLogic.DataModel.EventOrganized;
 
 namespace Eventive.ApplicationLogic.Services
 {
@@ -18,7 +18,7 @@ namespace Eventive.ApplicationLogic.Services
             this.eventRepository = eventRepository;
         }
 
-        private Guid ParseID(string userId)
+        private Guid ParseId(string userId)
         {
             if (!Guid.TryParse(userId, out Guid userIdGuid))
             {
@@ -27,67 +27,72 @@ namespace Eventive.ApplicationLogic.Services
             return userIdGuid;
         }
 
-        public User GetCreatorByGuid(Guid userGuid)
+        public Participant GetCreatorById(Guid participantId)
         {
-            var user = userRepository.GetUserByGuid(userGuid);
-            if (user == null)
+            var user = userRepository.GetParticipantByGuid(participantId);
+            if (user is null)
             {
-                throw new EntityNotFoundException(userGuid);
+                throw new EntityNotFoundException(participantId);
             }
 
             return user;
         }
 
-        public User GetUserByUserId(string userId)
+        public Participant GetParticipantByUserId(string userId)
         {
-            Guid userIdGuid = ParseID(userId);
-            return userRepository.GetUserByUserId(userIdGuid);
+            Guid userGuid = ParseId(userId);
+            var participant = userRepository.GetUserByUserId(userGuid);
+            if (participant is null)
+            {
+                throw new EntityNotFoundException(userGuid);
+            }
+
+            return participant;
         }
 
-        public IEnumerable<Event> GetUserEvents(string userId)
+        public IEnumerable<EventOrganized> GetUserEvents(Guid participantId)
         {
-            Guid userIdGuid = ParseID(userId);
-            GetCreatorByGuid(userIdGuid);
-            return userRepository.GetEventsCreatedByUser(userIdGuid);
+            return userRepository.GetEventsCreatedByUser(participantId);
         }
 
-        public User RegisterNewUser(string userId, string firstName, string lastName, string socialId, string email)
+        public Participant RegisterNewUser(string userId, string firstName, string lastName, string country, string city, string email)
         {
-            var newUser = User.CreateUser(Guid.Parse(userId), firstName, lastName, socialId, email);
+            var newUser = Participant.CreateUser(Guid.Parse(userId), firstName, lastName, country, city, email);
             newUser = userRepository.Add(newUser);
             userRepository.Update(newUser);
             return newUser;
         }
 
-        public User UpdateUser(Guid updateId, string firstName, string lastName,
+        public Participant UpdateParticipant(Guid participantId, string firstName, string lastName,
                                 string profileImage, string address,
                                 string city, string country,
-                                string phoneNo, string email,
-                                string linkToSocialM)
+                                string phoneNo, string linkToSocialM, int age, string description)
         {
-            var userToUpdate = userRepository.GetUserByGuid(updateId);
+            var userToUpdate = userRepository.GetParticipantByGuid(participantId);
 
             userToUpdate.UpdateUser(firstName, lastName, profileImage, 
-                address, city, country, phoneNo, email, linkToSocialM);
+                address, city, country, phoneNo, linkToSocialM, age, description);
             
             userRepository.Update(userToUpdate);
 
             return userToUpdate;
         }
 
-        public void AddEvent(Guid creatorId, string title, EventCategory category, 
+        public EventOrganized AddEvent(Guid creatorId, string title, EventCategory category, 
                             string image, EventDetails details)
         {
-            GetCreatorByGuid(creatorId);
+            GetCreatorById(creatorId);
 
-            eventRepository.Add(new Event() { 
-                Id = Guid.NewGuid(), 
-                Title = title, 
-                CreatorId = creatorId, 
-                Category = category,
-                EventDetails = details,
-                ImageByteArray = image
-            });
+            var newEventOrganized = Create(
+                creatorId,
+                title,
+                image,
+                category,
+                details
+            );
+
+            eventRepository.Add(newEventOrganized);
+            return newEventOrganized;
         }
     }
 }

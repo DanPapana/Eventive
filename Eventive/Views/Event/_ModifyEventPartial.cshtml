@@ -1,0 +1,71 @@
+﻿@using Eventive.Models.Events;
+@using Eventive.ApplicationLogic.DataModel;
+@model ModifyEventViewModel;
+
+<input type="hidden" asp-for="Id" />
+<input type="hidden" asp-for="CityLat" id="cityLat" />
+<input type="hidden" asp-for="CityLong" id="cityLong" />
+
+<div class="d-flex justify-content-center">
+    <div class="container w-50">
+        <div class="d-flex justify-content-center form-title">Required:</div>
+        <div class="form-group">
+            <label asp-for="Title"></label>
+            <input asp-for="Title" type="text" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Category"></label>
+            <select asp-for="Category" asp-items="Html.GetEnumSelectList<EventOrganized.EventCategory>()" class="form-control"></select>
+            <span asp-validation-for="Category" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Deadline"></label>
+            <input asp-for="Deadline" type="datetime-local" class="form-control" />
+            <span asp-validation-for="Deadline" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="OccurenceDate"></label>
+            <input asp-for="OccurenceDate" type="datetime-local" class="form-control" />
+            <span asp-validation-for="OccurenceDate" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Location"></label>
+            <input id="locationInput" asp-for="Location" type="text" class="form-control" />
+            <span asp-validation-for="Location" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="container w-50">
+        <div class="d-flex justify-content-center form-title">Optional:</div>
+        <div class="form-group">
+            <label asp-for="MaximumParticipants"></label>
+            <input asp-for="MaximumParticipants" type="number" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="ParticipationFee"></label>
+            <input asp-for="ParticipationFee" type="number" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="EventImage"></label>
+            <input asp-for="EventImage" type="file" />
+        </div>
+
+        <div class="form-group form-check">
+            <label asp-for="ApplicationRequired" class="form-check-label"></label>
+            <input asp-for="ApplicationRequired" type="checkbox" class="form-check-input">
+        </div>
+
+        <div class="form-group">
+            <label asp-for="EventDescription"></label>
+            @Html.TextAreaFor(m => m.EventDescription, new { @class = "form-control form-event-description" })
+        </div>
+    </div>
+</div>
+

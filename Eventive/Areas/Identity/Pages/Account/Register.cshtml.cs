@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading.Tasks;
+﻿using Eventive.ApplicationLogic.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -13,7 +7,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using Eventive.ApplicationLogic.Services;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Text.Encodings.Web;
+using System.Threading.Tasks;
 
 namespace Eventive.Areas.Identity.Pages.Account
 {
@@ -63,9 +62,12 @@ namespace Eventive.Areas.Identity.Pages.Account
             public string LastName { get; set; }
 
             [Required]
-            [StringLength(10, ErrorMessage = "Social security number must have 10 digits", MinimumLength = 10)]
-            [Display(Name = "Social Number")]
-            public string SocialId { get; set; }
+            [Display(Name = "Country")]
+            public string Country { get; set; }
+
+            [Required]
+            [Display(Name = "City")]
+            public string City { get; set; }
 
             [Required]
             [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
@@ -77,8 +79,6 @@ namespace Eventive.Areas.Identity.Pages.Account
             [Display(Name = "Confirm password")]
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
-
-
         }
 
         public async Task OnGetAsync(string returnUrl = null)
@@ -97,7 +97,7 @@ namespace Eventive.Areas.Identity.Pages.Account
                 var result = await _userManager.CreateAsync(user, Input.Password);
                 if (result.Succeeded)
                 {
-                    userService.RegisterNewUser(user.Id, Input.FirstName, Input.LastName, Input.SocialId, user.Email);
+                    userService.RegisterNewUser(user.Id, Input.FirstName, Input.LastName, Input.Country, Input.City, user.Email);
                     _logger.LogInformation("User created a new account with password.");
 
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);

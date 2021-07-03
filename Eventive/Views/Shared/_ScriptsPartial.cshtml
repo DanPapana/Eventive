@@ -1,0 +1,94 @@
+﻿<partial name="_ModalsPartial" />
+
+<script>
+    function followEvent(id) {
+        $.ajax({
+            url: "/Event/Follow?id=" + id,
+            success: function () {
+                $('#follow-' + id).toggle();
+                $('#following-' + id).toggle();
+            }
+        });
+    }
+
+    function applyToEvent(id) {
+        $('#apply-' + id).toggle();
+        $('#applied-' + id).toggle();
+        if ($('follow-' + id).is(":visible")) {
+            $('#follow-' + id).hide();
+            $('#following-' + id).show();
+        }
+    }
+
+    $(document).ready(function () {
+        $("#searchTitleBar").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#toSearch .card").filter(function () {
+                $(this).toggle($(this).find('.title').text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+    $(document).ready(function () {
+        $("#searchLocationBar").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#toSearch .card").filter(function () {
+                $(this).toggle($(this).find('.location').text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+    });
+
+    function rateEvent(eventId, score) {
+        $.ajax({
+            url: "/Event/Rate?eventId=" + eventId + "&score=" + score,
+            success: function () {},
+            error: function (xhr) { alert(xhr.responseText) }
+        });
+    }
+
+    function loadEditEvent(Id) {
+        loadServerPartialView("#editEventBody", '@Url.Action("Edit", "Event")' + "/" + Id);
+    }
+
+    function loadRemoveEvent(Id) {
+        loadServerPartialView("#removeEventBody", '@Url.Action("Remove", "Event")' + "/" + Id);
+    }
+
+    function loadDetails(Id) {
+        loadServerPartialView("#detailsBody", '@Url.Action("Details", "Event")' + "/" + Id);
+    }
+
+    function loadApplyToEvent(Id) {
+        loadServerPartialView("#applyBody", '@Url.Action("Apply", "Event")' + "/" + Id).then(successCallback);
+    }
+
+    function loadGetApplications(Id) {
+        loadServerPartialView("#getApplicationsBody", '@Url.Action("GetApplications", "Event")' + "/" + Id);
+    }
+
+    function successCallback(response) {
+        applyToEvent(response.Id);
+    }
+
+    function initializeGoogleApi() {
+        var input = document.getElementById('locationInput');
+        var autocomplete = new google.maps.places.Autocomplete(input);
+        document.getElementById('isLocationValid').value = false;
+
+        google.maps.event.addListener(autocomplete, 'place_changed', function () {
+            document.getElementById('isLocationValid').value = true;
+            var place = autocomplete.getPlace();
+            document.getElementById('cityLat').value = place.geometry.location.lat();
+            document.getElementById('cityLong').value = place.geometry.location.lng();
+        });
+    }
+
+    function hideModal(modalName) {
+        $(modalName).modal("hide");
+        $('form .form-event-description').val("");
+    }
+
+    $("#locationInput").keydown(function () {
+        document.getElementById('isLocationValid').value = false;
+    });
+</script>

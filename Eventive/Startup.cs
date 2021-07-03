@@ -1,20 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.EntityFrameworkCore;
+using Eventive.ApplicationLogic.Abstraction;
+using Eventive.ApplicationLogic.Services;
+using Eventive.Areas.Identity;
 using Eventive.Data;
+using Eventive.EFDataAccess;
+using Eventive.Services;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Eventive.EFDataAccess;
-using Eventive.ApplicationLogic.Abstraction;
-using Eventive.ApplicationLogic.Services;
 
 namespace Eventive
 {
@@ -37,15 +34,34 @@ namespace Eventive
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                .AddEntityFrameworkStores<ApplicationDbContext>();           
+            services.AddTransient<IEmailSender, EmailSender>();
+            services.Configure<AuthMessageSenderOptions>(Configuration);
 
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<EventService>();
-            services.AddScoped<UserService>();
+            services.AddScoped<UserService>(); 
+            services.AddResponseCompression();
 
+            services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    IConfigurationSection googleAuthNSection =
+                        Configuration.GetSection("Authentication:Google");
+
+                    options.ClientId = googleAuthNSection["ClientId"];
+                    options.ClientSecret = googleAuthNSection["ClientSecret"];
+                });
+
+            services.ConfigureNonBreakingSameSiteCookies();
             services.AddControllersWithViews();
-            services.AddRazorPages();
+            services.AddRazorPages().AddMvcOptions(options =>
+            {
+                options.MaxModelValidationErrors = 50;
+                options.ModelBindingMessageProvider.SetValueMustNotBeNullAccessor(
+                    _ => "The field is required.");
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -66,7 +82,9 @@ namespace Eventive
             app.UseStaticFiles();
 
             app.UseRouting();
+            app.UseResponseCompression();
 
+            app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseAuthorization();
 

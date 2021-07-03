@@ -1,15 +1,28 @@
 ﻿@using Eventive.Models.Events;
-@using Eventive.Models.Users;
 
 <div id="detailsModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h4 class="modal-title">Event Details</h4>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="close" data-dismiss="modal"><i class="fa fa-window-close" aria-hidden="true"></i></button>
             </div>
             <div class="modal-body" id="detailsBody">
-                @await Html.PartialAsync("~/Views/Event/_DetailsPartial.cshtml", new EventViewModel())
+                @await Html.PartialAsync("~/Views/Event/_DetailsPartial.cshtml", new DetailsViewModel())
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="getApplicationsModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Applications</h4>
+                <button type="button" class="close" data-dismiss="modal"><i class="fa fa-window-close" aria-hidden="true"></i></button>
+            </div>
+            <div class="modal-body" id="getApplicationsBody">
+                @await Html.PartialAsync("~/Views/Event/_ApproveApplicationPartial.cshtml", new GetApplicationsViewModel())
             </div>
         </div>
     </div>
@@ -22,9 +35,9 @@
       data-ajax-mode="replace"
       data-ajax-update="#applyBody">
 
-    <div class="modal fade" style="margin-top:10rem" id="applyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="applyModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog d-flex justify-content-center">
-            <div class="modal-content" style="max-width: 60%">
+            <div class="modal-content">
                 <div class="modal-body" id="applyBody">
                     @await Html.PartialAsync("~/Views/Event/_ApplyToEventPartial.cshtml", new ApplyToEventViewModel())
                 </div>
@@ -33,24 +46,25 @@
     </div>
 </form>
 
+
 <form enctype="multipart/form-data" method="post" asp-controller="Event" asp-action="NewEvent"
       data-ajax="true"
       data-ajax-method="POST"
-      data-ajax-complete="modalFormComplete('#newEventModal')"
+      data-ajax-complete="editModalFormComplete('#newEventModal')"
       data-ajax-mode="replace"
       data-ajax-update="#newEventBody">
 
     <div class="modal fade" id="newEventModal" tabindex="-1" aria-labelledby="newEventTitle" aria-hidden="true">
         <div class="modal-dialog d-flex justify-content-center">
-            <div class="modal-content" style="width: 60rem">
+            <div class="modal-content event-edit-form">
                 <div class="modal-header">
                     <h5 class="modal-title" id="newEventTitle">Create a new event!</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true"><i class="fa fa-window-close" aria-hidden="true"></i></span>
                     </button>
                 </div>
-                <div class="modal-body" id="newEventBody" style="width: 60rem">
-                    @await Html.PartialAsync("~/Views/Event/_AddEventPartial.cshtml", new NewEventViewModel())
+                <div class="modal-body" id="newEventBody">
+                    @await Html.PartialAsync("~/Views/Event/_AddEventPartial.cshtml", new AddEventViewModel())
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -65,50 +79,21 @@
 <form enctype="multipart/form-data" method="post" asp-controller="Event" asp-action="Edit"
       data-ajax="true"
       data-ajax-method="POST"
-      data-ajax-complete="modalFormComplete('#editEventModal')"
+      data-ajax-complete="editModalFormComplete('#editEventModal')"
       data-ajax-mode="replace"
       data-ajax-update="#editEventBody">
 
     <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventTitle" aria-hidden="true">
         <div class="modal-dialog d-flex justify-content-center">
-            <div class="modal-content" style="max-width: 70%">
+            <div class="modal-content event-edit-form">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editEventTitle">Edit your event</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+                        <span aria-hidden="true"><i class="fa fa-window-close" aria-hidden="true"></i></span>
                     </button>
                 </div>
                 <div class="modal-body" id="editEventBody">
-                    @await Html.PartialAsync("~/Views/Event/_EditEventPartial.cshtml", new EditEventViewModel())
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Update</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</form>
-
-
-<form enctype="multipart/form-data" method="post" asp-controller="Profile" asp-action="EditProfile"
-      data-ajax="true"
-      data-ajax-method="POST"
-      data-ajax-complete="updateProfileComplete('#editProfileModal')"
-      data-ajax-mode="replace"
-      data-ajax-update="#editProfileBody">
-
-    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileTitle" aria-hidden="true">
-        <div class="modal-dialog d-flex justify-content-center">
-            <div class="modal-content" style="max-width: 70%">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editProfileTitle">Edit your profile</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="editProfileBody">
-                    @await Html.PartialAsync("~/Views/Profile/_EditProfilePartial.cshtml", new EditProfileViewModel())
+                    @await Html.PartialAsync("~/Views/Event/_ModifyEventPartial.cshtml", new ModifyEventViewModel())
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -127,11 +112,15 @@
       data-ajax-mode="replace"
       data-ajax-update="#removeEventBody">
 
-    <div class="modal fade" style="margin-top:15rem;" id="removeEventModal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="removeEventModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog d-flex justify-content-center">
-            <div class="modal-content" style="max-width: 60%">
+            <div class="modal-content">
                 <div class="modal-body" id="removeEventBody">
                     @await Html.PartialAsync("~/Views/Event/_RemoveEventPartial.cshtml", new RemoveEventViewModel())
+                </div>
+                <div class="d-flex justify-content-around modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
+                    <button type="submit" class="btn btn-success">Yes</button>
                 </div>
             </div>
         </div>
