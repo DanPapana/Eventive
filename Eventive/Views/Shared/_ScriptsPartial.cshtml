@@ -3,7 +3,7 @@
 <script>
     function followEvent(id) {
         $.ajax({
-            url: "Event/Follow?id=" + id,
+            url: "/Event/Follow?id=" + id,
             success: function () {
                 $('#follow-' + id).toggle();
                 $('#following-' + id).toggle();

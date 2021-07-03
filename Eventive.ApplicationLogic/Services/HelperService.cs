@@ -18,7 +18,6 @@ namespace Eventive.ApplicationLogic.Services
         public static string CompressImage(IFormFile inputImage)
         {
             using var memoryStream = new MemoryStream();
-
             using (var image = Image.Load(inputImage.OpenReadStream()))
             {
                 int width = 400;
@@ -28,10 +27,7 @@ namespace Eventive.ApplicationLogic.Services
 
                 var resizeOptions = new ResizeOptions
                 {
-                    Size = new Size(width),
-                    Sampler = sampler,
-                    Compand = compand,
-                    Mode = mode
+                    Size = new Size(width), Sampler = sampler, Compand = compand, Mode = mode
                 };
 
                 image.Mutate(x => x
@@ -54,7 +50,8 @@ namespace Eventive.ApplicationLogic.Services
         public static async Task<string> GetCityFromAddress(string address)
         {
             string apiKey = ConfigurationManager.AppSettings.Get("GOOGLE_API_KEY");
-            string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", Uri.EscapeDataString(address), apiKey);
+            string requestUri = string.Format("https://maps.googleapis.com/maps/api/geocode/xml?key={1}&address={0}&sensor=false", 
+                Uri.EscapeDataString(address), apiKey);
 
             using (var client = new HttpClient())
             {

@@ -14,6 +14,7 @@
         public const double RecommendationApplicationWeight = 3;
         public const double RecommendationFollowWeight = 1;
         public const double RecommendationClickWeight = 0.1;
+        public const double RecommendationSimilarityWeight = 1.5;
 
         public const double RecommendationCategoryWeight = 5;
         public const double RecommendationProximityWeight = 5;

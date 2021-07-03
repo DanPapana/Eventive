@@ -65,25 +65,6 @@ namespace Eventive.ApplicationLogic.Services
             return GetEventsOrderedByScore(events);
         }
 
-        private UserBehaviour GetUpdatedUserBehaviour(Guid participantId, Dictionary<EventOrganized, double> proximityScores,
-            Dictionary<EventOrganized, double> categoryScores)
-        {
-            var userBehaviour = eventRepository.GetUserBehaviour(participantId);
-            if (userBehaviour is null)
-            {
-                var participant = userRepository.GetParticipantByGuid(participantId);
-                userBehaviour = UserBehaviour.Create(proximityScores, categoryScores, participant);
-                eventRepository.AddUserBehaviour(userBehaviour);
-            }
-            else
-            {
-                userBehaviour.Update(proximityScores, categoryScores);
-                eventRepository.Update(userBehaviour);
-            }
-
-            return userBehaviour;
-        }
-
         private Dictionary<EventOrganized, double> GetTotalRecommendationScore(Guid participantId, Dictionary<EventOrganized, double> proximityScores,
             Dictionary<EventOrganized, double> categoryScores)
         {
@@ -106,6 +87,67 @@ namespace Eventive.ApplicationLogic.Services
             return totalScores;
         }
 
+        private Dictionary<EventCategory, double> GetSimilarityScoreForCategories(Guid participantId)
+        {
+            //Get all the other participants
+            var participants = userRepository.GetAll().Where(p => p.Id != participantId);
+
+            //Get the category scores for all the other users
+            Dictionary<Guid, SortedDictionary<EventCategory, double>> categoryScores = 
+                new Dictionary<Guid, SortedDictionary<EventCategory, double>>();
+            foreach (var participant in participants)
+            {
+                categoryScores.Add(participant.Id, GetTotalCategoryScoreForUser(participant.Id));
+            }
+
+            //Get the category score for the current user
+            var currentUserCategoryScore = GetTotalCategoryScoreForUser(participantId);
+
+            //Calculate cosine similarity for every other user
+            Dictionary<Guid, double> cosineSimilarities = new Dictionary<Guid, double>();
+            foreach (var participant in participants)
+            {
+                cosineSimilarities.Add(participant.Id, GetCosineSimilarity(currentUserCategoryScore.Values.ToArray(),
+                    categoryScores[participant.Id].Values.ToArray()));
+            }
+
+            //Order the other users by their similarity to the current user
+            var orderedParticipantIds = cosineSimilarities
+                .OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
+
+            return GetTotalCategoryScoreBasedOnSimilarity(orderedParticipantIds, 
+                currentUserCategoryScore, categoryScores);
+        }
+
+        private Dictionary<EventCategory, double> GetTotalCategoryScoreBasedOnSimilarity(Dictionary<Guid, double> orderedParticipantIds, 
+            SortedDictionary<EventCategory, double> currentUserCategoryScore, 
+            Dictionary<Guid, SortedDictionary<EventCategory, double>> categoryScores)
+        {
+            Dictionary<EventCategory, double> categoryTotalScore = new Dictionary<EventCategory, double>();
+
+            //The more similar a user is, the higher its weight
+            foreach (var participant in orderedParticipantIds)
+            {
+                foreach (var category in currentUserCategoryScore.Keys)
+                {
+                    //Adding the similar user's category score of the current user and the most similar user
+                    double score = currentUserCategoryScore[category] + 
+                        categoryScores[participant.Key][category] * orderedParticipantIds[participant.Key];
+
+                    if (categoryTotalScore.ContainsKey(category))
+                    {
+                        categoryTotalScore[category] = score;
+                    }
+                    else
+                    {
+                        categoryTotalScore.Add(category, score);
+                    }
+                }
+            }
+
+            return categoryTotalScore;
+        }
+
         public IEnumerable<EventOrganized> GetRecommendedEvents(Guid participantId, string lat = null, string lng = null) 
         {
             var events = eventRepository.GetEventsToRecommend(participantId);
@@ -115,18 +157,25 @@ namespace Eventive.ApplicationLogic.Services
             }
 
             var proximityScores = GetEventProximityScoreForUserAsync(participantId, lat, lng).Result;
-            var categoryScores = GetEventCategoryScoreForUser(participantId);
 
-            //Save the current user's behaviour
-            var userBehaviour = GetUpdatedUserBehaviour(participantId, proximityScores, categoryScores);
+            //Add the resulting score to the categories from the users most similar to other users
+            var categoryTotalScore = GetSimilarityScoreForCategories(participantId);
+            
+            //Put all the category scores into the events with such categories
+            var eventScore = GetEventScoreFromCategoryScore(participantId, categoryTotalScore);
 
             //Add the scores to the events according to their weight
-            var totalEventScores = GetTotalRecommendationScore(participantId, proximityScores, categoryScores);
+            var totalEventScores = GetTotalRecommendationScore(participantId, proximityScores, eventScore);
 
             //Order events by the score
             var orderedScores = totalEventScores
                 .OrderByDescending(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
 
+            return GetRecommendedEvents(orderedScores);
+        }
+
+        private List<EventOrganized> GetRecommendedEvents(Dictionary<EventOrganized, double> orderedScores)
+        {
             //Return the top x events
             var maximumNumberOfRecommendedEvents = Constants.NumberOfRecommendedEventsShown;
             if (maximumNumberOfRecommendedEvents > orderedScores.Count())
@@ -142,6 +191,25 @@ namespace Eventive.ApplicationLogic.Services
 
             return recommendedEvents;
         }
+
+        //Cosine similarity(A, B) = Sum(A * B)/Sqrt(Sum(A^2)) * Sqrt(Sum(B^2))
+        private double GetCosineSimilarity(double[] currentUser, double[] targetUser)
+        {
+            double numerator = 0;
+            double A = 0;
+            double B = 0;
+
+            for (int i = 0; i < currentUser.Length; i++)
+            {
+                numerator += currentUser[i] * targetUser[i];
+                A += currentUser[i] * currentUser[i];
+                B += targetUser[i] * targetUser[i];
+            }
+
+            double denominator = Math.Sqrt(A) * Math.Sqrt(B);
+            return (numerator == 0) ? 0 : numerator / denominator;
+        }
+        
 
         public EventOrganized GetEventById(Guid eventId)
         {            
@@ -288,7 +356,6 @@ namespace Eventive.ApplicationLogic.Services
             {
                 interactionScore = interactionCount * interactionWeight / (interactionDecay / (interactionCount + 1));
             }
-
             return interactionScore;
         }
 
@@ -335,14 +402,12 @@ namespace Eventive.ApplicationLogic.Services
             return trendingEvents.AsEnumerable();
         }
 
-        public Dictionary<EventOrganized, double> GetEventCategoryScoreForUser(Guid participantId)
+        public SortedDictionary<EventCategory, double> GetTotalCategoryScoreForUser(Guid participantId)
         {
-            Dictionary<EventOrganized, double> categoryScoreForEvents = new Dictionary<EventOrganized, double>();
-            Dictionary<EventCategory, double> categoryTotalScore = new Dictionary<EventCategory, double>();
+            SortedDictionary<EventCategory, double> categoryTotalScore = new SortedDictionary<EventCategory, double>();
             Dictionary<EventCategory, double> categoryRatingScore = GetCategoryRatingScoreForUser(participantId);
             Dictionary<EventCategory, double> categoryInteractionScore = GetCategoryInteractionScoreForUser(participantId);
 
-            var events = eventRepository.GetEventsToRecommend(participantId);
             foreach (EventCategory category in Enum.GetValues(typeof(EventCategory)))
             {
                 int numberOfScores = 0;
@@ -362,10 +427,20 @@ namespace Eventive.ApplicationLogic.Services
                 if (numberOfScores > 0)
                 {
                     categoryTotalScore.Add(category, totalWeightedScore / numberOfScores);
+                } else {
+                    categoryTotalScore.Add(category, 0);
                 }
             }
+            return categoryTotalScore;
+        }
 
-            foreach(var eventOrganized in events)
+        private Dictionary<EventOrganized, double> GetEventScoreFromCategoryScore(Guid participantId, 
+            Dictionary<EventCategory, double> categoryTotalScore)
+        {
+            Dictionary<EventOrganized, double> categoryScoreForEvents = new Dictionary<EventOrganized, double>();
+            var events = eventRepository.GetEventsToRecommend(participantId);
+
+            foreach (var eventOrganized in events)
             {
                 if (categoryTotalScore.ContainsKey(eventOrganized.Category))
                 {
@@ -529,7 +604,8 @@ namespace Eventive.ApplicationLogic.Services
             return clickScorePerCategory;
         }
 
-        private Dictionary<EventCategory, double> GetNormalizedEventRatingScoreForUser(Dictionary<EventCategory, List<int>> categoryRatingList)
+        private Dictionary<EventCategory, double> GetNormalizedEventRatingScoreForUser(Dictionary<EventCategory, 
+            List<int>> categoryRatingList)
         {
             Dictionary<EventCategory, double> categoryRatingScore = new Dictionary<EventCategory, double>();
 
@@ -549,9 +625,10 @@ namespace Eventive.ApplicationLogic.Services
         /*
          * Calculate a score from 0.0 to 1.0
          * 1.0 meaning the distance from the user's current location is 0
-         * 0.0 meaning the distance is >= 1000 km (Specified as ProximityScoreMaximumDistanceInMeters in app.config)
+         * 0.0 meaning the distance is >= 1000 km (Specified as ProximityScoreMaximumDistanceInMeters in Constants)
          */
-        public async Task<Dictionary<EventOrganized, double>> GetEventProximityScoreForUserAsync(Guid participantId, string latitude, string longitude)
+        public async Task<Dictionary<EventOrganized, double>> GetEventProximityScoreForUserAsync(Guid participantId, 
+            string latitude, string longitude)
         {
             Dictionary<EventOrganized, double> proximityScoreForEvents = new Dictionary<EventOrganized, double>();
             if (string.IsNullOrEmpty(latitude) || string.IsNullOrEmpty(longitude))
@@ -600,7 +677,8 @@ namespace Eventive.ApplicationLogic.Services
             return destinations;
         }
 
-        private Dictionary<EventOrganized, double> GetProximityScoresFromResponse(List<Element> elements, IEnumerable<EventOrganized> events)
+        private Dictionary<EventOrganized, double> GetProximityScoresFromResponse(List<Element> elements, 
+            IEnumerable<EventOrganized> events)
         {
             double maximumDistanceToScore = Constants.ProximityScoreMaximumDistanceInMeters;
             Dictionary<EventOrganized, double> proximityScoreForEvents = new Dictionary<EventOrganized, double>();
