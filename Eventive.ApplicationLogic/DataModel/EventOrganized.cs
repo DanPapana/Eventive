@@ -14,7 +14,7 @@ namespace Eventive.ApplicationLogic.DataModel
             Dance,
             Drinks,
             Film,
-            Fitness,
+            Sightseeing,
             Food,
             Games,
             Health,
@@ -23,7 +23,7 @@ namespace Eventive.ApplicationLogic.DataModel
             Networking,
             Party,
             Sports,
-            Theater
+            Other
         }
 
         public Guid Id { get; set; }

@@ -28,5 +28,6 @@ namespace Eventive.Models.Events
         public string UserProfileImage { get; set; }
         public string HostProfileImage { get; set; }
         public int? Rating { get; set; }
+        public bool IsPendingApplication { get; set; }
     }
 }

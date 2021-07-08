@@ -613,6 +613,7 @@ namespace Eventive.Controllers
             string currentUsername = null;
             string currentProfileImage = null;
             var applicationStatus = EventApplication.ApplicationStatus.Pending.ToString();
+            bool isPendingApplication = false;
             int? userScore = null;
 
             if (User.Identity.IsAuthenticated)
@@ -626,6 +627,16 @@ namespace Eventive.Controllers
                 if (application != null)
                 {
                     applicationStatus = application.Status.ToString();
+                }
+
+                var applications = eventService.GetEventApplications(organizedEvent.Id);
+                foreach(var app in applications)
+                {
+                    if (app.Status.Equals(EventApplication.ApplicationStatus.Pending))
+                    {
+                        isPendingApplication = true;
+                        break;
+                    }
                 }
             }
 
@@ -651,9 +662,10 @@ namespace Eventive.Controllers
                 UserName = currentUsername,
                 UserProfileImage = currentProfileImage,
                 Rating = userScore,
-                ApplicationStatus = applicationStatus
+                ApplicationStatus = applicationStatus,
+                IsPendingApplication = isPendingApplication
             };
-             
+            
             return eventViewModel;
         }
 
